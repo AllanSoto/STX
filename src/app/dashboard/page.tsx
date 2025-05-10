@@ -101,6 +101,16 @@ export default function DashboardPage() {
     const reconnectDelay = 5000; 
 
     function connectWebSocket() {
+      if (!coinCapAssetIds) {
+        console.warn('CoinCap WebSocket: Asset IDs are empty. Connection aborted.');
+        toast({
+          title: t('dashboard.websocket.coincap.errorTitle', 'CoinCap Feed Error'),
+          description: t('dashboard.websocket.coincap.error.noAssets', 'No assets to track. Connection aborted.'),
+          variant: "destructive",
+        });
+        return;
+      }
+
       if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
         console.log('CoinCap WebSocket already open or connecting.');
         return;
@@ -142,29 +152,12 @@ export default function DashboardPage() {
       };
 
       ws.onerror = (event: Event) => {
-        console.error('Raw CoinCap WebSocket error event object:', event);
-        try {
-          // Attempt to get more details if possible, avoiding circular structure issues with stringify
-          const eventDetailsForLog: any = {};
-          for (const key in event) {
-            if (Object.prototype.hasOwnProperty.call(event, key)) {
-              const value = (event as any)[key];
-              if (typeof value !== 'object' && typeof value !== 'function') {
-                eventDetailsForLog[key] = value;
-              } else if (key === 'target' && value && (value as any).url) {
-                 eventDetailsForLog.targetUrl = (value as any).url;
-              }
-            }
-          }
-          console.error('CoinCap WebSocket error event details:', eventDetailsForLog);
-        } catch (e) {
-          console.error('Could not extract details from CoinCap WebSocket error event.');
-        }
+        console.error('CoinCap WebSocket error event:', event); 
         
         let errorDetailsMessage = t('dashboard.websocket.coincap.error.unknown', 'Unknown WebSocket error occurred with CoinCap.');
         if (event instanceof ErrorEvent && event.message) {
             errorDetailsMessage = t('dashboard.websocket.coincap.error.withMessage', 'Error: {message}', { message: event.message });
-        } else if (event.type) {
+        } else if (event.type) { 
             errorDetailsMessage = t('dashboard.websocket.coincap.error.withType', 'Event type: {type}', { type: event.type });
         }
         
@@ -172,9 +165,14 @@ export default function DashboardPage() {
           `CoinCap WebSocket detailed error: ${errorDetailsMessage}. WebSocket readyState: ${ws?.readyState}. Asset IDs: ${coinCapAssetIds}`
         );
         
+        let userFriendlyDescription = `${t('dashboard.websocket.coincap.errorDescription', 'Issue with CoinCap live price feed.')} ${errorDetailsMessage}`;
+        if (ws?.readyState === WebSocket.CLOSED) { // WebSocket.CLOSED is 3
+          userFriendlyDescription += ` ${t('dashboard.websocket.coincap.error.connectionClosed', 'The connection attempt failed or was closed. Please check your network.')}`;
+        }
+
         toast({
           title: t('dashboard.websocket.coincap.errorTitle', 'CoinCap Feed Error'),
-          description: `${t('dashboard.websocket.coincap.errorDescription', 'Issue with CoinCap live price feed.')} ${errorDetailsMessage}`,
+          description: userFriendlyDescription,
           variant: "destructive",
         });
       };
@@ -208,6 +206,9 @@ export default function DashboardPage() {
     return () => {
       if (ws) {
         console.log('Closing CoinCap WebSocket due to component unmount or effect re-run.');
+        ws.onopen = null;
+        ws.onmessage = null;
+        ws.onerror = null;
         ws.onclose = null; 
         ws.close(1000, "Component unmounting");
       }
@@ -221,9 +222,9 @@ export default function DashboardPage() {
       if (!isMounted) return;
 
       const shouldLoadAi = cryptoData.some(c => c.value !== 0 && !c.trendAnalysis) || 
-                           (cryptoData.every(c => c.value === 0 && !c.trendAnalysis) && isAiLoading); // isAiLoading condition might be redundant if it means no data yet
+                           (cryptoData.every(c => c.value === 0 && !c.trendAnalysis) && isAiLoading); 
       
-      if (shouldLoadAi && !isAiLoading) { // This will set isAiLoading to true if AI should load and it's not already loading
+      if (shouldLoadAi && !isAiLoading) { 
         setIsAiLoading(true);
       }
 
@@ -233,17 +234,13 @@ export default function DashboardPage() {
 
         const dataToAnalyze = currentDataForAI.some(c => c.value !== 0) 
           ? currentDataForAI.filter(c => c.value !== 0) 
-          : currentDataForAI; // If all values are 0, analyze all (or none if that's desired initial state)
+          : currentDataForAI; 
 
         if (dataToAnalyze.length === 0 && currentDataForAI.some(c => c.value !== 0)) {
-           // This case means all prices are 0 for dataToAnalyze, but some prices exist in currentDataForAI
-           // This shouldn't happen if dataToAnalyze is filtered correctly.
-           // If dataToAnalyze is genuinely empty (e.g. no filter matches, or source is empty) then proceed.
            if (isMounted) setIsAiLoading(false);
            return;
         }
         
-        // Proceed if there's data to analyze OR if all data has value 0 (initial load case)
         if (dataToAnalyze.length > 0 || dataToAnalyze.every(d => d.value === 0)) {
             const updatedDataWithTrends = await updateAllAiTrends(dataToAnalyze);
             
@@ -270,21 +267,19 @@ export default function DashboardPage() {
     
     const initialDelay = 7000; 
     const initialAiUpdateTimeout = setTimeout(() => {
-        performAiUpdate(); // Run once after delay
-        const intervalId = setInterval(performAiUpdate, 60000); // Then run every 60 seconds
-        // Cleanup for interval on unmount
+        performAiUpdate(); 
+        const intervalId = setInterval(performAiUpdate, 60000); 
         return () => {
             clearInterval(intervalId);
         };
     }, initialDelay);
 
-    // Cleanup for timeout and isMounted flag
     return () => {
       isMounted = false;
       clearTimeout(initialAiUpdateTimeout);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cryptoData]); // Re-run AI if cryptoData changes 
+  }, [cryptoData]); 
 
   return (
     <MainLayout>
@@ -322,3 +317,4 @@ export default function DashboardPage() {
     </MainLayout>
   );
 }
+
