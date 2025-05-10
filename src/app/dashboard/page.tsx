@@ -42,6 +42,10 @@ function getMockRecentPriceData(symbol: CryptoSymbol): string {
 
 async function updateAllAiTrends(currentCryptoData: CryptoCardData[]): Promise<CryptoCardData[]> {
   const dataPromises = currentCryptoData.map(async (crypto) => {
+    // Only analyze if there's a price and no recent analysis, or if analysis is explicitly needed.
+    if (crypto.value === 0 && !crypto.trendAnalysis) { // Don't analyze if price is 0 and no prior analysis
+        return crypto; // Return unchanged crypto data
+    }
     const recentPriceData = getMockRecentPriceData(crypto.symbol);
     try {
       const trendAnalysis = await analyzeCryptoTrend({ cryptoSymbol: crypto.symbol, recentPriceData });
@@ -102,19 +106,25 @@ export default function DashboardPage() {
       };
 
       ws.onmessage = (event) => {
+        console.log('Raw WebSocket message received:', event.data); 
         try {
           const message = JSON.parse(event.data as string);
           // Binance sends different structures for combined streams vs single.
           // For combined streams, the actual trade data is usually under a 'data' property.
+          // For single streams (e.g. btcusdt@trade), it's directly in the message.
           const tradeData = message.data || message;
+
 
           if (tradeData && tradeData.s && tradeData.p) { // s = symbol, p = price
             const symbol = tradeData.s.replace('USDT', '').toUpperCase() as CryptoSymbol;
             const newPrice = parseFloat(tradeData.p);
+            console.log(`Parsed trade: Symbol=${symbol}, Price=${newPrice}`);
 
+            let foundSymbol = false;
             setCryptoData(prevData =>
               prevData.map(crypto => {
                 if (crypto.symbol === symbol) {
+                  foundSymbol = true;
                   const priceBeforeUpdate = crypto.value; 
                   return {
                     ...crypto,
@@ -125,6 +135,11 @@ export default function DashboardPage() {
                 return crypto;
               })
             );
+            if (!foundSymbol) {
+                console.warn(`WebSocket: Received price for unmonitored symbol: ${symbol}`);
+            }
+          } else {
+             console.warn('WebSocket: Received message does not match expected trade data structure:', tradeData);
           }
         } catch (error) {
           console.error('Error processing WebSocket message:', error, event.data);
@@ -132,12 +147,12 @@ export default function DashboardPage() {
       };
 
       ws.onerror = (event: Event) => {
-        console.error('Binance WebSocket error object:', event); // Log the raw event object
+        console.error('Binance WebSocket error object:', event); 
         
         let errorDetailsMessage = 'Unknown WebSocket error occurred.';
-        if (event instanceof ErrorEvent) { // Standard ErrorEvent for more detailed script errors
+        if (event instanceof ErrorEvent) { 
             errorDetailsMessage = `Message: ${event.message || 'N/A'}${event.filename ? `, File: ${event.filename}` : ''}${event.lineno ? `, Line: ${event.lineno}` : ''}`;
-        } else if (event.type) { // Generic event, use its type
+        } else if (event.type) { 
             errorDetailsMessage = `Event type: '${event.type}'.`;
         }
         
@@ -148,18 +163,15 @@ export default function DashboardPage() {
           description: t('dashboard.websocket.errorDescription', 'There was an issue with the live price feed. Attempting to reconnect.'),
           variant: "destructive",
         });
-        // Note: The 'onclose' event will typically fire after an error that closes the connection,
-        // and 'onclose' handles the reconnection logic.
       };
 
       ws.onclose = (event: CloseEvent) => {
         console.log(`Binance WebSocket disconnected. Code: ${event.code}, Reason: ${event.reason || 'No reason given'}, Clean: ${event.wasClean}`);
-        // Only attempt to reconnect if it wasn't a clean closure initiated by our code AND maxReconnectAttempts not reached
         if (reconnectAttempts < maxReconnectAttempts) {
           reconnectAttempts++;
           console.log(`Attempting to reconnect WebSocket (attempt ${reconnectAttempts}/${maxReconnectAttempts}) in ${reconnectDelay / 1000}s...`);
           setTimeout(connectWebSocket, reconnectDelay);
-          if (!event.wasClean || event.code !== 1000) { // Show toast for unexpected closures or errors leading to closure
+          if (!event.wasClean || event.code !== 1000) { 
             toast({
               title: t('dashboard.websocket.disconnectedTitle', 'Real-time Feed Disconnected'),
               description: t('dashboard.websocket.reconnectingDescription', 'Attempting to reconnect to live prices... Attempt {attempt}/{maxAttempts}', {attempt: reconnectAttempts, maxAttempts: maxReconnectAttempts}),
@@ -182,8 +194,8 @@ export default function DashboardPage() {
     return () => {
       if (ws) {
         console.log('Closing Binance WebSocket due to component unmount or effect re-run.');
-        ws.onclose = null; // Prevent onclose handler from running during manual close
-        ws.close();
+        ws.onclose = null; 
+        ws.close(1000, "Component unmounting"); // Use a standard close code
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -195,58 +207,78 @@ export default function DashboardPage() {
     const performAiUpdate = async () => {
       if (!isMounted) return;
 
-      // Determine if AI loading should be shown
-      // Show loading if any crypto has no value yet OR if AI hasn't run yet for any crypto that has a value
-       if (cryptoData.some(c => c.value !== 0 && !c.trendAnalysis) || cryptoData.every(c => c.value === 0 && !c.trendAnalysis)) {
+      const shouldLoadAi = cryptoData.some(c => c.value !== 0 && !c.trendAnalysis) || 
+                           (cryptoData.every(c => c.value === 0 && !c.trendAnalysis) && isAiLoading); // Keep loading if initial state and AI hasn't run
+      
+      if (shouldLoadAi && !isAiLoading) { // Set loading to true only if it's not already true
         setIsAiLoading(true);
       }
 
+
       try {
-        // Create a deep copy of cryptoData for the AI function to prevent race conditions
-        // if cryptoData is updated by WebSocket while AI analysis is in progress.
         const currentDataForAI = JSON.parse(JSON.stringify(cryptoData)) as CryptoCardData[];
         
         if (!isMounted) return;
 
-        const updatedDataWithTrends = await updateAllAiTrends(currentDataForAI);
-        
-        if (isMounted) {
-          setCryptoData(prevData => 
-            prevData.map(pd => {
-              const trendUpdate = updatedDataWithTrends.find(ud => ud.symbol === pd.symbol);
-              return {
-                ...pd, 
-                trendAnalysis: trendUpdate ? trendUpdate.trendAnalysis : pd.trendAnalysis,
-              };
-            })
-          );
+        // Filter out cryptos with value 0 before sending to AI, unless no crypto has value yet
+        const dataToAnalyze = currentDataForAI.some(c => c.value !== 0) 
+          ? currentDataForAI.filter(c => c.value !== 0) 
+          : currentDataForAI;
+
+
+        if (dataToAnalyze.length === 0 && currentDataForAI.some(c => c.value !== 0)) {
+          // This case means all cryptos with prices were filtered out, effectively no new analysis needed
+           if (isMounted) setIsAiLoading(false); // Stop loading if no data to analyze
+           return;
         }
+        
+        // Only proceed if there's data to analyze or if it's the initial load (all values are 0)
+        if (dataToAnalyze.length > 0 || dataToAnalyze.every(d => d.value === 0)) {
+            const updatedDataWithTrends = await updateAllAiTrends(dataToAnalyze);
+            
+            if (isMounted) {
+              setCryptoData(prevData => 
+                prevData.map(pd => {
+                  const trendUpdate = updatedDataWithTrends.find(ud => ud.symbol === pd.symbol);
+                  return {
+                    ...pd, 
+                    trendAnalysis: trendUpdate ? trendUpdate.trendAnalysis : pd.trendAnalysis,
+                  };
+                })
+              );
+            }
+        }
+
       } catch (error) {
         console.error("Error in performAiUpdate:", error);
-        // Optionally, add a toast notification for AI update failure
       } finally {
         if (isMounted) {
           setIsAiLoading(false);
         }
       }
     };
+    
+    const initialDelay = 5000; // Wait 5 seconds for initial prices before first AI run
+    const initialAiUpdateTimeout = setTimeout(() => {
+        performAiUpdate();
+         // Then set up the interval
+        const intervalId = setInterval(performAiUpdate, 60000); // AI update every 60 seconds
+        // Clear interval on unmount
+        return () => {
+            clearInterval(intervalId);
+        };
+    }, initialDelay);
 
-    performAiUpdate(); 
-    const intervalId = setInterval(performAiUpdate, 60000); // AI update every 60 seconds
 
     return () => {
       isMounted = false;
-      clearInterval(intervalId);
+      clearTimeout(initialAiUpdateTimeout);
+      // Interval clearing is handled in the return of setTimeout's callback
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cryptoData]); // Rerun AI analysis if cryptoData reference changes (e.g. after WebSocket update) - might be too frequent.
-  // Consider a less frequent trigger or a separate timer not dependent on cryptoData reference.
-  // For now, this ensures AI uses most recent prices, but could be optimized.
-  // A better approach for AI interval:
-  // }, []); // And inside performAiUpdate, use functional update for setCryptoData or pass latest cryptoData.
-  // But `cryptoData` is needed to call `updateAllAiTrends`.
-  // The current dependency ensures that `performAiUpdate` always has access to the latest `cryptoData`.
-  // The `JSON.parse(JSON.stringify(cryptoData))` ensures it's a snapshot.
+  }, []); // Run AI effect once on mount, internal logic handles cryptoData via snapshots.
+
+  const isLoadingCards = cryptoData.some(data => data.value === 0) || (isAiLoading && cryptoData.some(data => !data.trendAnalysis && data.value !== 0));
 
 
   return (
@@ -261,7 +293,7 @@ export default function DashboardPage() {
               <CryptoDisplayCard 
                 key={data.symbol || i} 
                 data={data} 
-                isLoading={data.value === 0 || (isAiLoading && !data.trendAnalysis)} 
+                isLoading={data.value === 0 || (isAiLoading && !data.trendAnalysis && data.value !==0)} 
               />
             ))}
           </div>
@@ -270,7 +302,7 @@ export default function DashboardPage() {
         <section className="mb-8">
           <h2 className="text-2xl font-semibold mb-4 text-foreground sr-only">{t('dashboard.orderSimulator', 'Order Simulator')}</h2>
           <OrderSimulator cryptoPrices={cryptoData.reduce((acc, curr) => {
-            if(curr.value !== 0) { // Only pass prices if they are loaded
+            if(curr.value !== 0) { 
                 acc[curr.symbol] = curr.value;
             }
             return acc;
