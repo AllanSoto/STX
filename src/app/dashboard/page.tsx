@@ -10,7 +10,7 @@ import type { CryptoCardData } from '@/components/dashboard/types';
 import { initialCryptoData } from '@/components/dashboard/types';
 import { analyzeCryptoTrend } from '@/ai/flows/analyze-crypto-trends';
 import type { CryptoSymbol } from '@/lib/constants';
-import { CRYPTO_SYMBOLS } from '@/lib/constants';
+import { CRYPTO_SYMBOLS, QUOTE_CURRENCY } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
 
@@ -55,7 +55,8 @@ async function updateAllAiTrends(currentCryptoData: CryptoCardData[]): Promise<C
       if (error instanceof Error && (error as any).cause) {
         console.error(`Cause of error for ${crypto.symbol}:`, (error as any).cause);
       }
-      return { ...crypto, trendAnalysis: crypto.trendAnalysis }; 
+      // Return crypto with existing trendAnalysis if any, or null if it failed. Avoid setting it to undefined.
+      return { ...crypto, trendAnalysis: crypto.trendAnalysis || null }; 
     }
   });
   return Promise.all(dataPromises);
@@ -66,26 +67,16 @@ const cryptoSymbolToCoinCapId = (symbol: CryptoSymbol): string => {
     case 'BTC': return 'bitcoin';
     case 'ETH': return 'ethereum';
     case 'SOL': return 'solana';
-    case 'BNB': return 'binance-coin';
+    case 'BNB': return 'binance-coin'; 
     case 'XRP': return 'ripple';
-    default: return ''; // Should not happen
+    default: return ''; 
   }
 };
-
-const coinCapIdToCryptoSymbol = (id: string): CryptoSymbol | null => {
-  for (const symbol of CRYPTO_SYMBOLS) {
-    if (cryptoSymbolToCoinCapId(symbol) === id) {
-      return symbol;
-    }
-  }
-  return null;
-};
-
 
 export default function DashboardPage() {
   const [cryptoData, setCryptoData] = useState<CryptoCardData[]>(initialCryptoData);
   const [isAiLoading, setIsAiLoading] = useState(true);
-  const { translations, language } = useLanguage(); // Get language for stable dependency if needed
+  const { translations } = useLanguage();
   const { toast } = useToast();
 
   const t = useCallback((key: string, fallback?: string, vars?: Record<string, string | number>) => {
@@ -138,7 +129,7 @@ export default function DashboardPage() {
                 const newPrice = parseFloat(prices[coinCapId]);
                 return {
                   ...crypto,
-                  previousValue: crypto.value !== 0 ? crypto.value : newPrice, // Set previousValue correctly
+                  previousValue: crypto.value !== 0 ? crypto.value : newPrice,
                   value: newPrice,
                 };
               }
@@ -151,20 +142,39 @@ export default function DashboardPage() {
       };
 
       ws.onerror = (event: Event) => {
-        console.error('CoinCap WebSocket error event:', event); 
-        
-        let errorDetailsMessage = 'Unknown WebSocket error occurred with CoinCap.';
-        if (event instanceof ErrorEvent) { 
-            errorDetailsMessage = `Message: ${event.message || 'N/A'}`;
-        } else if (event.type) { 
-            errorDetailsMessage = `Event type: '${event.type}'.`;
+        console.error('Raw CoinCap WebSocket error event object:', event);
+        try {
+          // Attempt to get more details if possible, avoiding circular structure issues with stringify
+          const eventDetailsForLog: any = {};
+          for (const key in event) {
+            if (Object.prototype.hasOwnProperty.call(event, key)) {
+              const value = (event as any)[key];
+              if (typeof value !== 'object' && typeof value !== 'function') {
+                eventDetailsForLog[key] = value;
+              } else if (key === 'target' && value && (value as any).url) {
+                 eventDetailsForLog.targetUrl = (value as any).url;
+              }
+            }
+          }
+          console.error('CoinCap WebSocket error event details:', eventDetailsForLog);
+        } catch (e) {
+          console.error('Could not extract details from CoinCap WebSocket error event.');
         }
         
-        console.error(`CoinCap WebSocket detailed error: ${errorDetailsMessage}. WebSocket readyState: ${ws?.readyState}.`);
+        let errorDetailsMessage = t('dashboard.websocket.coincap.error.unknown', 'Unknown WebSocket error occurred with CoinCap.');
+        if (event instanceof ErrorEvent && event.message) {
+            errorDetailsMessage = t('dashboard.websocket.coincap.error.withMessage', 'Error: {message}', { message: event.message });
+        } else if (event.type) {
+            errorDetailsMessage = t('dashboard.websocket.coincap.error.withType', 'Event type: {type}', { type: event.type });
+        }
+        
+        console.error(
+          `CoinCap WebSocket detailed error: ${errorDetailsMessage}. WebSocket readyState: ${ws?.readyState}. Asset IDs: ${coinCapAssetIds}`
+        );
         
         toast({
           title: t('dashboard.websocket.coincap.errorTitle', 'CoinCap Feed Error'),
-          description: t('dashboard.websocket.coincap.errorDescription', 'Issue with CoinCap live price feed. Attempting to reconnect.'),
+          description: `${t('dashboard.websocket.coincap.errorDescription', 'Issue with CoinCap live price feed.')} ${errorDetailsMessage}`,
           variant: "destructive",
         });
       };
@@ -186,7 +196,7 @@ export default function DashboardPage() {
           console.error('Max CoinCap WebSocket reconnection attempts reached.');
           toast({
             title: t('dashboard.websocket.coincap.failedConnectionTitle', 'CoinCap Feed Failed'),
-            description: t('dashboard.websocket.failedConnectionDescription', 'Could not connect to CoinCap live prices. Please check your internet or try later.'),
+            description: t('dashboard.websocket.coincap.failedConnectionDescription', 'Could not connect to CoinCap live prices. Please check your internet or try later.'),
             variant: "destructive",
           });
         }
@@ -202,7 +212,7 @@ export default function DashboardPage() {
         ws.close(1000, "Component unmounting");
       }
     };
-  }, [t, toast]); // Using memoized t and stable toast
+  }, [t, toast]); // Dependencies: t, toast. t changes when language changes.
 
   // AI Trend Analysis (periodically)
   useEffect(() => {
@@ -211,9 +221,9 @@ export default function DashboardPage() {
       if (!isMounted) return;
 
       const shouldLoadAi = cryptoData.some(c => c.value !== 0 && !c.trendAnalysis) || 
-                           (cryptoData.every(c => c.value === 0 && !c.trendAnalysis) && isAiLoading);
+                           (cryptoData.every(c => c.value === 0 && !c.trendAnalysis) && isAiLoading); // isAiLoading condition might be redundant if it means no data yet
       
-      if (shouldLoadAi && !isAiLoading) {
+      if (shouldLoadAi && !isAiLoading) { // This will set isAiLoading to true if AI should load and it's not already loading
         setIsAiLoading(true);
       }
 
@@ -223,13 +233,17 @@ export default function DashboardPage() {
 
         const dataToAnalyze = currentDataForAI.some(c => c.value !== 0) 
           ? currentDataForAI.filter(c => c.value !== 0) 
-          : currentDataForAI;
+          : currentDataForAI; // If all values are 0, analyze all (or none if that's desired initial state)
 
         if (dataToAnalyze.length === 0 && currentDataForAI.some(c => c.value !== 0)) {
+           // This case means all prices are 0 for dataToAnalyze, but some prices exist in currentDataForAI
+           // This shouldn't happen if dataToAnalyze is filtered correctly.
+           // If dataToAnalyze is genuinely empty (e.g. no filter matches, or source is empty) then proceed.
            if (isMounted) setIsAiLoading(false);
            return;
         }
         
+        // Proceed if there's data to analyze OR if all data has value 0 (initial load case)
         if (dataToAnalyze.length > 0 || dataToAnalyze.every(d => d.value === 0)) {
             const updatedDataWithTrends = await updateAllAiTrends(dataToAnalyze);
             
@@ -254,21 +268,23 @@ export default function DashboardPage() {
       }
     };
     
-    const initialDelay = 7000; // Increased delay to allow CoinCap to connect first
+    const initialDelay = 7000; 
     const initialAiUpdateTimeout = setTimeout(() => {
-        performAiUpdate();
-        const intervalId = setInterval(performAiUpdate, 60000);
+        performAiUpdate(); // Run once after delay
+        const intervalId = setInterval(performAiUpdate, 60000); // Then run every 60 seconds
+        // Cleanup for interval on unmount
         return () => {
             clearInterval(intervalId);
         };
     }, initialDelay);
 
+    // Cleanup for timeout and isMounted flag
     return () => {
       isMounted = false;
       clearTimeout(initialAiUpdateTimeout);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cryptoData]); // Re-run AI if cryptoData changes significantly (e.g. prices are loaded)
+  }, [cryptoData]); // Re-run AI if cryptoData changes 
 
   return (
     <MainLayout>
