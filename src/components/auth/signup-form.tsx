@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { APP_NAME as DEFAULT_APP_NAME } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
+import { EmailTakenError } from '@/providers/auth-provider'; // Import custom error type
 
 const getSignupFormSchema = (t: (key: string, fallback?: string) => string) => z.object({
   email: z.string().email({ message: t('zod.email.invalid', 'Invalid email address.') }),
@@ -42,7 +43,7 @@ export function SignupForm() {
   const { translations, language } = useLanguage(); 
   const t = (key: string, fallback?: string) => translations[key] || fallback || key;
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null); // General error message state
 
   const signupFormSchema = useMemo(() => getSignupFormSchema(t), [language, t]);
 
@@ -57,19 +58,19 @@ export function SignupForm() {
 
   async function onSubmit(values: SignupFormValues) {
     setIsLoading(true);
-    setError(null);
+    setError(null); // Clear previous general errors
+    form.clearErrors("email"); // Clear previous email field errors
     try {
       await signup(values.email, values.password);
       // Redirect is handled by AuthProvider or RootPage effect
     } catch (err) {
-      if (err instanceof Error) {
-        // Check for specific error messages if AuthProvider throws them, or use a generic one
-        if (err.message === t('signup.error.emailTaken', 'This email is already registered.')) {
-          setError(err.message);
-           form.setError("email", { type: "manual", message: err.message });
-        } else {
-          setError(t('signup.error.unknown', 'An unknown error occurred.'));
-        }
+      if (err instanceof EmailTakenError) {
+        // Use the message from the custom error, which is already translated
+        form.setError("email", { type: "manual", message: err.message });
+        // Optionally set general error too, or let field error be primary
+        // setError(err.message); 
+      } else if (err instanceof Error) {
+        setError(t('signup.error.unknown', 'An unknown error occurred.'));
       } else {
         setError(t('signup.error.unknown', 'An unknown error occurred.'));
       }
@@ -126,6 +127,7 @@ export function SignupForm() {
                 </FormItem>
               )}
             />
+            {/* Display general error only if it's set and there's no specific email error */}
             {error && !form.formState.errors.email && <p className="text-sm font-medium text-destructive">{error}</p>}
             <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

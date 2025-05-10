@@ -6,6 +6,16 @@ import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/hooks/use-language'; // For translation of error messages
 
+// Define custom error for specific scenarios
+export class EmailTakenError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "EmailTakenError";
+    // Set the prototype explicitly to ensure instanceof works correctly
+    Object.setPrototypeOf(this, EmailTakenError.prototype);
+  }
+}
+
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
@@ -34,7 +44,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isConnectedToBinance, setIsConnectedToBinance] = useState(false);
   const router = useRouter();
-  const { translations } = useLanguage(); // Ensure LanguageProvider is above AuthProvider in layout
+  const { translations } = useLanguage(); 
   const t = (key: string, fallback?: string) => translations[key] || fallback || key;
 
 
@@ -45,7 +55,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const parsedUser = JSON.parse(storedUser) as User;
         setUser(parsedUser);
         if (parsedUser.binanceApiKey && parsedUser.binanceApiSecret) {
-          // Mock successful connection
           setIsConnectedToBinance(true);
         }
       } catch (error) {
@@ -65,12 +74,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const login = useCallback(async (email: string, pass: string) => {
-    // Client-side form validation should handle password strength format,
-    // but we ensure it here too for robustness (though in a real app, backend handles this)
     if (!isStrongPassword(pass)) {
-      // This specific error should ideally be caught by the form's Zod schema first.
-      // If it reaches here, it's a fallback.
-      throw new Error(t('zod.password.minLength', 'Password must meet all strength requirements.'));
+      throw new Error(t('login.error.invalidCredentials', 'Invalid email or password.')); // Generic message for login
     }
 
     const storedUserJSON = localStorage.getItem('simultradex_user');
@@ -80,16 +85,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             storedUser = JSON.parse(storedUserJSON) as User;
         } catch(e) {
             console.error("Error parsing stored user during login:", e);
-            // Potentially clear corrupted data
             localStorage.removeItem('simultradex_user');
         }
     }
     
-    // In a multi-user mock scenario, you'd search an array of users.
-    // For this single-user localStorage mock, we check if the stored user's email matches.
     if (storedUser && storedUser.email === email && storedUser.password === pass) {
       setUser(storedUser);
-      // persistUser(storedUser); // Already persisted, no need to call again if no change
       router.push('/dashboard');
     } else {
       throw new Error(t('login.error.invalidCredentials', 'Invalid email or password.'));
@@ -97,19 +98,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [router, t]);
 
   const signup = useCallback(async (email: string, pass: string) => {
-    // Password strength is already validated by Zod in SignupForm.
-    // If this function is called, 'pass' is assumed to be strong.
-    // Here, we simulate checking if the email is already taken.
+    // Password strength is validated by Zod in SignupForm before this is called.
     const storedUserJSON = localStorage.getItem('simultradex_user');
     if (storedUserJSON) {
         try {
             const existingUser = JSON.parse(storedUserJSON) as User;
             if (existingUser.email === email) {
-                throw new Error(t('signup.error.emailTaken', 'This email is already registered.'));
+                throw new EmailTakenError(t('signup.error.emailTaken', 'This email is already registered.'));
             }
         } catch (e) {
             console.error("Error parsing stored user during signup:", e);
-             // Potentially clear corrupted data if it prevents signup
             localStorage.removeItem('simultradex_user');
         }
     }
@@ -117,7 +115,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const newUser: User = { 
       id: 'mock-user-id-' + Date.now(), 
       email, 
-      password: pass // Store plain text password for mock
+      password: pass 
     };
     setUser(newUser);
     persistUser(newUser);
@@ -127,7 +125,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = useCallback(() => {
     setUser(null);
     setIsConnectedToBinance(false);
-    persistUser(null); // This clears the "remember me" state
+    persistUser(null); 
     router.push('/login');
   }, [router]);
 
