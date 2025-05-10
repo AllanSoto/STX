@@ -62,18 +62,26 @@ export default function DashboardPage() {
   const [cryptoData, setCryptoData] = useState<CryptoCardData[]>(initialCryptoData);
   const [isAiLoading, setIsAiLoading] = useState(true);
   const { translations } = useLanguage();
-  const t = (key: string, fallback?: string) => translations[key] || fallback || key;
+  const t = (key: string, fallback?: string, vars?: Record<string, string | number>) => {
+    let msg = translations[key] || fallback || key;
+    if (vars) {
+      Object.keys(vars).forEach(varKey => {
+        msg = msg.replace(`{${varKey}}`, String(vars[varKey]));
+      });
+    }
+    return msg;
+  };
   const { toast } = useToast();
 
   // WebSocket for real-time prices
   useEffect(() => {
     const symbols = initialCryptoData.map(c => `${c.symbol.toLowerCase()}usdt@trade`);
-    const wsUrl = `wss://stream.binance.com:9443/ws/${symbols.join('/')}`; // Use /ws/ for combined streams
+    const wsUrl = `wss://stream.binance.com:9443/ws/${symbols.join('/')}`; 
     
     let ws: WebSocket | null = null;
     let reconnectAttempts = 0;
     const maxReconnectAttempts = 5;
-    const reconnectDelay = 5000; // 5 seconds
+    const reconnectDelay = 5000; 
 
     function connectWebSocket() {
       if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
@@ -85,7 +93,7 @@ export default function DashboardPage() {
 
       ws.onopen = () => {
         console.log('Binance WebSocket connected');
-        reconnectAttempts = 0; // Reset attempts on successful connection
+        reconnectAttempts = 0; 
         toast({
           title: t('dashboard.websocket.connectedTitle', 'Real-time Feed Connected'),
           description: t('dashboard.websocket.connectedDescription', 'Live prices from Binance are now active.'),
@@ -95,8 +103,6 @@ export default function DashboardPage() {
       ws.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data as string);
-          // For combined streams, data structure is {stream: "symbol@trade", data: { S: "SYMBOL", p: "price"}}
-          // For single stream, it's directly the data object
           const tradeData = message.data || message;
 
           if (tradeData && tradeData.s && tradeData.p) {
@@ -106,11 +112,11 @@ export default function DashboardPage() {
             setCryptoData(prevData =>
               prevData.map(crypto => {
                 if (crypto.symbol === symbol) {
-                  const previousValue = crypto.value === 0 ? newPrice : crypto.value;
+                  const priceBeforeUpdate = crypto.value; // Value before this update
                   return {
                     ...crypto,
-                    previousValue: previousValue,
-                    value: newPrice,
+                    previousValue: priceBeforeUpdate, // Set previous value to the one before this update
+                    value: newPrice,                  // Set new current value
                   };
                 }
                 return crypto;
@@ -123,9 +129,6 @@ export default function DashboardPage() {
       };
 
       ws.onerror = (event) => {
-        // The 'event' object itself is an ErrorEvent, which might not have much detail.
-        // The actual error information is often not directly available in the event object for security reasons.
-        // Logging the event object itself is the most we can do here.
         console.error('Binance WebSocket error. Event:', event);
         console.error('WebSocket readyState:', ws?.readyState);
         toast({
@@ -133,7 +136,6 @@ export default function DashboardPage() {
           description: t('dashboard.websocket.errorDescription', 'There was an issue with the live price feed. Attempting to reconnect.'),
           variant: "destructive",
         });
-        // Don't attempt to reconnect immediately here, onclose will handle it
       };
 
       ws.onclose = (event) => {
@@ -158,17 +160,17 @@ export default function DashboardPage() {
       };
     }
 
-    connectWebSocket(); // Initial connection attempt
+    connectWebSocket(); 
 
     return () => {
       if (ws) {
-        ws.onclose = null; // Prevent onclose from triggering reconnect on manual close
+        ws.onclose = null; 
         ws.close();
         console.log('Binance WebSocket closed manually on component unmount.');
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [t]); // Add t to dependencies
+  }, [t, toast]); 
 
   // AI Trend Analysis (periodically)
   useEffect(() => {
@@ -213,7 +215,7 @@ export default function DashboardPage() {
     };
 
     performAiUpdate(); 
-    const intervalId = setInterval(performAiUpdate, 60000); // Update AI trends every 60 seconds (Increased interval)
+    const intervalId = setInterval(performAiUpdate, 60000); 
 
     return () => {
       isMounted = false;
@@ -256,4 +258,3 @@ export default function DashboardPage() {
     </MainLayout>
   );
 }
-
