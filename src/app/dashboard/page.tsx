@@ -1,6 +1,7 @@
+// src/app/dashboard/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { CryptoDisplayCard } from '@/components/dashboard/crypto-display-card';
 import { OrderSimulator } from '@/components/dashboard/order-simulator';
@@ -38,28 +39,44 @@ function getMockRecentPriceData(symbol: CryptoSymbol): string {
 }
 
 // Mock function to fetch current crypto values
-async function fetchDashboardData(): Promise<CryptoCardData[]> {
-    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API delay
+async function fetchDashboardData(currentData: CryptoCardData[]): Promise<CryptoCardData[]> {
+    // Simulate API delay for initial load only, subsequent loads are faster
+    if (currentData.every(d => d.value === 0)) {
+        await new Promise(resolve => setTimeout(resolve, 1500)); 
+    } else {
+        await new Promise(resolve => setTimeout(resolve, 500)); // Faster update
+    }
     
     const dataPromises = initialCryptoData.map(async (crypto) => {
         let price;
-        // Simplified mock prices
-        switch (crypto.symbol) {
-            case 'BTC': price = 60000 + Math.random() * 1000 - 500; break;
-            case 'ETH': price = 3000 + Math.random() * 100 - 50; break;
-            case 'SOL': price = 150 + Math.random() * 10 - 5; break;
-            case 'BNB': price = 580 + Math.random() * 20 - 10; break;
-            case 'XRP': price = 0.5 + Math.random() * 0.1 - 0.05; break;
-            default: price = 0;
-        }
+        // Simplified mock prices with more dynamic changes
+        const oldCrypto = currentData.find(c => c.symbol === crypto.symbol);
+        const basePrice = oldCrypto && oldCrypto.value > 0 ? oldCrypto.value : 
+            (crypto.symbol === 'BTC' ? 60000 :
+             crypto.symbol === 'ETH' ? 3000 :
+             crypto.symbol === 'SOL' ? 150 :
+             crypto.symbol === 'BNB' ? 580 :
+             crypto.symbol === 'XRP' ? 0.5 : 0);
+        
+        // Simulate small percentage change
+        const changePercentage = (Math.random() - 0.45) * 0.01; // +/- 0.45% change
+        price = basePrice * (1 + changePercentage);
+        if (price < 0) price = 0; // Ensure price is not negative
 
         try {
-            const recentPriceData = getMockRecentPriceData(crypto.symbol);
-            const trendAnalysis = await analyzeCryptoTrend({ cryptoSymbol: crypto.symbol, recentPriceData });
+            // Only run AI trend analysis periodically, not on every price update to save resources
+            // For this example, let's assume trend analysis is less frequent or triggered by larger changes
+            // Here, we'll reuse existing trendAnalysis if available, or fetch it if not.
+            let trendAnalysis = oldCrypto?.trendAnalysis || null;
+            if (!trendAnalysis || Math.random() < 0.1) { // 10% chance to re-fetch trend
+                 const recentPriceData = getMockRecentPriceData(crypto.symbol);
+                 trendAnalysis = await analyzeCryptoTrend({ cryptoSymbol: crypto.symbol, recentPriceData });
+            }
             return { ...crypto, value: parseFloat(price.toFixed(2)), trendAnalysis };
         } catch (error) {
             console.error(`Error analyzing trend for ${crypto.symbol}:`, error);
-            return { ...crypto, value: parseFloat(price.toFixed(2)), trendAnalysis: null };
+            // Keep old trend analysis on error if available
+            return { ...crypto, value: parseFloat(price.toFixed(2)), trendAnalysis: oldCrypto?.trendAnalysis || null };
         }
     });
 
@@ -73,16 +90,27 @@ export default function DashboardPage() {
   const { translations } = useLanguage();
   const t = (key: string, fallback?: string) => translations[key] || fallback || key;
 
-
-  useEffect(() => {
-    async function loadData() {
+  const loadData = useCallback(async (isInitialLoad = false) => {
+    if (isInitialLoad) {
       setIsLoading(true);
-      const data = await fetchDashboardData();
-      setCryptoData(data);
+    }
+    const data = await fetchDashboardData(cryptoData);
+    setCryptoData(data);
+    if (isInitialLoad) {
       setIsLoading(false);
     }
-    loadData();
-  }, []);
+  }, [cryptoData]); // cryptoData is a dependency to pass current state to fetchDashboardData
+
+  useEffect(() => {
+    loadData(true); // Initial load
+
+    const intervalId = setInterval(() => {
+      loadData(false); // Subsequent updates
+    }, 5000); // Refresh data every 5 seconds
+
+    return () => clearInterval(intervalId); // Cleanup interval on component unmount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadData]); // loadData is memoized with useCallback
 
   return (
     <MainLayout>
@@ -93,10 +121,10 @@ export default function DashboardPage() {
           <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('dashboard.marketOverview', 'Market Overview')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {cryptoData.map((data) => (
-              <CryptoDisplayCard key={data.symbol} data={data} isLoading={isLoading} />
+              <CryptoDisplayCard key={data.symbol} data={data} isLoading={isLoading && data.value === 0} />
             ))}
           </div>
-           {isLoading && cryptoData.length === 0 && ( // Show skeletons if still loading and no data yet
+           {isLoading && cryptoData.every(d => d.value === 0) && ( // Show skeletons if still loading and no data yet
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {[...Array(5)].map((_, i) => <CryptoDisplayCard key={i} data={{symbol: 'BTC', value:0, trendAnalysis: null}} isLoading={true} />)}
             </div>
@@ -106,13 +134,16 @@ export default function DashboardPage() {
         <section className="mb-8">
            {/* The OrderSimulator component has its own CardTitle, this h2 is for semantic structure */}
           <h2 className="text-2xl font-semibold mb-4 text-foreground sr-only">{t('dashboard.orderSimulator', 'Order Simulator')}</h2>
-          <OrderSimulator />
+          <OrderSimulator cryptoPrices={cryptoData.reduce((acc, curr) => {
+            acc[curr.symbol] = curr.value;
+            return acc;
+          }, {} as Record<CryptoSymbol, number>)} />
         </section>
 
         <section>
           {/* The OpportunityList component has its own CardTitle, this h2 is for semantic structure */}
           <h2 className="text-2xl font-semibold mb-4 text-foreground sr-only">{t('dashboard.opportunitySimulator', 'Opportunity Simulator')}</h2>
-          <OpportunityList />
+          <OpportunityList cryptoData={cryptoData} />
         </section>
       </div>
     </MainLayout>

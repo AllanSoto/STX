@@ -1,3 +1,4 @@
+// src/components/dashboard/order-simulator.tsx
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,7 +26,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { CRYPTO_SYMBOLS, COMMISSION_RATE } from '@/lib/constants';
 import type { CryptoSymbol } from '@/lib/constants';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
 const orderSimulatorSchema = z.object({
@@ -36,7 +37,11 @@ const orderSimulatorSchema = z.object({
 
 type OrderSimulatorFormValues = z.infer<typeof orderSimulatorSchema>;
 
-export function OrderSimulator() {
+interface OrderSimulatorProps {
+  cryptoPrices: Record<CryptoSymbol, number>;
+}
+
+export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [simulationResult, setSimulationResult] = useState<{ profit: number, commission: number, netProfit: number } | null>(null);
@@ -44,11 +49,29 @@ export function OrderSimulator() {
   const form = useForm<OrderSimulatorFormValues>({
     resolver: zodResolver(orderSimulatorSchema),
     defaultValues: {
-      cryptoSymbol: undefined, // Let Select handle placeholder for undefined
-      buyPrice: '', // Ensure input is controlled
-      sellPrice: '', // Ensure input is controlled
+      cryptoSymbol: undefined,
+      buyPrice: '', 
+      sellPrice: '',
     }
   });
+
+  const selectedCryptoSymbol = form.watch('cryptoSymbol');
+
+  useEffect(() => {
+    if (selectedCryptoSymbol && cryptoPrices[selectedCryptoSymbol]) {
+      form.setValue('buyPrice', cryptoPrices[selectedCryptoSymbol].toString(), { shouldValidate: true });
+      // Clear sell price if buy price changes due to symbol selection
+      const currentSellPrice = form.getValues('sellPrice');
+      if (currentSellPrice) {
+          const buyPriceNum = parseFloat(cryptoPrices[selectedCryptoSymbol].toString());
+          const sellPriceNum = parseFloat(currentSellPrice);
+          if (buyPriceNum >= sellPriceNum) {
+            form.setValue('sellPrice', '');
+          }
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCryptoSymbol, cryptoPrices]); // form.setValue is stable
 
   function onSubmit(values: OrderSimulatorFormValues) {
     setIsLoading(true);
@@ -93,7 +116,7 @@ export function OrderSimulator() {
     <Card className="shadow-lg">
       <CardHeader>
         <CardTitle>Order Simulator</CardTitle>
-        <CardDescription>Simulate a buy and sell order to estimate potential profit or loss, including commission.</CardDescription>
+        <CardDescription>Simulate a buy and sell order to estimate potential profit or loss, including commission. Current prices are pre-filled.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -104,7 +127,27 @@ export function OrderSimulator() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Cryptocurrency</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      const selectedSymbol = value as CryptoSymbol;
+                      if (cryptoPrices[selectedSymbol]) {
+                        form.setValue('buyPrice', cryptoPrices[selectedSymbol].toString(), { shouldValidate: true });
+                         // Clear sell price if buy price changes due to symbol selection
+                        const currentSellPrice = form.getValues('sellPrice');
+                        if (currentSellPrice) {
+                            const buyPriceNum = parseFloat(cryptoPrices[selectedSymbol].toString());
+                            const sellPriceNum = parseFloat(currentSellPrice);
+                            if (buyPriceNum >= sellPriceNum) {
+                                form.setValue('sellPrice', '');
+                            }
+                        }
+                      } else {
+                        form.setValue('buyPrice', ''); // Clear if symbol has no price
+                      }
+                    }} 
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a crypto" />
@@ -130,7 +173,7 @@ export function OrderSimulator() {
                   <FormItem>
                     <FormLabel>Buy Price ($)</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="e.g., 50000" {...field} onChange={e => field.onChange(e.target.value)} />
+                      <Input type="number" placeholder="e.g., 50000" {...field} value={field.value || ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -143,7 +186,7 @@ export function OrderSimulator() {
                   <FormItem>
                     <FormLabel>Sell Price ($)</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="e.g., 51000" {...field} onChange={e => field.onChange(e.target.value)} />
+                      <Input type="number" placeholder="e.g., 51000" {...field} value={field.value || ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
