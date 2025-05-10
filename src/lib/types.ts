@@ -3,6 +3,7 @@ import type { CryptoSymbol } from './constants';
 export interface User {
   id: string;
   email: string;
+  password?: string; // Added for mock password storage
   binanceApiKey?: string;
   binanceApiSecret?: string; // Should be handled with extreme care
 }
@@ -13,6 +14,7 @@ export interface SimulatedTrade {
   cryptoSymbol: CryptoSymbol;
   buyPrice: number;
   sellPrice: number;
+  quantity: number; // Added quantity to simulated trade
   commission: number;
   netProfitLoss: number;
 }
@@ -35,3 +37,4 @@ export interface Opportunity {
   profitPercentage: number;
   potentialProfit: number;
 }
+

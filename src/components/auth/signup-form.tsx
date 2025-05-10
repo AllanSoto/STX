@@ -39,7 +39,7 @@ type SignupFormValues = z.infer<ReturnType<typeof getSignupFormSchema>>;
 
 export function SignupForm() {
   const { signup } = useAuth();
-  const { translations, language } = useLanguage(); // Added language for schema dependency
+  const { translations, language } = useLanguage(); 
   const t = (key: string, fallback?: string) => translations[key] || fallback || key;
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,9 +60,19 @@ export function SignupForm() {
     setError(null);
     try {
       await signup(values.email, values.password);
-      // Redirect is handled by AuthProvider
+      // Redirect is handled by AuthProvider or RootPage effect
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('signup.error.unknown', 'An unknown error occurred.'));
+      if (err instanceof Error) {
+        // Check for specific error messages if AuthProvider throws them, or use a generic one
+        if (err.message === t('signup.error.emailTaken', 'This email is already registered.')) {
+          setError(err.message);
+           form.setError("email", { type: "manual", message: err.message });
+        } else {
+          setError(t('signup.error.unknown', 'An unknown error occurred.'));
+        }
+      } else {
+        setError(t('signup.error.unknown', 'An unknown error occurred.'));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -116,7 +126,7 @@ export function SignupForm() {
                 </FormItem>
               )}
             />
-            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+            {error && !form.formState.errors.email && <p className="text-sm font-medium text-destructive">{error}</p>}
             <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t('signup.submitButton', 'Sign Up')}
@@ -133,5 +143,3 @@ export function SignupForm() {
     </Card>
   );
 }
-
-    

@@ -37,6 +37,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.signupPrompt': "Don't have an account?",
     'login.signupLink': 'Sign up',
     'login.error.invalidCredentials': 'Invalid email or password.',
+    'login.error.unknown': 'An unknown error occurred.',
     'signup.title': 'Sign Up',
     'signup.description': 'Create your account',
     'signup.emailLabel': 'Email',
@@ -47,6 +48,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'signup.loginPrompt': 'Already have an account?',
     'signup.loginLink': 'Log in',
     'signup.error.unknown': 'An unknown error occurred.',
+    'signup.error.emailTaken': 'This email is already registered.',
+
 
     'account.apiKey.title': "Binance API Connection",
     'account.apiKey.description': "Connect your Binance account to fetch real-time data. Your keys are stored locally (mock).",
@@ -134,12 +137,12 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.apiKey.short': 'API Key seems too short.',
     'zod.apiSecret.short': 'API Secret seems too short.',
     'zod.password.currentRequired': 'Current password is required.',
-    'zod.password.newMinLength': 'Password must be at least 8 characters.', // same as zod.password.minLength but contextually different
-    'zod.password.newLowercase': 'Password must contain at least one lowercase letter.', // same as zod.password.lowercase
-    'zod.password.newUppercase': 'Password must contain at least one uppercase letter.', // same as zod.password.uppercase
-    'zod.password.newNumber': 'Password must contain at least one number.', // same as zod.password.number
-    'zod.password.newSpecialChar': 'Password must contain at least one special character.', // same as zod.password.specialChar
-    'zod.password.newConfirmMatch': "New passwords don't match.", // same as zod.password.confirmMatch
+    'zod.password.newMinLength': 'Password must be at least 8 characters.', 
+    'zod.password.newLowercase': 'Password must contain at least one lowercase letter.', 
+    'zod.password.newUppercase': 'Password must contain at least one uppercase letter.', 
+    'zod.password.newNumber': 'Password must contain at least one number.', 
+    'zod.password.newSpecialChar': 'Password must contain at least one special character.', 
+    'zod.password.newConfirmMatch': "New passwords don't match.", 
     'zod.order.selectCrypto': 'Please select a cryptocurrency.',
     'zod.order.positiveNumber': 'Must be a positive number.',
   },
@@ -163,6 +166,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.signupPrompt': '¿No tienes una cuenta?',
     'login.signupLink': 'Regístrate',
     'login.error.invalidCredentials': 'Correo electrónico o contraseña no válidos.',
+    'login.error.unknown': 'Ocurrió un error desconocido.',
     'signup.title': 'Crear Cuenta',
     'signup.description': 'Crea tu cuenta',
     'signup.emailLabel': 'Correo Electrónico',
@@ -173,6 +177,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'signup.loginPrompt': '¿Ya tienes una cuenta?',
     'signup.loginLink': 'Iniciar Sesión',
     'signup.error.unknown': 'Ocurrió un error desconocido.',
+    'signup.error.emailTaken': 'Este correo electrónico ya está registrado.',
 
     'account.apiKey.title': "Conexión API de Binance",
     'account.apiKey.description': "Conecta tu cuenta de Binance para obtener datos en tiempo real. Tus claves se almacenan localmente (simulado).",
@@ -289,6 +294,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.signupPrompt': 'Vous n\'avez pas de compte ?',
     'login.signupLink': 'S\'inscrire',
     'login.error.invalidCredentials': 'Email ou mot de passe incorrect.',
+    'login.error.unknown': 'Une erreur inconnue est survenue.',
     'signup.title': 'S\'inscrire',
     'signup.description': 'Créez votre compte',
     'signup.emailLabel': 'E-mail',
@@ -299,6 +305,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'signup.loginPrompt': 'Vous avez déjà un compte ?',
     'signup.loginLink': 'Se Connecter',
     'signup.error.unknown': 'Une erreur inconnue est survenue.',
+    'signup.error.emailTaken': 'Cet e-mail est déjà enregistré.',
 
     'account.apiKey.title': "Connexion API Binance",
     'account.apiKey.description': "Connectez votre compte Binance pour récupérer les données en temps réel. Vos clés sont stockées localement (simulation).",
@@ -415,6 +422,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.signupPrompt': 'खाता नहीं है?',
     'login.signupLink': 'साइन अप करें',
     'login.error.invalidCredentials': 'अमान्य ईमेल या पासवर्ड।',
+    'login.error.unknown': 'एक अज्ञात त्रुटि हुई।',
     'signup.title': 'साइन अप करें',
     'signup.description': 'अपना खाता बनाएं',
     'signup.emailLabel': 'ईमेल',
@@ -425,6 +433,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'signup.loginPrompt': 'पहले से ही एक खाता है?',
     'signup.loginLink': 'लॉग इन करें',
     'signup.error.unknown': 'एक अज्ञात त्रुटि हुई।',
+    'signup.error.emailTaken': 'यह ईमेल पहले से पंजीकृत है।',
+
 
     'account.apiKey.title': "बायनेंस एपीआई कनेक्शन",
     'account.apiKey.description': "वास्तविक समय डेटा प्राप्त करने के लिए अपने बायनेंस खाते को कनेक्ट करें। आपकी कुंजियाँ स्थानीय रूप से संग्रहीत हैं (मॉक)।",
@@ -541,6 +551,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.signupPrompt': '还没有账户？',
     'login.signupLink': '注册',
     'login.error.invalidCredentials': '无效的电子邮件或密码。',
+    'login.error.unknown': '发生未知错误。',
     'signup.title': '注册',
     'signup.description': '创建您的账户',
     'signup.emailLabel': '电子邮件',
@@ -551,6 +562,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'signup.loginPrompt': '已经有账户了？',
     'signup.loginLink': '登录',
     'signup.error.unknown': '发生未知错误。',
+    'signup.error.emailTaken': '该电子邮件已被注册。',
+
 
     'account.apiKey.title': "币安API连接",
     'account.apiKey.description': "连接您的币安账户以获取实时数据。您的密钥存储在本地（模拟）。",
@@ -703,5 +716,3 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     </LanguageContext.Provider>
   );
 };
-
-    

@@ -24,14 +24,18 @@ import { useLanguage } from '@/hooks/use-language';
 
 const getLoginFormSchema = (t: (key: string, fallback?: string) => string) => z.object({
   email: z.string().email({ message: t('zod.email.invalid', 'Invalid email address.') }),
-  password: z.string().min(1, { message: t('zod.password.required', 'Password is required.') }),
+  password: z.string().min(8, { message: t('zod.password.minLength', 'Password must be at least 8 characters.') })
+    .regex(/[a-z]/, { message: t('zod.password.lowercase', 'Password must contain at least one lowercase letter.') })
+    .regex(/[A-Z]/, { message: t('zod.password.uppercase', 'Password must contain at least one uppercase letter.') })
+    .regex(/[0-9]/, { message: t('zod.password.number', 'Password must contain at least one number.') })
+    .regex(/[^a-zA-Z0-9]/, { message: t('zod.password.specialChar', 'Password must contain at least one special character.') }),
 });
 
 type LoginFormValues = z.infer<ReturnType<typeof getLoginFormSchema>>;
 
 export function LoginForm() {
   const { login } = useAuth();
-  const { translations, language } = useLanguage(); // Added language for schema dependency
+  const { translations, language } = useLanguage();
   const t = (key: string, fallback?: string) => translations[key] || fallback || key;
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,9 +55,13 @@ export function LoginForm() {
     setError(null);
     try {
       await login(values.email, values.password);
-      // Redirect is handled by AuthProvider
+      // Redirect is handled by AuthProvider or RootPage effect
     } catch (err) {
-      setError(t('login.error.invalidCredentials', 'Invalid email or password.'));
+       if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(t('login.error.unknown', 'An unknown error occurred.'));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -111,5 +119,3 @@ export function LoginForm() {
     </Card>
   );
 }
-
-    
