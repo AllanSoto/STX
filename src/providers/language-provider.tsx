@@ -117,14 +117,14 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderSimulator.result.totalCommission': "Total Commission:",
     'dashboard.orderSimulator.result.netProfitLoss': "Net Profit / Loss:",
     
-    'dashboard.websocket.connectedTitle': 'Real-time Feed Connected',
-    'dashboard.websocket.connectedDescription': 'Live prices from Binance are now active.',
-    'dashboard.websocket.errorTitle': 'Real-time Feed Error',
-    'dashboard.websocket.errorDescription': 'There was an issue with the live price feed. Attempting to reconnect.',
-    'dashboard.websocket.disconnectedTitle': 'Real-time Feed Disconnected',
-    'dashboard.websocket.reconnectingDescription': 'Attempting to reconnect to live prices... Attempt {attempt}/{maxAttempts}',
-    'dashboard.websocket.failedConnectionTitle': 'Real-time Feed Failed',
-    'dashboard.websocket.failedConnectionDescription': 'Could not establish connection to live prices after multiple attempts. Please check your internet connection or try again later.',
+    'dashboard.websocket.coincap.connectedTitle': 'Real-time Feed Connected (CoinCap)',
+    'dashboard.websocket.coincap.connectedDescription': 'Live prices from CoinCap are now active.',
+    'dashboard.websocket.coincap.errorTitle': 'CoinCap Feed Error',
+    'dashboard.websocket.coincap.errorDescription': 'Issue with CoinCap live price feed. Attempting to reconnect.',
+    'dashboard.websocket.coincap.disconnectedTitle': 'CoinCap Feed Disconnected',
+    'dashboard.websocket.coincap.failedConnectionTitle': 'CoinCap Feed Failed',
+    'dashboard.websocket.coincap.failedConnectionDescription': 'Could not connect to CoinCap live prices. Please check your internet or try later.',
+    'dashboard.websocket.reconnectingDescription': 'Attempting to reconnect to live prices... Attempt {attempt}/{maxAttempts}', // Generic, can be reused
     
     'zod.email.invalid': 'Invalid email address.',
     'zod.password.required': 'Password is required.',
@@ -245,14 +245,15 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderSimulator.result.totalCommission': "Comisión Total:",
     'dashboard.orderSimulator.result.netProfitLoss': "Ganancia / Pérdida Neta:",
 
-    'dashboard.websocket.connectedTitle': 'Fuente en Tiempo Real Conectada',
-    'dashboard.websocket.connectedDescription': 'Los precios en vivo de Binance ahora están activos.',
-    'dashboard.websocket.errorTitle': 'Error en Fuente en Tiempo Real',
-    'dashboard.websocket.errorDescription': 'Hubo un problema con la fuente de precios en vivo. Intentando reconectar.',
-    'dashboard.websocket.disconnectedTitle': 'Fuente en Tiempo Real Desconectada',
+    'dashboard.websocket.coincap.connectedTitle': 'Fuente en Tiempo Real Conectada (CoinCap)',
+    'dashboard.websocket.coincap.connectedDescription': 'Los precios en vivo de CoinCap ahora están activos.',
+    'dashboard.websocket.coincap.errorTitle': 'Error en Fuente de CoinCap',
+    'dashboard.websocket.coincap.errorDescription': 'Hubo un problema con la fuente de precios en vivo de CoinCap. Intentando reconectar.',
+    'dashboard.websocket.coincap.disconnectedTitle': 'Fuente de CoinCap Desconectada',
+    'dashboard.websocket.coincap.failedConnectionTitle': 'Falló la Conexión de Fuente de CoinCap',
+    'dashboard.websocket.coincap.failedConnectionDescription': 'No se pudo conectar a los precios en vivo de CoinCap. Por favor, verifica tu conexión a internet o inténtalo de nuevo más tarde.',
     'dashboard.websocket.reconnectingDescription': 'Intentando reconectar a los precios en vivo... Intento {attempt}/{maxAttempts}',
-    'dashboard.websocket.failedConnectionTitle': 'Falló la Conexión de Fuente en Tiempo Real',
-    'dashboard.websocket.failedConnectionDescription': 'No se pudo establecer la conexión a los precios en vivo después de múltiples intentos. Por favor, verifica tu conexión a internet o inténtalo de nuevo más tarde.',
+
 
     'zod.email.invalid': 'Dirección de correo electrónico no válida.',
     'zod.password.required': 'La contraseña es obligatoria.',
@@ -373,14 +374,14 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderSimulator.result.totalCommission': "Commission Totale:",
     'dashboard.orderSimulator.result.netProfitLoss': "Profit / Perte Net(te):",
 
-    'dashboard.websocket.connectedTitle': 'Flux en Temps Réel Connecté',
-    'dashboard.websocket.connectedDescription': 'Les prix en direct de Binance sont maintenant actifs.',
-    'dashboard.websocket.errorTitle': 'Erreur du Flux en Temps Réel',
-    'dashboard.websocket.errorDescription': 'Un problème est survenu avec le flux de prix en direct. Tentative de reconnexion.',
-    'dashboard.websocket.disconnectedTitle': 'Flux en Temps Réel Déconnecté',
+    'dashboard.websocket.coincap.connectedTitle': 'Flux en Temps Réel Connecté (CoinCap)',
+    'dashboard.websocket.coincap.connectedDescription': 'Les prix en direct de CoinCap sont maintenant actifs.',
+    'dashboard.websocket.coincap.errorTitle': 'Erreur du Flux CoinCap',
+    'dashboard.websocket.coincap.errorDescription': 'Un problème est survenu avec le flux de prix en direct de CoinCap. Tentative de reconnexion.',
+    'dashboard.websocket.coincap.disconnectedTitle': 'Flux CoinCap Déconnecté',
+    'dashboard.websocket.coincap.failedConnectionTitle': 'Échec de Connexion du Flux CoinCap',
+    'dashboard.websocket.coincap.failedConnectionDescription': 'Impossible de se connecter aux prix en direct de CoinCap. Veuillez vérifier votre connexion Internet ou réessayer plus tard.',
     'dashboard.websocket.reconnectingDescription': 'Tentative de reconnexion aux prix en direct... Tentative {attempt}/{maxAttempts}',
-    'dashboard.websocket.failedConnectionTitle': 'Échec de Connexion du Flux en Temps Réel',
-    'dashboard.websocket.failedConnectionDescription': 'Impossible d\'établir la connexion aux prix en direct après plusieurs tentatives. Veuillez vérifier votre connexion Internet ou réessayer plus tard.',
 
     'zod.email.invalid': 'Adresse e-mail invalide.',
     'zod.password.required': 'Le mot de passe est requis.',
@@ -502,14 +503,14 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderSimulator.result.totalCommission': "कुल कमीशन:",
     'dashboard.orderSimulator.result.netProfitLoss': "शुद्ध लाभ / हानि:",
 
-    'dashboard.websocket.connectedTitle': 'रीयल-टाइम फ़ीड कनेक्टेड',
-    'dashboard.websocket.connectedDescription': 'बायनेंस से लाइव कीमतें अब सक्रिय हैं।',
-    'dashboard.websocket.errorTitle': 'रीयल-टाइम फ़ीड त्रुटि',
-    'dashboard.websocket.errorDescription': 'लाइव मूल्य फ़ीड के साथ एक समस्या थी। पुनः कनेक्ट करने का प्रयास किया जा रहा है।',
-    'dashboard.websocket.disconnectedTitle': 'रीयल-टाइम फ़ीड डिस्कनेक्ट हो गया',
+    'dashboard.websocket.coincap.connectedTitle': 'रीयल-टाइम फ़ीड कनेक्टेड (CoinCap)',
+    'dashboard.websocket.coincap.connectedDescription': 'CoinCap से लाइव कीमतें अब सक्रिय हैं।',
+    'dashboard.websocket.coincap.errorTitle': 'CoinCap फ़ीड त्रुटि',
+    'dashboard.websocket.coincap.errorDescription': 'CoinCap लाइव मूल्य फ़ीड के साथ एक समस्या थी। पुनः कनेक्ट करने का प्रयास किया जा रहा है।',
+    'dashboard.websocket.coincap.disconnectedTitle': 'CoinCap फ़ीड डिस्कनेक्ट हो गया',
+    'dashboard.websocket.coincap.failedConnectionTitle': 'CoinCap फ़ीड कनेक्शन विफल',
+    'dashboard.websocket.coincap.failedConnectionDescription': 'CoinCap लाइव कीमतों से कनेक्शन स्थापित नहीं किया जा सका। कृपया अपना इंटरनेट कनेक्शन जांचें या बाद में पुनः प्रयास करें।',
     'dashboard.websocket.reconnectingDescription': 'लाइव कीमतों से पुनः कनेक्ट करने का प्रयास किया जा रहा है... प्रयास {attempt}/{maxAttempts}',
-    'dashboard.websocket.failedConnectionTitle': 'रीयल-टाइम फ़ीड कनेक्शन विफल',
-    'dashboard.websocket.failedConnectionDescription': 'कई प्रयासों के बाद लाइव कीमतों से कनेक्शन स्थापित नहीं किया जा सका। कृपया अपना इंटरनेट कनेक्शन जांचें या बाद में पुनः प्रयास करें।',
 
     'zod.email.invalid': 'अमान्य ईमेल पता।',
     'zod.password.required': 'पासवर्ड आवश्यक है।',
@@ -631,14 +632,15 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderSimulator.result.totalCommission': "总佣金：",
     'dashboard.orderSimulator.result.netProfitLoss': "净利润/亏损：",
 
-    'dashboard.websocket.connectedTitle': '实时数据源已连接',
-    'dashboard.websocket.connectedDescription': '来自币安的实时价格现已激活。',
-    'dashboard.websocket.errorTitle': '实时数据源错误',
-    'dashboard.websocket.errorDescription': '实时价格数据源出现问题。正在尝试重新连接。',
-    'dashboard.websocket.disconnectedTitle': '实时数据源已断开',
+    'dashboard.websocket.coincap.connectedTitle': '实时数据源已连接 (CoinCap)',
+    'dashboard.websocket.coincap.connectedDescription': '来自 CoinCap 的实时价格现已激活。',
+    'dashboard.websocket.coincap.errorTitle': 'CoinCap 数据源错误',
+    'dashboard.websocket.coincap.errorDescription': 'CoinCap 实时价格数据源出现问题。正在尝试重新连接。',
+    'dashboard.websocket.coincap.disconnectedTitle': 'CoinCap 数据源已断开',
+    'dashboard.websocket.coincap.failedConnectionTitle': 'CoinCap 数据源连接失败',
+    'dashboard.websocket.coincap.failedConnectionDescription': '无法连接到 CoinCap 实时价格。请检查您的互联网连接或稍后再试。',
     'dashboard.websocket.reconnectingDescription': '正在尝试重新连接到实时价格... 尝试次数 {attempt}/{maxAttempts}',
-    'dashboard.websocket.failedConnectionTitle': '实时数据源连接失败',
-    'dashboard.websocket.failedConnectionDescription': '多次尝试后无法建立与实时价格的连接。请检查您的互联网连接或稍后再试。',
+
 
     'zod.email.invalid': '无效的电子邮件地址。',
     'zod.password.required': '密码是必需的。',
@@ -716,3 +718,4 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     </LanguageContext.Provider>
   );
 };
+
