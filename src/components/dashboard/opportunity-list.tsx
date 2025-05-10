@@ -1,3 +1,4 @@
+
 // src/components/dashboard/opportunity-list.tsx
 'use client';
 
@@ -9,8 +10,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { Opportunity } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import type { CryptoCardData } from './types';
+import { useLanguage } from '@/hooks/use-language';
 
-const PROFIT_PERCENTAGES = [1, 2, 5]; // e.g., 1%, 2%, 5%
+const PROFIT_PERCENTAGES = [1, 2, 5]; 
 
 interface OpportunityListProps {
   cryptoData: CryptoCardData[];
@@ -19,6 +21,8 @@ interface OpportunityListProps {
 export function OpportunityList({ cryptoData }: OpportunityListProps) {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { translations } = useLanguage();
+  const t = (key: string, fallback?: string) => translations[key] || fallback || key;
 
   useEffect(() => {
     function calculateOpportunities() {
@@ -31,7 +35,7 @@ export function OpportunityList({ cryptoData }: OpportunityListProps) {
       const newOpportunities: Opportunity[] = [];
 
       cryptoData.forEach(crypto => {
-        if (crypto.value > 0) { // Only consider cryptos with a valid price
+        if (crypto.value > 0) { 
           PROFIT_PERCENTAGES.forEach(perc => {
             const targetSellPrice = crypto.value * (1 + perc / 100);
             newOpportunities.push({
@@ -45,7 +49,6 @@ export function OpportunityList({ cryptoData }: OpportunityListProps) {
         }
       });
       
-      // Sort by potential profit DESC (as percentage of current price)
       newOpportunities.sort((a,b) => (b.potentialProfit / b.currentPrice) - (a.potentialProfit / a.currentPrice));
       setOpportunities(newOpportunities);
     }
@@ -55,8 +58,8 @@ export function OpportunityList({ cryptoData }: OpportunityListProps) {
   return (
     <Card className="shadow-lg">
       <CardHeader>
-        <CardTitle>Opportunity Simulator</CardTitle>
-        <CardDescription>Potential trade opportunities based on current prices and target profit percentages.</CardDescription>
+        <CardTitle>{t('dashboard.opportunityList.title', 'Opportunity Simulator')}</CardTitle>
+        <CardDescription>{t('dashboard.opportunityList.description', 'Potential trade opportunities based on current prices and target profit percentages.')}</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -64,16 +67,16 @@ export function OpportunityList({ cryptoData }: OpportunityListProps) {
             {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
           </div>
         ) : opportunities.length === 0 ? (
-          <p className="text-muted-foreground">No opportunities to display currently, or prices are still loading.</p>
+          <p className="text-muted-foreground">{t('dashboard.opportunityList.emptyMessage', 'No opportunities to display currently, or prices are still loading.')}</p>
         ) : (
           <ScrollArea className="h-[400px]">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Crypto</TableHead>
-                  <TableHead>Current Price</TableHead>
-                  <TableHead>Target Sell (+Profit)</TableHead>
-                  <TableHead>Potential Gain</TableHead>
+                  <TableHead>{t('dashboard.opportunityList.table.header.crypto', 'Crypto')}</TableHead>
+                  <TableHead>{t('dashboard.opportunityList.table.header.currentPrice', 'Current Price')}</TableHead>
+                  <TableHead>{t('dashboard.opportunityList.table.header.targetSell', 'Target Sell (+Profit)')}</TableHead>
+                  <TableHead>{t('dashboard.opportunityList.table.header.potentialGain', 'Potential Gain')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -96,3 +99,5 @@ export function OpportunityList({ cryptoData }: OpportunityListProps) {
     </Card>
   );
 }
+
+    

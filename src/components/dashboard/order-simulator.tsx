@@ -1,3 +1,4 @@
+
 // src/components/dashboard/order-simulator.tsx
 'use client';
 
@@ -26,17 +27,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { CRYPTO_SYMBOLS, COMMISSION_RATE, QUOTE_CURRENCY } from '@/lib/constants';
 import type { CryptoSymbol } from '@/lib/constants';
 import { useToast } from '@/hooks/use-toast';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useLanguage } from '@/hooks/use-language';
 
-const orderSimulatorSchema = z.object({
-  cryptoSymbol: z.enum(CRYPTO_SYMBOLS, { errorMap: () => ({ message: 'Please select a cryptocurrency.'})}),
-  quantity: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, { message: 'Must be a positive number.' }),
-  buyPrice: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, { message: 'Must be a positive number.' }),
-  sellPrice: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, { message: 'Must be a positive number.' }),
+const getOrderSimulatorSchema = (t: (key: string, fallback?: string) => string) => z.object({
+  cryptoSymbol: z.enum(CRYPTO_SYMBOLS, { errorMap: () => ({ message: t('zod.order.selectCrypto', 'Please select a cryptocurrency.')})}),
+  quantity: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, { message: t('zod.order.positiveNumber', 'Must be a positive number.') }),
+  buyPrice: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, { message: t('zod.order.positiveNumber', 'Must be a positive number.') }),
+  sellPrice: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, { message: t('zod.order.positiveNumber', 'Must be a positive number.') }),
 });
 
-type OrderSimulatorFormValues = z.infer<typeof orderSimulatorSchema>;
+type OrderSimulatorFormValues = z.infer<ReturnType<typeof getOrderSimulatorSchema>>;
 
 interface OrderSimulatorProps {
   cryptoPrices: Record<CryptoSymbol, number>;
@@ -46,12 +48,24 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [simulationResult, setSimulationResult] = useState<{ profit: number, commission: number, netProfit: number, quantity: number, cryptoSymbol: CryptoSymbol } | null>(null);
+  const { translations, language } = useLanguage();
+  const t = (key: string, fallback?: string, vars?: Record<string, string | number>) => {
+    let msg = translations[key] || fallback || key;
+    if (vars) {
+      Object.keys(vars).forEach(varKey => {
+        msg = msg.replace(`{${varKey}}`, String(vars[varKey]));
+      });
+    }
+    return msg;
+  };
+
+  const orderSimulatorSchema = useMemo(() => getOrderSimulatorSchema(t), [language, t]);
 
   const form = useForm<OrderSimulatorFormValues>({
     resolver: zodResolver(orderSimulatorSchema),
     defaultValues: {
       cryptoSymbol: undefined,
-      quantity: '1',
+      quantity: '', // Initialize with empty string for controlled input
       buyPrice: '', 
       sellPrice: '',
     }
@@ -63,19 +77,21 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
     if (selectedCryptoSymbol && cryptoPrices[selectedCryptoSymbol]) {
       form.setValue('buyPrice', cryptoPrices[selectedCryptoSymbol].toString(), { shouldValidate: true });
       const currentSellPrice = form.getValues('sellPrice');
-      if (currentSellPrice) {
+      if (currentSellPrice && currentSellPrice !== '') {
           const buyPriceNum = parseFloat(cryptoPrices[selectedCryptoSymbol].toString());
           const sellPriceNum = parseFloat(currentSellPrice);
           if (buyPriceNum >= sellPriceNum) {
             form.setValue('sellPrice', '');
           }
+      } else if (currentSellPrice === '' && form.formState.isSubmitted) {
+        // If sell price was cleared and form submitted, we might want to keep it empty or re-validate
       }
     } else if (!selectedCryptoSymbol) {
         form.setValue('buyPrice', '');
         form.setValue('sellPrice', '');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCryptoSymbol, cryptoPrices]); // form.setValue is stable
+  }, [selectedCryptoSymbol, cryptoPrices, form.setValue, form.getValues, form.formState.isSubmitted]);
 
   function onSubmit(values: OrderSimulatorFormValues) {
     setIsLoading(true);
@@ -85,12 +101,11 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
     const sellPrice = parseFloat(values.sellPrice);
     const quantity = parseFloat(values.quantity);
 
-    // Simulate some processing time
     setTimeout(() => {
       if (buyPrice >= sellPrice) {
         toast({
-          title: "Simulation Error",
-          description: "Sell price must be greater than buy price.",
+          title: t('dashboard.orderSimulator.toast.errorTitle', "Simulation Error"),
+          description: t('dashboard.orderSimulator.toast.errorSellPrice', "Sell price must be greater than buy price."),
           variant: "destructive",
         });
         setSimulationResult(null);
@@ -111,8 +126,8 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
       });
 
       toast({
-        title: "Simulation Complete",
-        description: `Simulated trade for ${quantity} ${values.cryptoSymbol} processed.`,
+        title: t('dashboard.orderSimulator.toast.completeTitle', "Simulation Complete"),
+        description: t('dashboard.orderSimulator.toast.completeDescription', "Simulated trade for {quantity} {symbol} processed.", { quantity, symbol: values.cryptoSymbol }),
       });
       setIsLoading(false);
     }, 1000);
@@ -121,8 +136,8 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
   return (
     <Card className="shadow-lg">
       <CardHeader>
-        <CardTitle>Order Simulator</CardTitle>
-        <CardDescription>Simulate a buy and sell order to estimate potential profit or loss. Input quantity, buy price, and sell price. Current market prices are pre-filled for buy price.</CardDescription>
+        <CardTitle>{t('dashboard.orderSimulator.title', 'Order Simulator')}</CardTitle>
+        <CardDescription>{t('dashboard.orderSimulator.description', 'Simulate a buy and sell order to estimate potential profit or loss. Input quantity, buy price, and sell price. Current market prices are pre-filled for buy price.')}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -132,7 +147,7 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
               name="cryptoSymbol"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cryptocurrency</FormLabel>
+                  <FormLabel>{t('dashboard.orderSimulator.cryptoLabel', 'Cryptocurrency')}</FormLabel>
                   <Select 
                     onValueChange={(value) => {
                       field.onChange(value);
@@ -140,7 +155,7 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
                       if (cryptoPrices[newSelectedSymbol]) {
                         form.setValue('buyPrice', cryptoPrices[newSelectedSymbol].toString(), { shouldValidate: true });
                         const currentSellPrice = form.getValues('sellPrice');
-                        if (currentSellPrice) {
+                        if (currentSellPrice && currentSellPrice !== '') {
                             const buyPriceNum = parseFloat(cryptoPrices[newSelectedSymbol].toString());
                             const sellPriceNum = parseFloat(currentSellPrice);
                             if (buyPriceNum >= sellPriceNum) {
@@ -155,7 +170,7 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a crypto" />
+                        <SelectValue placeholder={t('dashboard.orderSimulator.selectPlaceholder', 'Select a crypto')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -168,7 +183,7 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
                   </Select>
                   {selectedCryptoSymbol && (
                     <FormDescription className="mt-1">
-                      Trading Pair: {selectedCryptoSymbol}/{QUOTE_CURRENCY}
+                      {t('dashboard.orderSimulator.tradingPairDesc', "Trading Pair: {symbol}/{quoteCurrency}", { symbol: selectedCryptoSymbol, quoteCurrency: QUOTE_CURRENCY })}
                     </FormDescription>
                   )}
                   <FormMessage />
@@ -181,7 +196,12 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
               name="quantity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quantity {selectedCryptoSymbol ? `(${selectedCryptoSymbol})` : ''}</FormLabel>
+                  <FormLabel>
+                    {selectedCryptoSymbol 
+                      ? t('dashboard.orderSimulator.quantityLabel', 'Quantity ({symbol})', { symbol: selectedCryptoSymbol })
+                      : t('dashboard.orderSimulator.quantityLabelNoSymbol', 'Quantity')
+                    }
+                  </FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="e.g., 1.5" {...field} value={field.value || ''} step="any" />
                   </FormControl>
@@ -196,7 +216,7 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
                 name="buyPrice"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Buy Price ({QUOTE_CURRENCY} per unit)</FormLabel>
+                    <FormLabel>{t('dashboard.orderSimulator.buyPriceLabel', 'Buy Price ({quoteCurrency} per unit)', { quoteCurrency: QUOTE_CURRENCY })}</FormLabel>
                     <FormControl>
                       <Input type="number" placeholder="e.g., 50000" {...field} value={field.value || ''} step="any" disabled={!selectedCryptoSymbol} />
                     </FormControl>
@@ -209,7 +229,7 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
                 name="sellPrice"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Sell Price ({QUOTE_CURRENCY} per unit)</FormLabel>
+                    <FormLabel>{t('dashboard.orderSimulator.sellPriceLabel', 'Sell Price ({quoteCurrency} per unit)', { quoteCurrency: QUOTE_CURRENCY })}</FormLabel>
                     <FormControl>
                       <Input type="number" placeholder="e.g., 51000" {...field} value={field.value || ''} step="any" disabled={!selectedCryptoSymbol} />
                     </FormControl>
@@ -219,11 +239,11 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
               />
             </div>
             <FormDescription>
-              A commission of {COMMISSION_RATE * 100}% will be applied to both buy and sell transactions.
+              {t('dashboard.orderSimulator.commissionDesc', 'A commission of {rate}% will be applied to both buy and sell transactions.', { rate: (COMMISSION_RATE * 100).toFixed(1) })}
             </FormDescription>
             <Button type="submit" className="w-full" disabled={isLoading || !selectedCryptoSymbol}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Simulate Trade
+              {t('dashboard.orderSimulator.submitButton', 'Simulate Trade')}
             </Button>
           </form>
         </Form>
@@ -231,20 +251,22 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
         {simulationResult && (
           <Card className="mt-6 bg-secondary/50">
             <CardHeader>
-              <CardTitle className="text-lg">Simulation Result for {simulationResult.quantity} {simulationResult.cryptoSymbol}</CardTitle>
+              <CardTitle className="text-lg">
+                {t('dashboard.orderSimulator.result.title', 'Simulation Result for {quantity} {symbol}', { quantity: simulationResult.quantity, symbol: simulationResult.cryptoSymbol })}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="flex justify-between">
-                <span>Gross Profit:</span>
+                <span>{t('dashboard.orderSimulator.result.grossProfit', 'Gross Profit:')}</span>
                 <span className="font-medium">${simulationResult.profit.toFixed(2)} {QUOTE_CURRENCY}</span>
               </div>
               <div className="flex justify-between">
-                <span>Total Commission:</span>
+                <span>{t('dashboard.orderSimulator.result.totalCommission', 'Total Commission:')}</span>
                 <span className="font-medium">${simulationResult.commission.toFixed(2)} {QUOTE_CURRENCY}</span>
               </div>
               <hr className="my-1 border-border" />
               <div className="flex justify-between">
-                <span className="font-semibold">Net Profit / Loss:</span>
+                <span className="font-semibold">{t('dashboard.orderSimulator.result.netProfitLoss', 'Net Profit / Loss:')}</span>
                 <span className={`font-bold ${simulationResult.netProfit >= 0 ? 'text-primary' : 'text-destructive'}`}>
                   ${simulationResult.netProfit.toFixed(2)} {QUOTE_CURRENCY}
                 </span>
@@ -256,3 +278,5 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
     </Card>
   );
 }
+
+    
