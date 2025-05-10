@@ -52,7 +52,7 @@ async function fetchDashboardData(currentData: CryptoCardData[]): Promise<Crypto
         // Simplified mock prices with more dynamic changes
         const oldCrypto = currentData.find(c => c.symbol === crypto.symbol);
         const basePrice = oldCrypto && oldCrypto.value > 0 ? oldCrypto.value : 
-            (crypto.symbol === 'BTC' ? 60000 :
+            (crypto.symbol === 'BTC' ? 103000 : // Updated BTC base price
              crypto.symbol === 'ETH' ? 3000 :
              crypto.symbol === 'SOL' ? 150 :
              crypto.symbol === 'BNB' ? 580 :
@@ -94,12 +94,13 @@ export default function DashboardPage() {
     if (isInitialLoad) {
       setIsLoading(true);
     }
-    const data = await fetchDashboardData(cryptoData);
+    // Pass the current cryptoData to fetchDashboardData so it can use current prices as base for next calculation
+    const data = await fetchDashboardData(cryptoData); 
     setCryptoData(data);
     if (isInitialLoad) {
       setIsLoading(false);
     }
-  }, [cryptoData]); // cryptoData is a dependency to pass current state to fetchDashboardData
+  }, [cryptoData]); // cryptoData is a dependency now
 
   useEffect(() => {
     loadData(true); // Initial load
@@ -110,7 +111,7 @@ export default function DashboardPage() {
 
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadData]); // loadData is memoized with useCallback
+  }, [loadData]); // loadData is memoized
 
   return (
     <MainLayout>
@@ -120,15 +121,14 @@ export default function DashboardPage() {
         <section className="mb-8">
           <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('dashboard.marketOverview', 'Market Overview')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {cryptoData.map((data) => (
-              <CryptoDisplayCard key={data.symbol} data={data} isLoading={isLoading && data.value === 0} />
-            ))}
+            {isLoading && cryptoData.every(d => d.value === 0) ? ( // Show skeletons if still loading and no data yet
+                 [...Array(5)].map((_, i) => <CryptoDisplayCard key={i} data={{symbol: 'BTC', value:0, trendAnalysis: null}} isLoading={true} />)
+            ) : (
+                cryptoData.map((data) => (
+                  <CryptoDisplayCard key={data.symbol} data={data} isLoading={isLoading && data.value === 0} />
+                ))
+            )}
           </div>
-           {isLoading && cryptoData.every(d => d.value === 0) && ( // Show skeletons if still loading and no data yet
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {[...Array(5)].map((_, i) => <CryptoDisplayCard key={i} data={{symbol: 'BTC', value:0, trendAnalysis: null}} isLoading={true} />)}
-            </div>
-           )}
         </section>
 
         <section className="mb-8">
