@@ -10,6 +10,7 @@ import { initialCryptoData } from '@/components/dashboard/types';
 import { analyzeCryptoTrend } from '@/ai/flows/analyze-crypto-trends';
 import type { CryptoSymbol } from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLanguage } from '@/hooks/use-language';
 
 // Mock function to get recent price data for AI analysis
 function getMockRecentPriceData(symbol: CryptoSymbol): string {
@@ -69,6 +70,9 @@ async function fetchDashboardData(): Promise<CryptoCardData[]> {
 export default function DashboardPage() {
   const [cryptoData, setCryptoData] = useState<CryptoCardData[]>(initialCryptoData);
   const [isLoading, setIsLoading] = useState(true);
+  const { translations } = useLanguage();
+  const t = (key: string, fallback?: string) => translations[key] || fallback || key;
+
 
   useEffect(() => {
     async function loadData() {
@@ -83,10 +87,10 @@ export default function DashboardPage() {
   return (
     <MainLayout>
       <div className="container mx-auto py-8 px-4">
-        <h1 className="text-3xl font-bold mb-8 text-foreground">Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-8 text-foreground">{t('dashboard.title', 'Dashboard')}</h1>
         
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4 text-foreground">Market Overview</h2>
+          <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('dashboard.marketOverview', 'Market Overview')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {cryptoData.map((data) => (
               <CryptoDisplayCard key={data.symbol} data={data} isLoading={isLoading} />
@@ -100,10 +104,14 @@ export default function DashboardPage() {
         </section>
 
         <section className="mb-8">
+           {/* The OrderSimulator component has its own CardTitle, this h2 is for semantic structure */}
+          <h2 className="text-2xl font-semibold mb-4 text-foreground sr-only">{t('dashboard.orderSimulator', 'Order Simulator')}</h2>
           <OrderSimulator />
         </section>
 
         <section>
+          {/* The OpportunityList component has its own CardTitle, this h2 is for semantic structure */}
+          <h2 className="text-2xl font-semibold mb-4 text-foreground sr-only">{t('dashboard.opportunitySimulator', 'Opportunity Simulator')}</h2>
           <OpportunityList />
         </section>
       </div>
