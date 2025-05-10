@@ -1,4 +1,5 @@
-import type { CryptoSymbol, CRYPTO_SYMBOLS } from '@/lib/constants';
+import type { CryptoSymbol } from '@/lib/constants';
+import { CRYPTO_SYMBOLS } from '@/lib/constants';
 import type { TrendAnalysis } from '@/lib/types';
 
 export interface CryptoCardData {
@@ -12,3 +13,4 @@ export const initialCryptoData: CryptoCardData[] = CRYPTO_SYMBOLS.map(symbol => 
   value: 0,
   trendAnalysis: null,
 }));
+
