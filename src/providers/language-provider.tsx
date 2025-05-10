@@ -97,7 +97,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.opportunityList.description': "Potential trade opportunities based on current prices and target profit percentages.",
     'dashboard.opportunityList.table.header.crypto': "Crypto",
     'dashboard.opportunityList.table.header.currentPrice': "Current Price",
-    'dashboard.opportunityList.table.header.targetSell': "Target Sell ({profitPercentage}%)",
+    'dashboard.opportunityList.table.header.targetSell': "Target Sell (+{profitPercentage}%)", // Updated to use placeholder
     'dashboard.opportunityList.table.header.potentialGain': "Potential Gain",
     'dashboard.opportunityList.emptyMessage': "No opportunities to display currently, or prices are still loading.",
 
@@ -108,10 +108,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderSimulator.tradingPairDesc': "Trading Pair: {symbol}/{quoteCurrency}",
     'dashboard.orderSimulator.quantityLabel': "Quantity ({symbol})",
     'dashboard.orderSimulator.quantityLabelNoSymbol': "Quantity",
-    'dashboard.orderSimulator.buyPriceLabel': "Buy Price ({quoteCurrency} per {symbol})",
-    'dashboard.orderSimulator.sellPriceLabel': "Sell Price ({quoteCurrency} per {symbol})",
-    'dashboard.orderSimulator.buyPriceLabelNoSymbol': "Buy Price ({quoteCurrency})",
-    'dashboard.orderSimulator.sellPriceLabelNoSymbol': "Sell Price ({quoteCurrency})",
+    'dashboard.orderSimulator.buyPriceLabel': "Buy Price ({quoteCurrency} per unit)",
+    'dashboard.orderSimulator.sellPriceLabel': "Sell Price ({quoteCurrency} per unit)",
     'dashboard.orderSimulator.commissionDesc': "A commission of {rate}% will be applied to both buy and sell transactions.",
     'dashboard.orderSimulator.submitButton': "Simulate Trade",
     'dashboard.orderSimulator.toast.errorTitle': "Simulation Error",
@@ -123,19 +121,11 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderSimulator.result.totalCommission': "Total Commission:",
     'dashboard.orderSimulator.result.netProfitLoss': "Net Profit / Loss:",
     
-    'dashboard.websocket.coincap.connectedTitle': 'Real-time Feed Connected (CoinCap)',
-    'dashboard.websocket.coincap.connectedDescription': 'Live prices from CoinCap are now active.',
-    'dashboard.websocket.coincap.errorTitle': 'CoinCap Feed Error',
-    'dashboard.websocket.coincap.errorDescription': 'Issue with CoinCap live price feed.',
-    'dashboard.websocket.coincap.error.unknown': 'Unknown WebSocket error occurred with CoinCap.',
-    'dashboard.websocket.coincap.error.withMessage': 'Error: {message}',
-    'dashboard.websocket.coincap.error.withType': 'Event type: {type}',
-    'dashboard.websocket.coincap.error.connectionClosed': 'The connection attempt failed or was closed. Please check your network.',
-    'dashboard.websocket.coincap.error.noAssets': 'No assets to track. Connection aborted.',
-    'dashboard.websocket.coincap.disconnectedTitle': 'CoinCap Feed Disconnected',
-    'dashboard.websocket.coincap.failedConnectionTitle': 'CoinCap Feed Failed',
-    'dashboard.websocket.coincap.failedConnectionDescription': 'Could not connect to CoinCap live prices. Please check your internet or try later.',
-    'dashboard.websocket.reconnectingDescription': 'Attempting to reconnect to live prices... Attempt {attempt}/{maxAttempts}',
+    'dashboard.api.binance.fetchError': 'Failed to fetch prices from Binance: {status}',
+    'dashboard.api.binance.errorTitle': 'Price Fetch Error',
+    'dashboard.api.binance.unknownError': 'Could not fetch live prices from Binance.',
+    'dashboard.ai.errorTitle': 'AI Analysis Error',
+    'dashboard.ai.errorDescription': 'Could not update AI trends.',
     
     'zod.email.invalid': 'Invalid email address.',
     'zod.password.required': 'Password is required.',
@@ -237,7 +227,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.opportunityList.description': "Oportunidades de trade potenciales basadas en precios actuales y porcentajes de ganancia objetivo.",
     'dashboard.opportunityList.table.header.crypto': "Cripto",
     'dashboard.opportunityList.table.header.currentPrice': "Precio Actual",
-    'dashboard.opportunityList.table.header.targetSell': "Venta Objetivo ({profitPercentage}%)",
+    'dashboard.opportunityList.table.header.targetSell': "Venta Objetivo (+{profitPercentage}%)", // Updated
     'dashboard.opportunityList.table.header.potentialGain': "Ganancia Potencial",
     'dashboard.opportunityList.emptyMessage': "No hay oportunidades para mostrar actualmente, o los precios aún se están cargando.",
 
@@ -248,10 +238,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderSimulator.tradingPairDesc': "Par de Trading: {symbol}/{quoteCurrency}",
     'dashboard.orderSimulator.quantityLabel': "Cantidad ({symbol})",
     'dashboard.orderSimulator.quantityLabelNoSymbol': "Cantidad",
-    'dashboard.orderSimulator.buyPriceLabel': "Precio de Compra ({quoteCurrency} por {symbol})",
-    'dashboard.orderSimulator.sellPriceLabel': "Precio de Venta ({quoteCurrency} por {symbol})",
-    'dashboard.orderSimulator.buyPriceLabelNoSymbol': "Precio de Compra ({quoteCurrency})",
-    'dashboard.orderSimulator.sellPriceLabelNoSymbol': "Precio de Venta ({quoteCurrency})",
+    'dashboard.orderSimulator.buyPriceLabel': "Precio de Compra ({quoteCurrency} por unidad)",
+    'dashboard.orderSimulator.sellPriceLabel': "Precio de Venta ({quoteCurrency} por unidad)",
     'dashboard.orderSimulator.commissionDesc': "Se aplicará una comisión del {rate}% a las transacciones de compra y venta.",
     'dashboard.orderSimulator.submitButton': "Simular Trade",
     'dashboard.orderSimulator.toast.errorTitle': "Error de Simulación",
@@ -263,20 +251,11 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderSimulator.result.totalCommission': "Comisión Total:",
     'dashboard.orderSimulator.result.netProfitLoss': "Ganancia / Pérdida Neta:",
 
-    'dashboard.websocket.coincap.connectedTitle': 'Fuente en Tiempo Real Conectada (CoinCap)',
-    'dashboard.websocket.coincap.connectedDescription': 'Los precios en vivo de CoinCap ahora están activos.',
-    'dashboard.websocket.coincap.errorTitle': 'Error en Fuente de CoinCap',
-    'dashboard.websocket.coincap.errorDescription': 'Hubo un problema con la fuente de precios en vivo de CoinCap.',
-    'dashboard.websocket.coincap.error.unknown': 'Error desconocido de WebSocket con CoinCap.',
-    'dashboard.websocket.coincap.error.withMessage': 'Error: {message}',
-    'dashboard.websocket.coincap.error.withType': 'Tipo de evento: {type}',
-    'dashboard.websocket.coincap.error.connectionClosed': 'El intento de conexión falló o se cerró. Por favor, revisa tu red.',
-    'dashboard.websocket.coincap.error.noAssets': 'No hay activos para rastrear. Conexión abortada.',
-    'dashboard.websocket.coincap.disconnectedTitle': 'Fuente de CoinCap Desconectada',
-    'dashboard.websocket.coincap.failedConnectionTitle': 'Falló la Conexión de Fuente de CoinCap',
-    'dashboard.websocket.coincap.failedConnectionDescription': 'No se pudo conectar a los precios en vivo de CoinCap. Por favor, verifica tu conexión a internet o inténtalo de nuevo más tarde.',
-    'dashboard.websocket.reconnectingDescription': 'Intentando reconectar a los precios en vivo... Intento {attempt}/{maxAttempts}',
-
+    'dashboard.api.binance.fetchError': 'Error al obtener precios de Binance: {status}',
+    'dashboard.api.binance.errorTitle': 'Error al Obtener Precios',
+    'dashboard.api.binance.unknownError': 'No se pudieron obtener los precios en vivo de Binance.',
+    'dashboard.ai.errorTitle': 'Error en Análisis de IA',
+    'dashboard.ai.errorDescription': 'No se pudieron actualizar las tendencias de IA.',
 
     'zod.email.invalid': 'Dirección de correo electrónico no válida.',
     'zod.password.required': 'La contraseña es obligatoria.',
@@ -330,10 +309,10 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'signup.confirmPasswordLabel': 'Confirmer le mot de passe',
     'signup.submitButton': 'S\'inscrire',
     'signup.loginPrompt': 'Vous avez déjà un compte ?',
-    'login.loginLink': 'Se Connecter',
-    'login.error.unknown': 'Une erreur inconnue est survenue.',
-    'login.error.emailTaken': 'Cet e-mail est déjà enregistré.',
-    'login.error.passwordTooWeak': 'Le mot de passe ne respecte pas les exigences de sécurité. Il doit comporter au moins 8 caractères, inclure une majuscule, une minuscule, un chiffre et un symbole.',
+    'signup.loginLink': 'Se Connecter', // Corrected from login.loginLink
+    'signup.error.unknown': 'Une erreur inconnue est survenue.', // Corrected from login.error.unknown
+    'signup.error.emailTaken': 'Cet e-mail est déjà enregistré.', // Corrected from login.error.emailTaken
+    'signup.error.passwordTooWeak': 'Le mot de passe ne respecte pas les exigences de sécurité. Il doit comporter au moins 8 caractères, inclure une majuscule, une minuscule, un chiffre et un symbole.', // Corrected from login.error.passwordTooWeak
 
     'account.apiKey.title': "Connexion API Binance",
     'account.apiKey.description': "Connectez votre compte Binance pour récupérer les données en temps réel. Vos clés sont stockées localement (simulation).",
@@ -379,7 +358,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.opportunityList.description': "Opportunités de trade potentielles basées sur les prix actuels et les pourcentages de profit cibles.",
     'dashboard.opportunityList.table.header.crypto': "Crypto",
     'dashboard.opportunityList.table.header.currentPrice': "Prix Actuel",
-    'dashboard.opportunityList.table.header.targetSell': "Vente Cible ({profitPercentage}%)",
+    'dashboard.opportunityList.table.header.targetSell': "Vente Cible (+{profitPercentage}%)", // Updated
     'dashboard.opportunityList.table.header.potentialGain': "Gain Potentiel",
     'dashboard.opportunityList.emptyMessage': "Aucune opportunité à afficher pour le moment, ou les prix sont encore en cours de chargement.",
 
@@ -390,10 +369,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderSimulator.tradingPairDesc': "Paire de Trading : {symbol}/{quoteCurrency}",
     'dashboard.orderSimulator.quantityLabel': "Quantité ({symbol})",
     'dashboard.orderSimulator.quantityLabelNoSymbol': "Quantité",
-    'dashboard.orderSimulator.buyPriceLabel': "Prix d'Achat ({quoteCurrency} par {symbol})",
-    'dashboard.orderSimulator.sellPriceLabel': "Prix de Vente ({quoteCurrency} par {symbol})",
-    'dashboard.orderSimulator.buyPriceLabelNoSymbol': "Prix d'Achat ({quoteCurrency})",
-    'dashboard.orderSimulator.sellPriceLabelNoSymbol': "Prix de Vente ({quoteCurrency})",
+    'dashboard.orderSimulator.buyPriceLabel': "Prix d'Achat ({quoteCurrency} par unité)",
+    'dashboard.orderSimulator.sellPriceLabel': "Prix de Vente ({quoteCurrency} par unité)",
     'dashboard.orderSimulator.commissionDesc': "Une commission de {rate}% sera appliquée aux transactions d'achat et de vente.",
     'dashboard.orderSimulator.submitButton': "Simuler le Trade",
     'dashboard.orderSimulator.toast.errorTitle': "Erreur de Simulation",
@@ -405,19 +382,11 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderSimulator.result.totalCommission': "Commission Totale:",
     'dashboard.orderSimulator.result.netProfitLoss': "Profit / Perte Net(te):",
 
-    'dashboard.websocket.coincap.connectedTitle': 'Flux en Temps Réel Connecté (CoinCap)',
-    'dashboard.websocket.coincap.connectedDescription': 'Les prix en direct de CoinCap sont maintenant actifs.',
-    'dashboard.websocket.coincap.errorTitle': 'Erreur du Flux CoinCap',
-    'dashboard.websocket.coincap.errorDescription': 'Un problème est survenu avec le flux de prix en direct de CoinCap.',
-    'dashboard.websocket.coincap.error.unknown': 'Erreur WebSocket inconnue avec CoinCap.',
-    'dashboard.websocket.coincap.error.withMessage': 'Erreur : {message}',
-    'dashboard.websocket.coincap.error.withType': 'Type d\'événement : {type}',
-    'dashboard.websocket.coincap.error.connectionClosed': 'La tentative de connexion a échoué ou a été fermée. Veuillez vérifier votre réseau.',
-    'dashboard.websocket.coincap.error.noAssets': 'Aucun actif à suivre. Connexion interrompue.',
-    'dashboard.websocket.coincap.disconnectedTitle': 'Flux CoinCap Déconnecté',
-    'dashboard.websocket.coincap.failedConnectionTitle': 'Échec de Connexion du Flux CoinCap',
-    'dashboard.websocket.coincap.failedConnectionDescription': 'Impossible de se connecter aux prix en direct de CoinCap. Veuillez vérifier votre connexion Internet ou réessayer plus tard.',
-    'dashboard.websocket.reconnectingDescription': 'Tentative de reconnexion aux prix en direct... Tentative {attempt}/{maxAttempts}',
+    'dashboard.api.binance.fetchError': 'Échec de la récupération des prix de Binance: {status}',
+    'dashboard.api.binance.errorTitle': 'Erreur de Récupération des Prix',
+    'dashboard.api.binance.unknownError': 'Impossible de récupérer les prix en direct de Binance.',
+    'dashboard.ai.errorTitle': 'Erreur d\'Analyse IA',
+    'dashboard.ai.errorDescription': 'Impossible de mettre à jour les tendances IA.',
 
     'zod.email.invalid': 'Adresse e-mail invalide.',
     'zod.password.required': 'Le mot de passe est requis.',
@@ -471,10 +440,10 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'signup.confirmPasswordLabel': 'पासवर्ड की पुष्टि करें',
     'signup.submitButton': 'साइन अप करें',
     'signup.loginPrompt': 'पहले से ही एक खाता है?',
-    'login.loginLink': 'लॉग इन करें',
-    'login.error.unknown': 'एक अज्ञात त्रुटि हुई।',
-    'login.error.emailTaken': 'यह ईमेल पहले से पंजीकृत है।',
-    'login.error.passwordTooWeak': 'पासवर्ड सुरक्षा आवश्यकताओं को पूरा नहीं करता है। इसमें 8+ वर्ण होने चाहिए, जिसमें अपरकेस, लोअरकेस, संख्या और प्रतीक शामिल हों।',
+    'signup.loginLink': 'लॉग इन करें', // Corrected
+    'signup.error.unknown': 'एक अज्ञात त्रुटि हुई।', // Corrected
+    'signup.error.emailTaken': 'यह ईमेल पहले से पंजीकृत है।', // Corrected
+    'signup.error.passwordTooWeak': 'पासवर्ड सुरक्षा आवश्यकताओं को पूरा नहीं करता है। इसमें 8+ वर्ण होने चाहिए, जिसमें अपरकेस, लोअरकेस, संख्या और प्रतीक शामिल हों।', // Corrected
 
 
     'account.apiKey.title': "बायनेंस एपीआई कनेक्शन",
@@ -520,7 +489,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.opportunityList.description': "मौजूदा कीमतों और लक्ष्य लाभ प्रतिशत के आधार पर संभावित व्यापार के अवसर।",
     'dashboard.opportunityList.table.header.crypto': "क्रिप्टो",
     'dashboard.opportunityList.table.header.currentPrice': "वर्तमान मूल्य",
-    'dashboard.opportunityList.table.header.targetSell': "लक्ष्य बिक्री ({profitPercentage}%)",
+    'dashboard.opportunityList.table.header.targetSell': "लक्ष्य बिक्री (+{profitPercentage}%)", // Updated
     'dashboard.opportunityList.table.header.potentialGain': "संभावित लाभ",
     'dashboard.opportunityList.emptyMessage': "वर्तमान में प्रदर्शित करने के लिए कोई अवसर नहीं है, या कीमतें अभी भी लोड हो रही हैं।",
 
@@ -531,10 +500,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderSimulator.tradingPairDesc': "ट्रेडिंग जोड़ी: {symbol}/{quoteCurrency}",
     'dashboard.orderSimulator.quantityLabel': "मात्रा ({symbol})",
     'dashboard.orderSimulator.quantityLabelNoSymbol': "मात्रा",
-    'dashboard.orderSimulator.buyPriceLabel': "खरीद मूल्य ({quoteCurrency} प्रति {symbol})",
-    'dashboard.orderSimulator.sellPriceLabel': "बिक्री मूल्य ({quoteCurrency} प्रति {symbol})",
-    'dashboard.orderSimulator.buyPriceLabelNoSymbol': "खरीद मूल्य ({quoteCurrency})",
-    'dashboard.orderSimulator.sellPriceLabelNoSymbol': "बिक्री मूल्य ({quoteCurrency})",
+    'dashboard.orderSimulator.buyPriceLabel': "खरीद मूल्य ({quoteCurrency} प्रति इकाई)",
+    'dashboard.orderSimulator.sellPriceLabel': "बिक्री मूल्य ({quoteCurrency} प्रति इकाई)",
     'dashboard.orderSimulator.commissionDesc': "खरीद और बिक्री दोनों लेनदेन पर {rate}% का कमीशन लागू होगा।",
     'dashboard.orderSimulator.submitButton': "ट्रेड का अनुकरण करें",
     'dashboard.orderSimulator.toast.errorTitle': "अनुकरण त्रुटि",
@@ -546,19 +513,11 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderSimulator.result.totalCommission': "कुल कमीशन:",
     'dashboard.orderSimulator.result.netProfitLoss': "शुद्ध लाभ / हानि:",
 
-    'dashboard.websocket.coincap.connectedTitle': 'रीयल-टाइम फ़ीड कनेक्टेड (CoinCap)',
-    'dashboard.websocket.coincap.connectedDescription': 'CoinCap से लाइव कीमतें अब सक्रिय हैं।',
-    'dashboard.websocket.coincap.errorTitle': 'CoinCap फ़ीड त्रुटि',
-    'dashboard.websocket.coincap.errorDescription': 'CoinCap लाइव मूल्य फ़ीड के साथ एक समस्या थी।',
-    'dashboard.websocket.coincap.error.unknown': 'CoinCap के साथ अज्ञात WebSocket त्रुटि हुई।',
-    'dashboard.websocket.coincap.error.withMessage': 'त्रुटि: {message}',
-    'dashboard.websocket.coincap.error.withType': 'घटना प्रकार: {type}',
-    'dashboard.websocket.coincap.error.connectionClosed': 'कनेक्शन का प्रयास विफल रहा या कनेक्शन बंद कर दिया गया। कृपया अपना नेटवर्क जांचें।',
-    'dashboard.websocket.coincap.error.noAssets': 'ट्रैक करने के लिए कोई संपत्ति नहीं। कनेक्शन रद्द कर दिया गया।',
-    'dashboard.websocket.coincap.disconnectedTitle': 'CoinCap फ़ीड डिस्कनेक्ट हो गया',
-    'dashboard.websocket.coincap.failedConnectionTitle': 'CoinCap फ़ीड कनेक्शन विफल',
-    'dashboard.websocket.coincap.failedConnectionDescription': 'CoinCap लाइव कीमतों से कनेक्शन स्थापित नहीं किया जा सका। कृपया अपना इंटरनेट कनेक्शन जांचें या बाद में पुनः प्रयास करें।',
-    'dashboard.websocket.reconnectingDescription': 'लाइव कीमतों से पुनः कनेक्ट करने का प्रयास किया जा रहा है... प्रयास {attempt}/{maxAttempts}',
+    'dashboard.api.binance.fetchError': 'बायनेंस से कीमतें प्राप्त करने में विफल: {status}',
+    'dashboard.api.binance.errorTitle': 'कीमत प्राप्त करने में त्रुटि',
+    'dashboard.api.binance.unknownError': 'बायनेंस से लाइव कीमतें प्राप्त नहीं की जा सकीं।',
+    'dashboard.ai.errorTitle': 'एआई विश्लेषण त्रुटि',
+    'dashboard.ai.errorDescription': 'एआई रुझान अपडेट नहीं किए जा सके।',
 
     'zod.email.invalid': 'अमान्य ईमेल पता।',
     'zod.password.required': 'पासवर्ड आवश्यक है।',
@@ -612,10 +571,10 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'signup.confirmPasswordLabel': '确认密码',
     'signup.submitButton': '注册',
     'signup.loginPrompt': '已经有账户了？',
-    'login.loginLink': '登录',
-    'login.error.unknown': '发生未知错误。',
-    'login.error.emailTaken': '该电子邮件已被注册。',
-    'login.error.passwordTooWeak': '密码不符合安全要求。必须包含8个以上字符，包括大写字母、小写字母、数字和符号。',
+    'signup.loginLink': '登录', // Corrected
+    'signup.error.unknown': '发生未知错误。', // Corrected
+    'signup.error.emailTaken': '该电子邮件已被注册。', // Corrected
+    'signup.error.passwordTooWeak': '密码不符合安全要求。必须包含8个以上字符，包括大写字母、小写字母、数字和符号。', // Corrected
 
 
     'account.apiKey.title': "币安API连接",
@@ -661,7 +620,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.opportunityList.description': "根据当前价格和目标利润百分比的潜在交易机会。",
     'dashboard.opportunityList.table.header.crypto': "加密货币",
     'dashboard.opportunityList.table.header.currentPrice': "当前价格",
-    'dashboard.opportunityList.table.header.targetSell': "目标卖出价 ({profitPercentage}%)",
+    'dashboard.opportunityList.table.header.targetSell': "目标卖出价 (+{profitPercentage}%)", // Updated
     'dashboard.opportunityList.table.header.potentialGain': "潜在收益",
     'dashboard.opportunityList.emptyMessage': "当前没有可显示的机会，或者价格仍在加载中。",
 
@@ -672,10 +631,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderSimulator.tradingPairDesc': "交易对：{symbol}/{quoteCurrency}",
     'dashboard.orderSimulator.quantityLabel': "数量 ({symbol})",
     'dashboard.orderSimulator.quantityLabelNoSymbol': "数量",
-    'dashboard.orderSimulator.buyPriceLabel': "买入价格 ({quoteCurrency} / {symbol})",
-    'dashboard.orderSimulator.sellPriceLabel': "卖出价格 ({quoteCurrency} / {symbol})",
-    'dashboard.orderSimulator.buyPriceLabelNoSymbol': "买入价格 ({quoteCurrency})",
-    'dashboard.orderSimulator.sellPriceLabelNoSymbol': "卖出价格 ({quoteCurrency})",
+    'dashboard.orderSimulator.buyPriceLabel': "买入价格 ({quoteCurrency}/单位)",
+    'dashboard.orderSimulator.sellPriceLabel': "卖出价格 ({quoteCurrency}/单位)",
     'dashboard.orderSimulator.commissionDesc': "买入和卖出交易都将收取{rate}%的佣金。",
     'dashboard.orderSimulator.submitButton': "模拟交易",
     'dashboard.orderSimulator.toast.errorTitle': "模拟错误",
@@ -686,21 +643,12 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderSimulator.result.grossProfit': "毛利润：",
     'dashboard.orderSimulator.result.totalCommission': "总佣金：",
     'dashboard.orderSimulator.result.netProfitLoss': "净利润/亏损：",
-
-    'dashboard.websocket.coincap.connectedTitle': '实时数据源已连接 (CoinCap)',
-    'dashboard.websocket.coincap.connectedDescription': '来自 CoinCap 的实时价格现已激活。',
-    'dashboard.websocket.coincap.errorTitle': 'CoinCap 数据源错误',
-    'dashboard.websocket.coincap.errorDescription': 'CoinCap 实时价格数据源出现问题。',
-    'dashboard.websocket.coincap.error.unknown': 'CoinCap 发生未知 WebSocket 错误。',
-    'dashboard.websocket.coincap.error.withMessage': '错误：{message}',
-    'dashboard.websocket.coincap.error.withType': '事件类型：{type}',
-    'dashboard.websocket.coincap.error.connectionClosed': '连接尝试失败或已关闭。请检查您的网络。',
-    'dashboard.websocket.coincap.error.noAssets': '没有可追踪的资产。连接已中止。',
-    'dashboard.websocket.coincap.disconnectedTitle': 'CoinCap 数据源已断开',
-    'dashboard.websocket.coincap.failedConnectionTitle': 'CoinCap 数据源连接失败',
-    'dashboard.websocket.coincap.failedConnectionDescription': '无法连接到 CoinCap 实时价格。请检查您的互联网连接或稍后再试。',
-    'dashboard.websocket.reconnectingDescription': '正在尝试重新连接到实时价格... 尝试次数 {attempt}/{maxAttempts}',
-
+    
+    'dashboard.api.binance.fetchError': '从币安获取价格失败：{status}',
+    'dashboard.api.binance.errorTitle': '价格获取错误',
+    'dashboard.api.binance.unknownError': '无法从币安获取实时价格。',
+    'dashboard.ai.errorTitle': 'AI分析错误',
+    'dashboard.ai.errorDescription': '无法更新AI趋势。',
 
     'zod.email.invalid': '无效的电子邮件地址。',
     'zod.password.required': '密码是必需的。',

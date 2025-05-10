@@ -27,7 +27,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { CRYPTO_SYMBOLS, COMMISSION_RATE, QUOTE_CURRENCY } from '@/lib/constants';
 import type { CryptoSymbol } from '@/lib/constants';
 import { useToast } from '@/hooks/use-toast';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useLanguage } from '@/hooks/use-language';
 
@@ -49,7 +49,8 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [simulationResult, setSimulationResult] = useState<{ profit: number, commission: number, netProfit: number, quantity: number, cryptoSymbol: CryptoSymbol } | null>(null);
   const { translations, language } = useLanguage();
-  const t = (key: string, fallback?: string, vars?: Record<string, string | number>) => {
+  
+  const t = useCallback((key: string, fallback?: string, vars?: Record<string, string | number>) => {
     let msg = translations[key] || fallback || key;
     if (vars) {
       Object.keys(vars).forEach(varKey => {
@@ -57,7 +58,7 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
       });
     }
     return msg;
-  };
+  }, [translations]);
 
   const orderSimulatorSchema = useMemo(() => getOrderSimulatorSchema(t), [language, t]);
 
@@ -65,7 +66,7 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
     resolver: zodResolver(orderSimulatorSchema),
     defaultValues: {
       cryptoSymbol: undefined,
-      quantity: '', // Initialize with empty string for controlled input
+      quantity: '', 
       buyPrice: '', 
       sellPrice: '',
     }
@@ -83,15 +84,12 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
           if (buyPriceNum >= sellPriceNum) {
             form.setValue('sellPrice', '');
           }
-      } else if (currentSellPrice === '' && form.formState.isSubmitted) {
-        // If sell price was cleared and form submitted, we might want to keep it empty or re-validate
       }
     } else if (!selectedCryptoSymbol) {
         form.setValue('buyPrice', '');
         form.setValue('sellPrice', '');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCryptoSymbol, cryptoPrices, form.setValue, form.getValues, form.formState.isSubmitted]);
+  }, [selectedCryptoSymbol, cryptoPrices, form]); // form was added as dependency
 
   function onSubmit(values: OrderSimulatorFormValues) {
     setIsLoading(true);
@@ -137,7 +135,7 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
     <Card className="shadow-lg">
       <CardHeader>
         <CardTitle>{t('dashboard.orderSimulator.title', 'Order Simulator')}</CardTitle>
-        <CardDescription>{t('dashboard.orderSimulator.description', 'Simulate a buy and sell order to estimate potential profit or loss. Input quantity, buy price, and sell price. Current market prices are pre-filled for buy price.')}</CardDescription>
+        <CardDescription>{t('dashboard.orderSimulator.description', 'Simulate a buy and sell order to estimate potential profit or loss. Input quantity, buy price, and sell price. Current market prices are pre-filled for buy price when a crypto is selected.')}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -258,17 +256,17 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
             <CardContent className="space-y-2">
               <div className="flex justify-between">
                 <span>{t('dashboard.orderSimulator.result.grossProfit', 'Gross Profit:')}</span>
-                <span className="font-medium">${simulationResult.profit.toFixed(2)} {QUOTE_CURRENCY}</span>
+                <span className="font-medium">${simulationResult.profit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} {QUOTE_CURRENCY}</span>
               </div>
               <div className="flex justify-between">
                 <span>{t('dashboard.orderSimulator.result.totalCommission', 'Total Commission:')}</span>
-                <span className="font-medium">${simulationResult.commission.toFixed(2)} {QUOTE_CURRENCY}</span>
+                <span className="font-medium">${simulationResult.commission.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} {QUOTE_CURRENCY}</span>
               </div>
               <hr className="my-1 border-border" />
               <div className="flex justify-between">
                 <span className="font-semibold">{t('dashboard.orderSimulator.result.netProfitLoss', 'Net Profit / Loss:')}</span>
                 <span className={`font-bold ${simulationResult.netProfit >= 0 ? 'text-primary' : 'text-destructive'}`}>
-                  ${simulationResult.netProfit.toFixed(2)} {QUOTE_CURRENCY}
+                  ${simulationResult.netProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} {QUOTE_CURRENCY}
                 </span>
               </div>
             </CardContent>
@@ -278,5 +276,3 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
     </Card>
   );
 }
-
-    

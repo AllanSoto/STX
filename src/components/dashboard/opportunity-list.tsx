@@ -2,7 +2,7 @@
 // src/components/dashboard/opportunity-list.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -22,7 +22,17 @@ export function OpportunityList({ cryptoData }: OpportunityListProps) {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { translations } = useLanguage();
-  const t = (key: string, fallback?: string) => translations[key] || fallback || key;
+  
+  const t = useCallback((key: string, fallback?: string, vars?: Record<string, string | number>) => {
+    let msg = translations[key] || fallback || key;
+    if (vars) {
+      Object.keys(vars).forEach(varKey => {
+        msg = msg.replace(`{${varKey}}`, String(vars[varKey]));
+      });
+    }
+    return msg;
+  }, [translations]);
+
 
   useEffect(() => {
     function calculateOpportunities() {
@@ -75,7 +85,7 @@ export function OpportunityList({ cryptoData }: OpportunityListProps) {
                 <TableRow>
                   <TableHead>{t('dashboard.opportunityList.table.header.crypto', 'Crypto')}</TableHead>
                   <TableHead>{t('dashboard.opportunityList.table.header.currentPrice', 'Current Price')}</TableHead>
-                  <TableHead>{t('dashboard.opportunityList.table.header.targetSell', 'Target Sell (+Profit)')}</TableHead>
+                  <TableHead>{t('dashboard.opportunityList.table.header.targetSell', 'Target Sell (+{profitPercentage}%)', { profitPercentage: 'X' })}</TableHead>
                   <TableHead>{t('dashboard.opportunityList.table.header.potentialGain', 'Potential Gain')}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -83,12 +93,12 @@ export function OpportunityList({ cryptoData }: OpportunityListProps) {
                 {opportunities.map((op, index) => (
                   <TableRow key={index}>
                     <TableCell className="font-medium">{op.cryptoSymbol}</TableCell>
-                    <TableCell>${op.currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                    <TableCell>${op.currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: op.currentPrice < 1 ? 5 : 2 })}</TableCell>
                     <TableCell>
-                      ${op.targetSellPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
+                      ${op.targetSellPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: op.targetSellPrice < 1 ? 5 : 2 })}{' '}
                       <Badge variant="outline" className="ml-1 text-primary border-primary">+{op.profitPercentage}%</Badge>
                     </TableCell>
-                    <TableCell className="text-primary">${op.potentialProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                    <TableCell className="text-primary">${op.potentialProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: op.potentialProfit < 1 ? 5 : 2 })}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -99,5 +109,3 @@ export function OpportunityList({ cryptoData }: OpportunityListProps) {
     </Card>
   );
 }
-
-    

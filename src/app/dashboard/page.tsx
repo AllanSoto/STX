@@ -14,6 +14,11 @@ import { CRYPTO_SYMBOLS, QUOTE_CURRENCY } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
 
+const BINANCE_API_BASE_URL = 'https://api.binance.com/api/v3';
+const PRICE_FETCH_INTERVAL = 5000; // 5 seconds
+const AI_ANALYSIS_INITIAL_DELAY = 7000; // 7 seconds
+const AI_ANALYSIS_INTERVAL = 60000; // 60 seconds
+
 // Mock function to get recent price data for AI analysis (remains for historical context for AI)
 function getMockRecentPriceData(symbol: CryptoSymbol): string {
   const basePrice = Math.random() * 50000 + (symbol === 'BTC' ? 20000 : symbol === 'ETH' ? 1000 : 10); // More realistic base
@@ -25,7 +30,6 @@ function getMockRecentPriceData(symbol: CryptoSymbol): string {
   if (symbol === 'SOL') trendFactor = 0.2;
   if (symbol === 'BNB') trendFactor = 0.6;
   if (symbol === 'XRP') trendFactor = 0.4;
-
 
   for (let i = 0; i < 10; i++) {
     let change;
@@ -42,40 +46,34 @@ function getMockRecentPriceData(symbol: CryptoSymbol): string {
 }
 
 async function updateAllAiTrends(currentCryptoData: CryptoCardData[]): Promise<CryptoCardData[]> {
-  const dataPromises = currentCryptoData.map(async (crypto) => {
-    if (crypto.value === 0 && !crypto.trendAnalysis) { 
-        return crypto; 
-    }
+  const dataToAnalyze = currentCryptoData.filter(crypto => crypto.value > 0);
+  if (dataToAnalyze.length === 0) return currentCryptoData; // No data with prices to analyze
+
+  const dataPromises = dataToAnalyze.map(async (crypto) => {
     const recentPriceData = getMockRecentPriceData(crypto.symbol);
     try {
       const trendAnalysis = await analyzeCryptoTrend({ cryptoSymbol: crypto.symbol, recentPriceData });
       return { ...crypto, trendAnalysis };
     } catch (error) {
       console.error(`Error analyzing trend for ${crypto.symbol}:`, error);
-      if (error instanceof Error && (error as any).cause) {
-        console.error(`Cause of error for ${crypto.symbol}:`, (error as any).cause);
-      }
-      // Return crypto with existing trendAnalysis if any, or null if it failed. Avoid setting it to undefined.
+      // Return crypto with existing trendAnalysis if any, or null if it failed.
       return { ...crypto, trendAnalysis: crypto.trendAnalysis || null }; 
     }
   });
-  return Promise.all(dataPromises);
+  
+  const results = await Promise.all(dataPromises);
+  
+  // Merge results back into the full currentCryptoData list
+  return currentCryptoData.map(crypto => {
+    const updatedCrypto = results.find(r => r.symbol === crypto.symbol);
+    return updatedCrypto || crypto;
+  });
 }
-
-const cryptoSymbolToCoinCapId = (symbol: CryptoSymbol): string => {
-  switch (symbol) {
-    case 'BTC': return 'bitcoin';
-    case 'ETH': return 'ethereum';
-    case 'SOL': return 'solana';
-    case 'BNB': return 'binance-coin'; 
-    case 'XRP': return 'ripple';
-    default: return ''; 
-  }
-};
 
 export default function DashboardPage() {
   const [cryptoData, setCryptoData] = useState<CryptoCardData[]>(initialCryptoData);
-  const [isAiLoading, setIsAiLoading] = useState(true);
+  const [isPricesLoading, setIsPricesLoading] = useState(true);
+  const [isAiLoading, setIsAiLoading] = useState(false); // AI loading is separate
   const { translations } = useLanguage();
   const { toast } = useToast();
 
@@ -89,175 +87,75 @@ export default function DashboardPage() {
     return msg;
   }, [translations]);
 
-
-  // WebSocket for real-time prices from CoinCap
-  useEffect(() => {
-    const coinCapAssetIds = CRYPTO_SYMBOLS.map(cryptoSymbolToCoinCapId).filter(id => id !== '').join(',');
-    const wsUrl = `wss://ws.coincap.io/prices?assets=${coinCapAssetIds}`;
-    
-    let ws: WebSocket | null = null;
-    let reconnectAttempts = 0;
-    const maxReconnectAttempts = 5;
-    const reconnectDelay = 5000; 
-
-    function connectWebSocket() {
-      if (!coinCapAssetIds) {
-        console.warn('CoinCap WebSocket: Asset IDs are empty. Connection aborted.');
-        toast({
-          title: t('dashboard.websocket.coincap.errorTitle', 'CoinCap Feed Error'),
-          description: t('dashboard.websocket.coincap.error.noAssets', 'No assets to track. Connection aborted.'),
-          variant: "destructive",
-        });
-        return;
+  // Fetch prices from Binance API
+  const fetchBinancePrices = useCallback(async () => {
+    const symbolsToFetch = CRYPTO_SYMBOLS.map(s => `${s}${QUOTE_CURRENCY}`);
+    const symbolsParam = JSON.stringify(symbolsToFetch);
+    try {
+      const response = await fetch(`${BINANCE_API_BASE_URL}/ticker/price?symbols=${symbolsParam}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Binance API error:', errorData);
+        throw new Error(t('dashboard.api.binance.fetchError', 'Failed to fetch prices from Binance: {status}', {status: response.statusText}));
       }
-
-      if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-        console.log('CoinCap WebSocket already open or connecting.');
-        return;
-      }
-
-      console.log(`Attempting to connect to CoinCap WebSocket: ${wsUrl}`);
-      ws = new WebSocket(wsUrl);
-
-      ws.onopen = () => {
-        console.log('CoinCap WebSocket connected');
-        reconnectAttempts = 0; 
-        toast({
-          title: t('dashboard.websocket.coincap.connectedTitle', 'Real-time Feed Connected (CoinCap)'),
-          description: t('dashboard.websocket.coincap.connectedDescription', 'Live prices from CoinCap are now active.'),
-        });
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const prices = JSON.parse(event.data as string) as Record<string, string>;
-          
-          setCryptoData(prevData =>
-            prevData.map(crypto => {
-              const coinCapId = cryptoSymbolToCoinCapId(crypto.symbol);
-              if (prices[coinCapId]) {
-                const newPrice = parseFloat(prices[coinCapId]);
-                return {
-                  ...crypto,
-                  previousValue: crypto.value !== 0 ? crypto.value : newPrice,
-                  value: newPrice,
-                };
-              }
-              return crypto;
-            })
-          );
-        } catch (error) {
-          console.error('Error processing CoinCap WebSocket message:', error, event.data);
-        }
-      };
-
-      ws.onerror = (event: Event) => {
-        console.error('CoinCap WebSocket error event:', event); 
-        
-        let errorDetailsMessage = t('dashboard.websocket.coincap.error.unknown', 'Unknown WebSocket error occurred with CoinCap.');
-        if (event instanceof ErrorEvent && event.message) {
-            errorDetailsMessage = t('dashboard.websocket.coincap.error.withMessage', 'Error: {message}', { message: event.message });
-        } else if (event.type) { 
-            errorDetailsMessage = t('dashboard.websocket.coincap.error.withType', 'Event type: {type}', { type: event.type });
-        }
-        
-        console.error(
-          `CoinCap WebSocket detailed error: ${errorDetailsMessage}. WebSocket readyState: ${ws?.readyState}. Asset IDs: ${coinCapAssetIds}`
-        );
-        
-        let userFriendlyDescription = `${t('dashboard.websocket.coincap.errorDescription', 'Issue with CoinCap live price feed.')} ${errorDetailsMessage}`;
-        if (ws?.readyState === WebSocket.CLOSED) { // WebSocket.CLOSED is 3
-          userFriendlyDescription += ` ${t('dashboard.websocket.coincap.error.connectionClosed', 'The connection attempt failed or was closed. Please check your network.')}`;
-        }
-
-        toast({
-          title: t('dashboard.websocket.coincap.errorTitle', 'CoinCap Feed Error'),
-          description: userFriendlyDescription,
-          variant: "destructive",
-        });
-      };
-
-      ws.onclose = (event: CloseEvent) => {
-        console.log(`CoinCap WebSocket disconnected. Code: ${event.code}, Reason: ${event.reason || 'No reason given'}, Clean: ${event.wasClean}`);
-        if (reconnectAttempts < maxReconnectAttempts) {
-          reconnectAttempts++;
-          console.log(`Attempting to reconnect CoinCap WebSocket (attempt ${reconnectAttempts}/${maxReconnectAttempts}) in ${reconnectDelay / 1000}s...`);
-          setTimeout(connectWebSocket, reconnectDelay);
-          if (!event.wasClean || event.code !== 1000) { 
-            toast({
-              title: t('dashboard.websocket.coincap.disconnectedTitle', 'CoinCap Feed Disconnected'),
-              description: t('dashboard.websocket.reconnectingDescription', 'Attempting to reconnect to live prices... Attempt {attempt}/{maxAttempts}', {attempt: reconnectAttempts, maxAttempts: maxReconnectAttempts}),
-              variant: "destructive",
-            });
+      const data: { symbol: string; price: string }[] = await response.json();
+      
+      setCryptoData(prevData =>
+        prevData.map(crypto => {
+          const pairSymbol = `${crypto.symbol}${QUOTE_CURRENCY}`;
+          const foundPrice = data.find(p => p.symbol === pairSymbol);
+          if (foundPrice) {
+            const newPrice = parseFloat(foundPrice.price);
+            return {
+              ...crypto,
+              previousValue: crypto.value !== 0 ? crypto.value : newPrice, // Set previousValue correctly
+              value: newPrice,
+            };
           }
-        } else {
-          console.error('Max CoinCap WebSocket reconnection attempts reached.');
-          toast({
-            title: t('dashboard.websocket.coincap.failedConnectionTitle', 'CoinCap Feed Failed'),
-            description: t('dashboard.websocket.coincap.failedConnectionDescription', 'Could not connect to CoinCap live prices. Please check your internet or try later.'),
-            variant: "destructive",
-          });
-        }
-      };
+          return crypto;
+        })
+      );
+      if (isPricesLoading) setIsPricesLoading(false);
+    } catch (error) {
+      console.error('Error fetching Binance prices:', error);
+      toast({
+        title: t('dashboard.api.binance.errorTitle', 'Price Fetch Error'),
+        description: error instanceof Error ? error.message : t('dashboard.api.binance.unknownError', 'Could not fetch live prices from Binance.'),
+        variant: "destructive",
+      });
+      // Optionally keep isPricesLoading true or set a retry mechanism
     }
+  }, [t, toast, isPricesLoading]);
 
-    connectWebSocket(); 
-
-    return () => {
-      if (ws) {
-        console.log('Closing CoinCap WebSocket due to component unmount or effect re-run.');
-        ws.onopen = null;
-        ws.onmessage = null;
-        ws.onerror = null;
-        ws.onclose = null; 
-        ws.close(1000, "Component unmounting");
-      }
-    };
-  }, [t, toast]); // Dependencies: t, toast. t changes when language changes.
+  // Effect for polling Binance API for prices
+  useEffect(() => {
+    fetchBinancePrices(); // Initial fetch
+    const intervalId = setInterval(fetchBinancePrices, PRICE_FETCH_INTERVAL);
+    return () => clearInterval(intervalId);
+  }, [fetchBinancePrices]);
 
   // AI Trend Analysis (periodically)
   useEffect(() => {
     let isMounted = true;
     const performAiUpdate = async () => {
-      if (!isMounted) return;
+      if (!isMounted || cryptoData.every(c => c.value === 0)) return; // Don't run if no prices yet
 
-      const shouldLoadAi = cryptoData.some(c => c.value !== 0 && !c.trendAnalysis) || 
-                           (cryptoData.every(c => c.value === 0 && !c.trendAnalysis) && isAiLoading); 
-      
-      if (shouldLoadAi && !isAiLoading) { 
-        setIsAiLoading(true);
-      }
-
+      setIsAiLoading(true);
       try {
+        // Pass a deep copy of cryptoData to avoid potential mutation issues if AI updates it directly
         const currentDataForAI = JSON.parse(JSON.stringify(cryptoData)) as CryptoCardData[];
-        if (!isMounted) return;
-
-        const dataToAnalyze = currentDataForAI.some(c => c.value !== 0) 
-          ? currentDataForAI.filter(c => c.value !== 0) 
-          : currentDataForAI; 
-
-        if (dataToAnalyze.length === 0 && currentDataForAI.some(c => c.value !== 0)) {
-           if (isMounted) setIsAiLoading(false);
-           return;
-        }
+        const updatedDataWithTrends = await updateAllAiTrends(currentDataForAI);
         
-        if (dataToAnalyze.length > 0 || dataToAnalyze.every(d => d.value === 0)) {
-            const updatedDataWithTrends = await updateAllAiTrends(dataToAnalyze);
-            
-            if (isMounted) {
-              setCryptoData(prevData => 
-                prevData.map(pd => {
-                  const trendUpdate = updatedDataWithTrends.find(ud => ud.symbol === pd.symbol);
-                  return {
-                    ...pd, 
-                    trendAnalysis: trendUpdate ? trendUpdate.trendAnalysis : pd.trendAnalysis,
-                  };
-                })
-              );
-            }
+        if (isMounted) {
+          setCryptoData(updatedDataWithTrends);
         }
       } catch (error) {
         console.error("Error in performAiUpdate:", error);
+        toast({
+          title: t('dashboard.ai.errorTitle', 'AI Analysis Error'),
+          description: t('dashboard.ai.errorDescription', 'Could not update AI trends.'),
+          variant: "destructive",
+        });
       } finally {
         if (isMounted) {
           setIsAiLoading(false);
@@ -265,21 +163,19 @@ export default function DashboardPage() {
       }
     };
     
-    const initialDelay = 7000; 
-    const initialAiUpdateTimeout = setTimeout(() => {
-        performAiUpdate(); 
-        const intervalId = setInterval(performAiUpdate, 60000); 
-        return () => {
-            clearInterval(intervalId);
-        };
-    }, initialDelay);
+    const initialAiTimeoutId = setTimeout(() => {
+      performAiUpdate(); // Initial AI update
+      const aiIntervalId = setInterval(performAiUpdate, AI_ANALYSIS_INTERVAL);
+      return () => clearInterval(aiIntervalId); // Cleanup for the interval
+    }, AI_ANALYSIS_INITIAL_DELAY);
 
     return () => {
       isMounted = false;
-      clearTimeout(initialAiUpdateTimeout);
-    }
+      clearTimeout(initialAiTimeoutId); // Cleanup for the initial timeout
+      // The interval cleanup is handled by its own return function if it gets set up
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cryptoData]); 
+  }, [t, toast]); // cryptoData is intentionally omitted to run AI on its own schedule
 
   return (
     <MainLayout>
@@ -293,7 +189,7 @@ export default function DashboardPage() {
               <CryptoDisplayCard 
                 key={data.symbol || i} 
                 data={data} 
-                isLoading={data.value === 0 || (isAiLoading && !data.trendAnalysis && data.value !==0)} 
+                isLoading={isPricesLoading || (isAiLoading && !data.trendAnalysis && data.value !==0)} 
               />
             ))}
           </div>
@@ -317,4 +213,3 @@ export default function DashboardPage() {
     </MainLayout>
   );
 }
-
