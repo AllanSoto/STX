@@ -11,3 +11,4 @@ export const LANGUAGES = [
 
 export const APP_NAME = 'SimulTradex';
 export const COMMISSION_RATE = 0.001; // 0.1%
+export const QUOTE_CURRENCY = 'USDT'; // Standard quote currency for pairs

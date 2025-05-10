@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CRYPTO_SYMBOLS, COMMISSION_RATE } from '@/lib/constants';
+import { CRYPTO_SYMBOLS, COMMISSION_RATE, QUOTE_CURRENCY } from '@/lib/constants';
 import type { CryptoSymbol } from '@/lib/constants';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
@@ -31,6 +31,7 @@ import { Loader2 } from 'lucide-react';
 
 const orderSimulatorSchema = z.object({
   cryptoSymbol: z.enum(CRYPTO_SYMBOLS, { errorMap: () => ({ message: 'Please select a cryptocurrency.'})}),
+  quantity: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, { message: 'Must be a positive number.' }),
   buyPrice: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, { message: 'Must be a positive number.' }),
   sellPrice: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, { message: 'Must be a positive number.' }),
 });
@@ -44,12 +45,13 @@ interface OrderSimulatorProps {
 export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [simulationResult, setSimulationResult] = useState<{ profit: number, commission: number, netProfit: number } | null>(null);
+  const [simulationResult, setSimulationResult] = useState<{ profit: number, commission: number, netProfit: number, quantity: number, cryptoSymbol: CryptoSymbol } | null>(null);
 
   const form = useForm<OrderSimulatorFormValues>({
     resolver: zodResolver(orderSimulatorSchema),
     defaultValues: {
       cryptoSymbol: undefined,
+      quantity: '1',
       buyPrice: '', 
       sellPrice: '',
     }
@@ -60,7 +62,6 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
   useEffect(() => {
     if (selectedCryptoSymbol && cryptoPrices[selectedCryptoSymbol]) {
       form.setValue('buyPrice', cryptoPrices[selectedCryptoSymbol].toString(), { shouldValidate: true });
-      // Clear sell price if buy price changes due to symbol selection
       const currentSellPrice = form.getValues('sellPrice');
       if (currentSellPrice) {
           const buyPriceNum = parseFloat(cryptoPrices[selectedCryptoSymbol].toString());
@@ -69,6 +70,9 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
             form.setValue('sellPrice', '');
           }
       }
+    } else if (!selectedCryptoSymbol) {
+        form.setValue('buyPrice', '');
+        form.setValue('sellPrice', '');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCryptoSymbol, cryptoPrices]); // form.setValue is stable
@@ -79,6 +83,7 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
 
     const buyPrice = parseFloat(values.buyPrice);
     const sellPrice = parseFloat(values.sellPrice);
+    const quantity = parseFloat(values.quantity);
 
     // Simulate some processing time
     setTimeout(() => {
@@ -93,7 +98,6 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
         return;
       }
 
-      const quantity = 1; // Assume trading 1 unit for simplicity
       const grossProfit = (sellPrice - buyPrice) * quantity;
       const totalCommission = (buyPrice * quantity * COMMISSION_RATE) + (sellPrice * quantity * COMMISSION_RATE);
       const netProfit = grossProfit - totalCommission;
@@ -102,11 +106,13 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
         profit: grossProfit,
         commission: totalCommission,
         netProfit: netProfit,
+        quantity,
+        cryptoSymbol: values.cryptoSymbol,
       });
 
       toast({
         title: "Simulation Complete",
-        description: `Simulated trade for ${values.cryptoSymbol} processed.`,
+        description: `Simulated trade for ${quantity} ${values.cryptoSymbol} processed.`,
       });
       setIsLoading(false);
     }, 1000);
@@ -116,7 +122,7 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
     <Card className="shadow-lg">
       <CardHeader>
         <CardTitle>Order Simulator</CardTitle>
-        <CardDescription>Simulate a buy and sell order to estimate potential profit or loss, including commission. Current prices are pre-filled.</CardDescription>
+        <CardDescription>Simulate a buy and sell order to estimate potential profit or loss. Input quantity, buy price, and sell price. Current market prices are pre-filled for buy price.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -130,20 +136,19 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
                   <Select 
                     onValueChange={(value) => {
                       field.onChange(value);
-                      const selectedSymbol = value as CryptoSymbol;
-                      if (cryptoPrices[selectedSymbol]) {
-                        form.setValue('buyPrice', cryptoPrices[selectedSymbol].toString(), { shouldValidate: true });
-                         // Clear sell price if buy price changes due to symbol selection
+                      const newSelectedSymbol = value as CryptoSymbol;
+                      if (cryptoPrices[newSelectedSymbol]) {
+                        form.setValue('buyPrice', cryptoPrices[newSelectedSymbol].toString(), { shouldValidate: true });
                         const currentSellPrice = form.getValues('sellPrice');
                         if (currentSellPrice) {
-                            const buyPriceNum = parseFloat(cryptoPrices[selectedSymbol].toString());
+                            const buyPriceNum = parseFloat(cryptoPrices[newSelectedSymbol].toString());
                             const sellPriceNum = parseFloat(currentSellPrice);
                             if (buyPriceNum >= sellPriceNum) {
                                 form.setValue('sellPrice', '');
                             }
                         }
                       } else {
-                        form.setValue('buyPrice', ''); // Clear if symbol has no price
+                        form.setValue('buyPrice', '');
                       }
                     }} 
                     defaultValue={field.value}
@@ -161,19 +166,39 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
                       ))}
                     </SelectContent>
                   </Select>
+                  {selectedCryptoSymbol && (
+                    <FormDescription className="mt-1">
+                      Trading Pair: {selectedCryptoSymbol}/{QUOTE_CURRENCY}
+                    </FormDescription>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="quantity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Quantity {selectedCryptoSymbol ? `(${selectedCryptoSymbol})` : ''}</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="e.g., 1.5" {...field} value={field.value || ''} step="any" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="buyPrice"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Buy Price ($)</FormLabel>
+                    <FormLabel>Buy Price ({QUOTE_CURRENCY} per unit)</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="e.g., 50000" {...field} value={field.value || ''} />
+                      <Input type="number" placeholder="e.g., 50000" {...field} value={field.value || ''} step="any" disabled={!selectedCryptoSymbol} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -184,9 +209,9 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
                 name="sellPrice"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Sell Price ($)</FormLabel>
+                    <FormLabel>Sell Price ({QUOTE_CURRENCY} per unit)</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="e.g., 51000" {...field} value={field.value || ''} />
+                      <Input type="number" placeholder="e.g., 51000" {...field} value={field.value || ''} step="any" disabled={!selectedCryptoSymbol} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -196,7 +221,7 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
             <FormDescription>
               A commission of {COMMISSION_RATE * 100}% will be applied to both buy and sell transactions.
             </FormDescription>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading || !selectedCryptoSymbol}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Simulate Trade
             </Button>
@@ -206,22 +231,22 @@ export function OrderSimulator({ cryptoPrices }: OrderSimulatorProps) {
         {simulationResult && (
           <Card className="mt-6 bg-secondary/50">
             <CardHeader>
-              <CardTitle className="text-lg">Simulation Result</CardTitle>
+              <CardTitle className="text-lg">Simulation Result for {simulationResult.quantity} {simulationResult.cryptoSymbol}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="flex justify-between">
                 <span>Gross Profit:</span>
-                <span className="font-medium">${simulationResult.profit.toFixed(2)}</span>
+                <span className="font-medium">${simulationResult.profit.toFixed(2)} {QUOTE_CURRENCY}</span>
               </div>
               <div className="flex justify-between">
                 <span>Total Commission:</span>
-                <span className="font-medium">${simulationResult.commission.toFixed(2)}</span>
+                <span className="font-medium">${simulationResult.commission.toFixed(2)} {QUOTE_CURRENCY}</span>
               </div>
               <hr className="my-1 border-border" />
               <div className="flex justify-between">
                 <span className="font-semibold">Net Profit / Loss:</span>
                 <span className={`font-bold ${simulationResult.netProfit >= 0 ? 'text-primary' : 'text-destructive'}`}>
-                  ${simulationResult.netProfit.toFixed(2)}
+                  ${simulationResult.netProfit.toFixed(2)} {QUOTE_CURRENCY}
                 </span>
               </div>
             </CardContent>
