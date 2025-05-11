@@ -16,9 +16,8 @@ import {
   SidebarMenuItem, 
   SidebarMenuButton,
   SidebarSeparator,
-  // SidebarGroup, // No longer directly used for language dropdown trigger
-  // SidebarGroupLabel // No longer directly used for language dropdown trigger
 } from '@/components/ui/sidebar';
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'; // Added TooltipProvider, Tooltip, TooltipTrigger, TooltipContent
 import { BarChartBig, Settings, History, Wallet, LogOut, Check, LayoutDashboard, Languages as LanguagesIcon, ChevronDown, Copyright } from 'lucide-react';
 import { LANGUAGES, APP_NAME as DEFAULT_APP_NAME } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
@@ -201,7 +200,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
 
       <div className="flex flex-col flex-1 transition-all duration-200 ease-linear md:ml-[var(--sidebar-width-icon)] peer-data-[state=expanded]:md:ml-[var(--sidebar-width)]">
         <AppHeader />
-        <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 bg-background">
+        <main className="flex-1"> {/* Removed default padding, pages will handle their own padding */}
           {children}
         </main>
       </div>
