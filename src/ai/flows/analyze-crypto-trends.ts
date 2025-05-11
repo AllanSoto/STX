@@ -19,7 +19,7 @@ export type AnalyzeCryptoTrendInput = z.infer<typeof AnalyzeCryptoTrendInputSche
 
 const AnalyzeCryptoTrendOutputSchema = z.object({
   trend: z.enum(['upward', 'downward', 'sideways']).describe('The trend of the cryptocurrency price movement.'),
-  confidence: z.number().describe('A confidence score (0-1) indicating the reliability of the trend analysis.'),
+  confidence: z.number().min(0).max(1).describe('A confidence score (0-1) indicating the reliability of the trend analysis.'),
   reason: z.string().describe('Explanation of why the model determined the trend.'),
 });
 export type AnalyzeCryptoTrendOutput = z.infer<typeof AnalyzeCryptoTrendOutputSchema>;
@@ -45,6 +45,16 @@ const analyzeCryptoTrendPrompt = ai.definePrompt({
 
   Ensure that the output is formatted according to the AnalyzeCryptoTrendOutputSchema.
   `,
+   config: {
+    // Adding safety settings to potentially mitigate some service issues if they are content-related,
+    // though 503 is usually a service availability issue.
+    safetySettings: [
+      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+    ],
+  },
 });
 
 const analyzeCryptoTrendFlow = ai.defineFlow(
@@ -53,8 +63,37 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
     inputSchema: AnalyzeCryptoTrendInputSchema,
     outputSchema: AnalyzeCryptoTrendOutputSchema,
   },
-  async input => {
-    const {output} = await analyzeCryptoTrendPrompt(input);
-    return output!;
+  async (input): Promise<AnalyzeCryptoTrendOutput> => {
+    try {
+      const result = await analyzeCryptoTrendPrompt(input);
+      if (!result || !result.output) {
+        console.error(`analyzeCryptoTrendPrompt for ${input.cryptoSymbol} returned no output or undefined output. Result:`, result);
+        return {
+          trend: 'sideways',
+          confidence: 0.1,
+          reason: `AI analysis for ${input.cryptoSymbol} failed to produce a valid output.`,
+        };
+      }
+      // Validate the output against the schema before returning
+      const parsedOutput = AnalyzeCryptoTrendOutputSchema.safeParse(result.output);
+      if (!parsedOutput.success) {
+        console.error(`AI output for ${input.cryptoSymbol} did not match schema. Errors:`, parsedOutput.error.flatten());
+        return {
+          trend: 'sideways',
+          confidence: 0.1,
+          reason: `AI output for ${input.cryptoSymbol} was malformed.`,
+        };
+      }
+      return parsedOutput.data;
+    } catch (error) {
+      console.error(`Error in analyzeCryptoTrendFlow for ${input.cryptoSymbol}:`, error);
+      // Return a default/error state that matches the schema
+      return {
+        trend: 'sideways',
+        confidence: 0.1,
+        reason: `AI analysis failed for ${input.cryptoSymbol}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      };
+    }
   }
 );
+
