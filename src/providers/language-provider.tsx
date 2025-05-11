@@ -1,3 +1,4 @@
+
 // src/providers/language-provider.tsx
 'use client';
 
@@ -22,6 +23,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'settings.accountSettings': 'Account Settings',
     'settings.language': 'Language',
     'settings.logout': 'Log out',
+    'header.userMenu.title': 'User Menu',
     'dashboard.title': 'Dashboard',
     'dashboard.marketOverview': 'Market Overview',
     'dashboard.orderSimulator': 'Order Simulator',
@@ -332,6 +334,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'settings.accountSettings': 'Configuración de Cuenta',
     'settings.language': 'Idioma',
     'settings.logout': 'Cerrar Sesión',
+    'header.userMenu.title': 'Menú de Usuario',
     'dashboard.title': 'Tablero',
     'dashboard.marketOverview': 'Resumen del Mercado',
     'dashboard.orderSimulator': 'Simulador de Órdenes',
@@ -624,6 +627,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'settings.accountSettings': 'Paramètres du Compte',
     'settings.language': 'Langue',
     'settings.logout': 'Se Déconnecter',
+    'header.userMenu.title': 'Menu Utilisateur',
     'dashboard.title': 'Tableau de Bord',
     'dashboard.marketOverview': 'Aperçu du Marché',
     'dashboard.loadingPrices': 'Chargement des prix en direct...',
@@ -914,6 +918,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'settings.accountSettings': 'खाता सेटिंग्स',
     'settings.language': 'भाषा',
     'settings.logout': 'लॉग आउट करें',
+    'header.userMenu.title': 'उपयोगकर्ता मेनू',
     'dashboard.title': 'डैशबोर्ड',
     'dashboard.marketOverview': 'बाज़ार अवलोकन',
     'dashboard.loadingPrices': 'लाइव कीमतें लोड हो रही हैं...',
@@ -1205,6 +1210,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'settings.accountSettings': '账户设置',
     'settings.language': '语言',
     'settings.logout': '登出',
+    'header.userMenu.title': '用户菜单',
     'dashboard.title': '仪表板',
     'dashboard.marketOverview': '市场概览',
     'dashboard.loadingPrices': '正在加载实时价格...',
@@ -1544,3 +1550,4 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     </LanguageContext.Provider>
   );
 };
+
