@@ -3,14 +3,14 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PanelLeftClose, ChevronLeft, ChevronRight } from "lucide-react" // Added PanelLeftClose, ChevronLeft, ChevronRight
+import { PanelLeft, PanelLeftClose, ChevronLeft, ChevronRight } from "lucide-react" 
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetHeader as UiSheetHeader, SheetTitle as UiSheetTitle } from "@/components/ui/sheet" // Added UiSheetHeader and UiSheetTitle
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
@@ -35,7 +35,7 @@ type SidebarContext = {
   setOpenMobile: (open: boolean) => void
   isMobile: boolean
   toggleSidebar: () => void
-  side: "left" | "right" // Added side to context
+  side: "left" | "right" 
 }
 
 const SidebarContext = React.createContext<SidebarContext | null>(null)
@@ -55,7 +55,7 @@ const SidebarProvider = React.forwardRef<
     defaultOpen?: boolean
     open?: boolean
     onOpenChange?: (open: boolean) => void
-    side?: "left" | "right" // Added side prop
+    side?: "left" | "right" 
   }
 >(
   (
@@ -63,7 +63,7 @@ const SidebarProvider = React.forwardRef<
       defaultOpen = true,
       open: openProp,
       onOpenChange: setOpenProp,
-      side = "left", // Default side to left
+      side = "left", 
       className,
       style,
       children,
@@ -137,7 +137,7 @@ const SidebarProvider = React.forwardRef<
         openMobile,
         setOpenMobile,
         toggleSidebar,
-        side, // Provide side in context
+        side, 
       }),
       [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, side]
     )
@@ -172,15 +172,12 @@ SidebarProvider.displayName = "SidebarProvider"
 const Sidebar = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
-    // side prop is now handled by SidebarProvider, but can be overridden here if needed
-    // side?: "left" | "right" 
     variant?: "sidebar" | "floating" | "inset"
     collapsible?: "offcanvas" | "icon" | "none"
   }
 >(
   (
     {
-      // side = "left", // Get side from context or allow override
       variant = "sidebar",
       collapsible = "offcanvas",
       className,
@@ -189,7 +186,7 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile, toggleSidebar, side } = useSidebar() // Use side from context
+    const { isMobile, state, openMobile, setOpenMobile, toggleSidebar, side } = useSidebar() 
 
     if (collapsible === "none") {
       return (
@@ -218,8 +215,12 @@ const Sidebar = React.forwardRef<
                 "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
               } as React.CSSProperties
             }
-            side={side} // Pass side to SheetContent
+            side={side} 
           >
+            {/* Add a visually hidden title for accessibility */}
+            <UiSheetHeader className="sr-only">
+              <UiSheetTitle>Navigation Menu</UiSheetTitle>
+            </UiSheetHeader>
             <div className="flex h-full w-full flex-col">{children}</div>
           </SheetContent>
         </Sheet>
@@ -233,11 +234,11 @@ const Sidebar = React.forwardRef<
         data-state={state}
         data-collapsible={state === "collapsed" ? collapsible : ""}
         data-variant={variant}
-        data-side={side} // Use side from context
+        data-side={side} 
         style={{
           width: state === 'expanded' ? 'var(--sidebar-width)' : 'var(--sidebar-width-icon)',
           transition: 'width 0.2s ease-linear',
-          position: 'relative' // Needed for absolute positioning of SidebarRail if it's a child
+          position: 'relative' 
         }}
         {...props}
       >
@@ -262,7 +263,7 @@ const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button>
 >(({ className, onClick, ...props }, ref) => {
-  const { toggleSidebar, open, isMobile } = useSidebar(); // Get `open` state and `isMobile`
+  const { toggleSidebar, open, isMobile, state } = useSidebar(); 
 
   return (
     <Button
@@ -277,10 +278,7 @@ const SidebarTrigger = React.forwardRef<
       }}
       {...props}
     >
-      {/* Use PanelLeft when sidebar is closed (open is false), PanelLeftClose when open (open is true) */}
-      {/* On mobile, openMobile state determines this, but SidebarTrigger is for overall toggle */}
-      {/* Let's assume `open` refers to the desktop `expanded` state for icon logic here */}
-      {open && !isMobile ? <PanelLeftClose /> : <PanelLeft />}
+      { (isMobile ? openMobile : open) ? <PanelLeftClose /> : <PanelLeft />}
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   );
@@ -304,9 +302,8 @@ const SidebarRail = React.forwardRef<
       title="Toggle Sidebar"
       className={cn(
         "absolute z-10 hidden h-10 w-6 cursor-pointer items-center justify-center rounded-md bg-sidebar-accent/70 text-sidebar-accent-foreground shadow-sm transition-all duration-200 ease-linear hover:bg-sidebar-accent sm:flex",
-        "top-[calc(50%-theme(spacing.5))]", // Vertically centered
+        "top-[calc(50%-theme(spacing.5))]", 
         
-        // Positioning and icon based on sidebar side and state
         hostSide === "left" 
           ? (open ? "right-1 translate-x-0" : "right-0 translate-x-full rounded-l-none rounded-r-md")
           : (open ? "left-1 translate-x-0" : "left-0 -translate-x-full rounded-r-none rounded-l-md"),
