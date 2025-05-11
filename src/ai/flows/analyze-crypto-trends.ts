@@ -8,7 +8,7 @@
  * - AnalyzeCryptoTrendOutput - The return type for the analyzeCryptoTrend function.
  */
 
-import {ai} from '@/ai/genkit';
+import {ai, isAiOperational} from '@/ai/genkit';
 import {z} from 'zod'; 
 
 const AnalyzeCryptoTrendInputSchema = z.object({
@@ -66,7 +66,7 @@ const analyzeCryptoTrendPrompt = ai.definePrompt({
   name: 'analyzeCryptoTrendPrompt',
   input: {schema: AnalyzeCryptoTrendInputSchema},
   output: {schema: AnalyzeCryptoTrendOutputSchema},
-  model: 'googleai/gemini-1.5-flash-latest', // Using 1.5-flash as 2.0-flash was causing issues
+  model: 'googleai/gemini-1.5-flash-latest',
   prompt: `You are an AI assistant specializing in cryptocurrency trend analysis.
 
   Analyze the recent price movements of {{cryptoSymbol}} based on the following data and determine if the trend is upward, downward, or sideways.
@@ -97,12 +97,12 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
     outputSchema: AnalyzeCryptoTrendOutputSchema,
   },
   async (input): Promise<AnalyzeCryptoTrendOutput> => {
-    if (!process.env.GOOGLE_API_KEY) {
-      console.error("GOOGLE_API_KEY is not set in the server environment. AI features cannot function.");
+    if (!isAiOperational()) {
+      console.warn(`AI is not operational. Returning default for ${input.cryptoSymbol}. This may be due to a missing GOOGLE_API_KEY or plugin initialization failure.`);
       return {
         trend: 'sideways',
         confidence: 0,
-        reason: `AI service configuration error for ${input.cryptoSymbol}: GOOGLE_API_KEY missing.`,
+        reason: `AI service is not operational for ${input.cryptoSymbol}. Check server logs for GOOGLE_API_KEY and plugin status.`,
       };
     }
 
@@ -123,17 +123,18 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
         return {
           trend: 'sideways',
           confidence: 0,
-          reason: `AI output for ${input.cryptoSymbol} was malformed. Check server logs.`,
+          reason: `AI output for ${input.cryptoSymbol} was malformed. Check server logs. Details: ${parsedOutput.error.message}`,
         };
       }
       return parsedOutput.data;
     } catch (error) {
       console.error(`Error during AI flow execution for ${input.cryptoSymbol}:`, error);
       const failureType = error instanceof Error ? error.name : 'GenkitFlowError';
+      const errorMessage = error instanceof Error ? error.message : String(error);
       return {
         trend: 'sideways',
         confidence: 0,
-        reason: `AI flow for ${input.cryptoSymbol} encountered an error: ${failureType}. Check server logs.`,
+        reason: `AI flow for ${input.cryptoSymbol} encountered an error: ${failureType}. Message: ${errorMessage}. Check server logs.`,
       };
     }
   }
