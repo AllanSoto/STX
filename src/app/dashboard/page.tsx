@@ -82,7 +82,7 @@ export default function DashboardPage() {
     let msg = translations[key] || fallback || key;
     if (vars) {
       Object.keys(vars).forEach(varKey => {
-        msg = msg.replace(`{${varKey}}`, String(vars[varKey]));
+        msg = msg = msg.replace(`{${varKey}}`, String(vars[varKey]));
       });
     }
     return msg;
@@ -172,10 +172,9 @@ export default function DashboardPage() {
           variant: "destructive",
         });
       }
-      // If fetching prices fails, and we are in loading state, we should stop loading.
       if (isPricesLoading) setIsPricesLoading(false);
     }
-  }, [t, toast, isPricesLoading]); // isPricesLoading is kept here because its read impacts logic inside and setIsPricesLoading is called.
+  }, [t, toast, isPricesLoading]); 
 
   const startBinanceRestFallback = useCallback(() => {
     if (binanceFallbackIntervalRef.current) clearInterval(binanceFallbackIntervalRef.current);
@@ -277,7 +276,7 @@ export default function DashboardPage() {
         startBinanceRestFallback();
       }
     };
-  }, [t, toast, startBinanceRestFallback, isPricesLoading]); // isPricesLoading is kept as it's read in onopen
+  }, [t, toast, startBinanceRestFallback, isPricesLoading]); 
 
 
   useEffect(() => {
@@ -304,7 +303,13 @@ export default function DashboardPage() {
     let aiIntervalTimerId: NodeJS.Timeout | null = null;
 
     const performAiUpdate = async () => {
-      if (!isMounted || cryptoDataRef.current.every(c => c.value === 0)) return;
+      const relevantCryptoHasPrice = cryptoDataRef.current
+        .filter(cd => SYMBOLS_TO_DISPLAY_ON_CARDS.includes(cd.symbol))
+        .some(cd => cd.value > 0);
+
+      if (!isMounted || !relevantCryptoHasPrice) {
+        return;
+      }
 
       setIsAiLoading(true);
       try {
@@ -339,16 +344,11 @@ export default function DashboardPage() {
     };
     
     const initialTimeoutId = setTimeout(() => {
-        if (isMounted && cryptoDataRef.current.some(c => c.value > 0)) {
-            performAiUpdate(); 
-            aiIntervalTimerId = setInterval(() => {
-                if (isMounted) performAiUpdate();
-            }, AI_ANALYSIS_INTERVAL);
-        } else if (isMounted) {
-           setTimeout(() => {
-             if (isMounted && cryptoDataRef.current.some(c => c.value > 0)) performAiUpdate();
-           }, AI_ANALYSIS_INITIAL_DELAY);
-        }
+      if (isMounted) {
+        performAiUpdate();
+        if (aiIntervalTimerId) clearInterval(aiIntervalTimerId); // Clear if any exists (should not)
+        aiIntervalTimerId = setInterval(performAiUpdate, AI_ANALYSIS_INTERVAL);
+      }
     }, AI_ANALYSIS_INITIAL_DELAY);
 
     return () => {
@@ -429,3 +429,4 @@ export default function DashboardPage() {
     </MainLayout>
   );
 }
+
