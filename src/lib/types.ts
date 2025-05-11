@@ -38,3 +38,21 @@ export interface Opportunity {
   potentialProfit: number;
 }
 
+export interface SimulatedSaleEntry {
+  precio_venta_simulado: number;
+  ingreso_bruto: number;
+  comision_venta: number;
+  ganancia_neta: number;
+}
+
+export interface SimulationLogEntry {
+  id: string; // Document ID from Firestore
+  usuario_id: string;
+  fecha: any; // Firestore Timestamp, will be typed more accurately if using Firebase SDK types directly
+  par_operacion: string; // e.g., USDT/BTC
+  monto_compra_usdt: number;
+  precio_compra: number;
+  cantidad_cripto_comprada: number;
+  comision_compra: number;
+  ventas_simuladas: SimulatedSaleEntry[];
+}
