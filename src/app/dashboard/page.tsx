@@ -32,15 +32,21 @@ const binanceSymbolsForREST = CRYPTO_SYMBOLS.map(s => COIN_MAPPINGS_WS[s]?.binan
 const SYMBOLS_TO_DISPLAY_ON_CARDS: CryptoSymbol[] = ['BTC', 'ETH', 'SOL', 'XRP', 'BNB'];
 
 function getMockRecentPriceData(symbol: CryptoSymbol, currentPrice: number): string {
-    const prices = [currentPrice];
-    for (let i = 0; i < 9; i++) {
-        const priceFluctuation = (Math.random() - 0.5) * 0.02 * currentPrice;
-        prices.unshift(Math.max(0, currentPrice - priceFluctuation * (i + 1)));
+    const prices: number[] = [];
+    prices.push(currentPrice); // Most recent price is the current price
+    let lastPrice = currentPrice;
+    // Generate 9 older prices, making each fluctuate based on the previously generated one
+    for (let i = 0; i < 9; i++) { 
+        const priceFluctuationFactor = (Math.random() - 0.5) * 0.02; // Fluctuation up to +/- 1% of the last price
+        const fluctuatedPrice = lastPrice * (1 + priceFluctuationFactor);
+        prices.unshift(Math.max(0, fluctuatedPrice)); // Add to the beginning of the array (older prices first)
+        lastPrice = fluctuatedPrice; // The next older price will be based on this one
     }
+    // Ensure the final array has currentPrice as the last element if logic was reversed, but here it's already correct.
     return prices.map(p => p.toFixed(Math.max(2, (currentPrice < 1 ? 5 : 2)))).join(',');
 }
 
-async function updateAllAiTrendsExternal(currentCryptoData: CryptoCardData[], tGlobal: (key: string, fallback?: string) => string): Promise<CryptoCardData[]> {
+async function updateAllAiTrendsExternal(currentCryptoData: CryptoCardData[], tGlobal: (key: string, fallback?: string, vars?: Record<string, string | number>) => string): Promise<CryptoCardData[]> {
   const dataToAnalyze = currentCryptoData.filter(crypto => SYMBOLS_TO_DISPLAY_ON_CARDS.includes(crypto.symbol) && crypto.value > 0);
   if (dataToAnalyze.length === 0) return currentCryptoData;
 
@@ -51,10 +57,9 @@ async function updateAllAiTrendsExternal(currentCryptoData: CryptoCardData[], tG
       return { ...crypto, trendAnalysis: trendAnalysisOutput };
     } catch (error) {
       console.error(`Client-side error calling analyzeCryptoTrend for ${crypto.symbol}:`, error);
-      // Construct a TrendAnalysis object to report the client-side error
       const errorReason = error instanceof Error ? error.message : tGlobal('dashboard.ai.errorDescription', 'Could not update AI trends.');
       const errorTrendAnalysis: TrendAnalysis = {
-        trend: 'sideways', // Default trend on error
+        trend: 'sideways', 
         confidence: 0,
         reason: tGlobal('dashboard.ai.clientErrorReason', 'Client error fetching trend for {symbol}: {details}', {symbol: crypto.symbol, details: errorReason }),
       };
@@ -175,7 +180,6 @@ export default function DashboardPage() {
         return prevData; 
       });
       if (isPricesLoading && data.length === 0 && binanceSymbolsForREST.length > 0) {
-         // If we expected data but got none, also stop loading.
         setIsPricesLoading(false); 
       }
 
@@ -333,7 +337,6 @@ export default function DashboardPage() {
 
       setIsAiLoading(true);
       try {
-        // Pass the global 't' function to updateAllAiTrendsExternal for consistent translations
         const currentDataForAI = JSON.parse(JSON.stringify(cryptoDataRef.current)) as CryptoCardData[];
         const updatedDataWithTrends = await updateAllAiTrendsExternal(currentDataForAI, t);
         
@@ -348,7 +351,7 @@ export default function DashboardPage() {
             });
           });
         }
-      } catch (error) { // This catch is for errors within performAiUpdate itself or if updateAllAiTrendsExternal re-throws
+      } catch (error) { 
         console.error("Error in performAiUpdate:", error);
         if (isMounted) {
           toast({
@@ -379,7 +382,7 @@ export default function DashboardPage() {
         clearInterval(aiIntervalTimerId);
       }
     };
-  }, [t, toast]); // t is now a dependency of performAiUpdate via updateAllAiTrendsExternal
+  }, [t, toast]); 
 
   const cryptoPricesForSimulator = useMemo(() => 
     cryptoData.reduce((acc, curr) => {
@@ -463,3 +466,4 @@ export default function DashboardPage() {
     </MainLayout>
   );
 }
+
