@@ -16,6 +16,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
 import { saveDailyPortfolioSnapshot } from '@/lib/firebase/portfolioSnapshots';
 import { format } from 'date-fns';
+import type { TrendAnalysis } from '@/lib/types';
+
 
 const BINANCE_WS_URL = 'wss://stream.binance.com:9443/ws/!miniTicker@arr';
 const BINANCE_API_REST_BASE_URL = 'https://api.binance.com/api/v3';
@@ -24,7 +26,8 @@ const BINANCE_API_REFRESH_INTERVAL = 5000; // 5 seconds for Binance REST fallbac
 const AI_ANALYSIS_INITIAL_DELAY = 7000; // 7 seconds
 const AI_ANALYSIS_INTERVAL = 60000 * 5; // 5 minutes for AI analysis
 
-const binanceSymbolsForREST = CRYPTO_SYMBOLS.map(s => COIN_MAPPINGS_WS[s].binanceSymbol);
+const binanceSymbolsForREST = CRYPTO_SYMBOLS.map(s => COIN_MAPPINGS_WS[s]?.binanceSymbol).filter(Boolean) as string[];
+
 
 const SYMBOLS_TO_DISPLAY_ON_CARDS: CryptoSymbol[] = ['BTC', 'ETH', 'SOL', 'XRP', 'BNB'];
 
@@ -37,18 +40,25 @@ function getMockRecentPriceData(symbol: CryptoSymbol, currentPrice: number): str
     return prices.map(p => p.toFixed(Math.max(2, (currentPrice < 1 ? 5 : 2)))).join(',');
 }
 
-async function updateAllAiTrendsExternal(currentCryptoData: CryptoCardData[]): Promise<CryptoCardData[]> {
+async function updateAllAiTrendsExternal(currentCryptoData: CryptoCardData[], tGlobal: (key: string, fallback?: string) => string): Promise<CryptoCardData[]> {
   const dataToAnalyze = currentCryptoData.filter(crypto => SYMBOLS_TO_DISPLAY_ON_CARDS.includes(crypto.symbol) && crypto.value > 0);
   if (dataToAnalyze.length === 0) return currentCryptoData;
 
   const dataPromises = dataToAnalyze.map(async (crypto) => {
     const recentPriceData = getMockRecentPriceData(crypto.symbol, crypto.value);
     try {
-      const trendAnalysis = await analyzeCryptoTrend({ cryptoSymbol: crypto.symbol, recentPriceData });
-      return { ...crypto, trendAnalysis };
+      const trendAnalysisOutput = await analyzeCryptoTrend({ cryptoSymbol: crypto.symbol, recentPriceData });
+      return { ...crypto, trendAnalysis: trendAnalysisOutput };
     } catch (error) {
-      console.error(`Error analyzing trend for ${crypto.symbol}:`, error);
-      return { ...crypto, trendAnalysis: crypto.trendAnalysis || null };
+      console.error(`Client-side error calling analyzeCryptoTrend for ${crypto.symbol}:`, error);
+      // Construct a TrendAnalysis object to report the client-side error
+      const errorReason = error instanceof Error ? error.message : tGlobal('dashboard.ai.errorDescription', 'Could not update AI trends.');
+      const errorTrendAnalysis: TrendAnalysis = {
+        trend: 'sideways', // Default trend on error
+        confidence: 0,
+        reason: tGlobal('dashboard.ai.clientErrorReason', 'Client error fetching trend for {symbol}: {details}', {symbol: crypto.symbol, details: errorReason }),
+      };
+      return { ...crypto, trendAnalysis: errorTrendAnalysis };
     }
   });
   
@@ -82,7 +92,7 @@ export default function DashboardPage() {
     let msg = translations[key] || fallback || key;
     if (vars) {
       Object.keys(vars).forEach(varKey => {
-        msg = msg = msg.replace(`{${varKey}}`, String(vars[varKey]));
+        msg = msg.replace(`{${varKey}}`, String(vars[varKey]));
       });
     }
     return msg;
@@ -120,7 +130,12 @@ export default function DashboardPage() {
 
 
   const fetchBinancePricesREST = useCallback(async (showToastOnError = true) => {
-    console.log('Fetching Binance prices via REST API...');
+    if (binanceSymbolsForREST.length === 0) {
+      console.warn("No symbols configured for Binance REST API fetch.");
+      if (isPricesLoading) setIsPricesLoading(false);
+      return;
+    }
+    console.log('Fetching Binance prices via REST API for symbols:', binanceSymbolsForREST);
     try {
       const symbolsParam = JSON.stringify(binanceSymbolsForREST);
       const response = await fetch(`${BINANCE_API_REST_BASE_URL}/ticker/price?symbols=${symbolsParam}`);
@@ -159,9 +174,11 @@ export default function DashboardPage() {
         if (isPricesLoading) setIsPricesLoading(false);
         return prevData; 
       });
-      if (isPricesLoading && data.length === 0) {
+      if (isPricesLoading && data.length === 0 && binanceSymbolsForREST.length > 0) {
+         // If we expected data but got none, also stop loading.
         setIsPricesLoading(false); 
       }
+
 
     } catch (error) {
       console.error('Error fetching Binance prices (REST):', error);
@@ -257,7 +274,7 @@ export default function DashboardPage() {
       
       toast({
         title: t('dashboard.websocket.errorTitle', 'WebSocket Error'),
-        description: t('dashboard.websocket.errorDescriptionBinance', 'Connection to Binance live price feed failed. Falling back to Binance periodic updates.'),
+        description: t('dashboard.websocket.errorDescriptionBinanceFallback', 'Binance WebSocket failed. Using REST fallback.'),
         variant: "warning",
       });
 
@@ -308,13 +325,17 @@ export default function DashboardPage() {
         .some(cd => cd.value > 0);
 
       if (!isMounted || !relevantCryptoHasPrice) {
+        if(relevantCryptoHasPrice === false && isMounted) {
+            console.log("AI Update skipped: No relevant crypto has a price > 0 for analysis.");
+        }
         return;
       }
 
       setIsAiLoading(true);
       try {
+        // Pass the global 't' function to updateAllAiTrendsExternal for consistent translations
         const currentDataForAI = JSON.parse(JSON.stringify(cryptoDataRef.current)) as CryptoCardData[];
-        const updatedDataWithTrends = await updateAllAiTrendsExternal(currentDataForAI);
+        const updatedDataWithTrends = await updateAllAiTrendsExternal(currentDataForAI, t);
         
         if (isMounted) {
           setCryptoData(prevData => {
@@ -327,7 +348,7 @@ export default function DashboardPage() {
             });
           });
         }
-      } catch (error) {
+      } catch (error) { // This catch is for errors within performAiUpdate itself or if updateAllAiTrendsExternal re-throws
         console.error("Error in performAiUpdate:", error);
         if (isMounted) {
           toast({
@@ -346,7 +367,7 @@ export default function DashboardPage() {
     const initialTimeoutId = setTimeout(() => {
       if (isMounted) {
         performAiUpdate();
-        if (aiIntervalTimerId) clearInterval(aiIntervalTimerId); // Clear if any exists (should not)
+        if (aiIntervalTimerId) clearInterval(aiIntervalTimerId);
         aiIntervalTimerId = setInterval(performAiUpdate, AI_ANALYSIS_INTERVAL);
       }
     }, AI_ANALYSIS_INITIAL_DELAY);
@@ -358,7 +379,7 @@ export default function DashboardPage() {
         clearInterval(aiIntervalTimerId);
       }
     };
-  }, [t, toast]);
+  }, [t, toast]); // t is now a dependency of performAiUpdate via updateAllAiTrendsExternal
 
   const cryptoPricesForSimulator = useMemo(() => 
     cryptoData.reduce((acc, curr) => {
@@ -391,6 +412,19 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         )}
+         {!isWebSocketConnected && binanceFallbackIntervalRef.current && (
+          <Card className="mb-8 bg-yellow-500/10 border-yellow-500/50">
+            <CardHeader>
+              <CardTitle className="text-yellow-600 dark:text-yellow-400">{t('dashboard.connectionStatus.fallbackTitle', 'Using Fallback Connection')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-yellow-700 dark:text-yellow-300">
+                {t('dashboard.connectionStatus.restFallbackActive', 'WebSocket connection failed. Using periodic REST API updates for prices.')}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
 
         <Card className="mb-8 shadow-lg bg-secondary/30">
             <CardHeader>
@@ -429,4 +463,3 @@ export default function DashboardPage() {
     </MainLayout>
   );
 }
-
