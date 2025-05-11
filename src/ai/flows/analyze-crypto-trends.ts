@@ -129,12 +129,24 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
       return parsedOutput.data;
     } catch (error) {
       console.error(`Error during AI flow execution for ${input.cryptoSymbol}:`, error);
-      const failureType = error instanceof Error ? error.name : 'GenkitFlowError';
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      // Ensure the reason is a simple, serializable string.
+      let reasonMessage = `AI analysis for ${input.cryptoSymbol} encountered an unexpected issue.`;
+      if (error instanceof Error) {
+        reasonMessage = `AI analysis for ${input.cryptoSymbol} failed: ${error.name} - ${error.message}.`;
+      } else if (typeof error === 'string') {
+        reasonMessage = `AI analysis for ${input.cryptoSymbol} failed: ${error}.`;
+      } else {
+        try {
+          reasonMessage = `AI analysis for ${input.cryptoSymbol} failed with unknown error: ${JSON.stringify(error)}.`;
+        } catch (stringifyError) {
+          reasonMessage = `AI analysis for ${input.cryptoSymbol} failed with an unstringifiable error.`;
+        }
+      }
+      
       return {
         trend: 'sideways',
         confidence: 0,
-        reason: `AI flow for ${input.cryptoSymbol} encountered an error: ${failureType}. Message: ${errorMessage}. Check server logs.`,
+        reason: reasonMessage,
       };
     }
   }
