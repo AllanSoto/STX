@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Languages, LogOut, UserCircle, Settings, BarChartBig, Check, History } from 'lucide-react';
+import { Languages, LogOut, UserCircle, Settings, BarChartBig, Check, History, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -56,6 +56,10 @@ export function AppHeader() {
                   <History className="mr-2 h-4 w-4" />
                   <span>{t('history.menuItem', 'Order History')}</span>
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('/balance')}>
+                  <Wallet className="mr-2 h-4 w-4" />
+                  <span>{t('balance.menuItem', 'Balance')}</span>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>{t('settings.language', 'Language')}</DropdownMenuLabel>
                 {LANGUAGES.map((lang) => (
@@ -77,3 +81,4 @@ export function AppHeader() {
     </header>
   );
 }
+
