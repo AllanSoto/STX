@@ -25,7 +25,28 @@ const AnalyzeCryptoTrendOutputSchema = z.object({
 export type AnalyzeCryptoTrendOutput = z.infer<typeof AnalyzeCryptoTrendOutputSchema>;
 
 export async function analyzeCryptoTrend(input: AnalyzeCryptoTrendInput): Promise<AnalyzeCryptoTrendOutput> {
-  return analyzeCryptoTrendFlow(input);
+  try {
+    return await analyzeCryptoTrendFlow(input);
+  } catch (error) {
+    // This is a top-level catch for the exported server action.
+    // It ensures that any error from analyzeCryptoTrendFlow, even if unexpected
+    // or not caught by its internal try-catch, results in a serializable error object.
+    console.error(`Critical error in analyzeCryptoTrend wrapper for ${input.cryptoSymbol}:`, error);
+    
+    let userFriendlyMessage = `A critical server-side error occurred while analyzing the trend for ${input.cryptoSymbol}.`;
+    if (error instanceof Error) {
+      // Avoid sending overly detailed or sensitive error messages to the client directly.
+      // Log full error on server, return generic or sanitized message.
+      userFriendlyMessage += ` Please check server logs for details.`;
+    }
+    
+    const errorOutput: AnalyzeCryptoTrendOutput = {
+      trend: 'sideways',
+      confidence: 0, // Indicate very low confidence for critical errors
+      reason: userFriendlyMessage,
+    };
+    return errorOutput;
+  }
 }
 
 const analyzeCryptoTrendPrompt = ai.definePrompt({
