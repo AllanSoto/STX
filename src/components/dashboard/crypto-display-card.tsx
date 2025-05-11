@@ -7,6 +7,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TrendArrow } from '@/components/shared/TrendArrow';
 import { CryptoIcon } from '@/components/shared/CryptoIcon';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
+import { Bell } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/hooks/use-language';
 
@@ -14,9 +16,10 @@ interface CryptoDisplayCardProps {
   data: CryptoCardData;
   isLoading: boolean; // True if initial price for this card is still loading
   isAiTrendLoading: boolean; // True if AI trend for this card is loading
+  onSetAlertClick: (symbol: CryptoCardData['symbol'], currentPrice: number) => void; // Callback to open alert modal
 }
 
-export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoDisplayCardProps) {
+export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading, onSetAlertClick }: CryptoDisplayCardProps) {
   const { symbol, value, previousValue, trendAnalysis } = data;
   const [priceChangeClass, setPriceChangeClass] = useState('');
   const { translations } = useLanguage();
@@ -67,12 +70,14 @@ export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoD
   };
 
   return (
-    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium flex items-center">
+    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between">
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+        <div className="flex items-center">
            <CryptoIcon symbol={symbol} className="mr-2" />
-          {symbol}
-        </CardTitle>
+          <CardTitle className="text-sm font-medium">
+            {symbol}
+          </CardTitle>
+        </div>
         {isAiTrendLoading ? (
             <Skeleton className="h-5 w-5 rounded-full" />
         ): trendAnalysis ? (
@@ -87,9 +92,9 @@ export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoD
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-        ) : null /* No icon if not loading and no analysis */ }
+        ) : <div className="h-5 w-5"></div> /* Placeholder to maintain layout if no trend */ }
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-grow">
         <div className={`text-2xl font-bold ${priceChangeClass}`}>
           ${value.toLocaleString(undefined, { 
             minimumFractionDigits: 2, 
@@ -104,6 +109,19 @@ export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoD
             </p>
         )}
       </CardContent>
+      <div className="p-4 pt-0">
+        <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={() => onSetAlertClick(symbol, value)}
+            disabled={value === 0}
+            title={t('dashboard.cryptoCard.alertButton.title', 'Set Price Alert')}
+          >
+            <Bell className="mr-2 h-4 w-4" />
+            {t('dashboard.cryptoCard.alertButton.label', 'Set Alert')}
+        </Button>
+      </div>
     </Card>
   );
 }

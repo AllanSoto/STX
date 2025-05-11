@@ -4,8 +4,9 @@
 import { MainLayout } from '@/components/layout/main-layout';
 import { ApiKeyForm } from '@/components/account/api-key-form';
 import { PasswordChangeForm } from '@/components/account/password-change-form';
+import { ActiveAlertsList } from '@/components/account/active-alerts-list'; // Import the new component
 import { useAuth } from '@/hooks/use-auth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/hooks/use-language';
 
 export default function AccountPage() {
@@ -33,9 +34,11 @@ export default function AccountPage() {
           <ApiKeyForm />
           <PasswordChangeForm />
         </div>
+        
+        <div className="mt-12">
+            <ActiveAlertsList />
+        </div>
       </div>
     </MainLayout>
   );
 }
-
-    

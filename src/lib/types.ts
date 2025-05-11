@@ -88,3 +88,17 @@ export interface PortfolioSnapshot {
   valueUSDT: number;
   timestamp: any; // Firestore Timestamp
 }
+
+export type AlertDirection = 'above' | 'below';
+
+export interface PriceAlert {
+  id: string; // Document ID from Firestore
+  userId: string;
+  symbol: CryptoSymbol;
+  targetPrice: number;
+  direction: AlertDirection; // 'above' or 'below'
+  active: boolean;
+  createdAt: any; // Firestore Timestamp
+  updatedAt: any; // Firestore Timestamp
+  triggeredAt?: any; // Firestore Timestamp, optional
+}
