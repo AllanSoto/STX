@@ -35,18 +35,42 @@ const binanceSymbolsForREST = CRYPTO_SYMBOLS.map(s => COIN_MAPPINGS_WS[s]?.binan
 
 const SYMBOLS_TO_DISPLAY_ON_CARDS: CryptoSymbol[] = ['BTC', 'ETH', 'SOL', 'XRP', 'BNB'];
 
+// Updated mock function to generate slightly more structured price data for AI analysis
 function getMockRecentPriceData(symbol: CryptoSymbol, currentPrice: number): string {
     const prices: number[] = [];
-    prices.push(currentPrice); 
     let lastPrice = currentPrice;
-    for (let i = 0; i < 9; i++) { 
-        const priceFluctuationFactor = (Math.random() - 0.5) * 0.02; 
-        const fluctuatedPrice = lastPrice * (1 + priceFluctuationFactor);
-        prices.unshift(Math.max(0, fluctuatedPrice)); 
-        lastPrice = fluctuatedPrice; 
+
+    // Generate 19 historical points. Together with currentPrice, this will be 20 data points.
+    // The goal is to create data that might show some short-term patterns.
+    let trendMomentum = (Math.random() - 0.5) * 2; // Initial random trend momentum between -1 and 1
+
+    for (let i = 0; i < 19; i++) {
+        // Randomly adjust trend momentum slightly or flip it
+        if (Math.random() < 0.15) { // 15% chance to significantly change momentum
+            trendMomentum = (Math.random() - 0.5) * 2;
+        } else if (Math.random() < 0.3) { // 30% chance for minor adjustment
+            trendMomentum += (Math.random() - 0.5) * 0.5;
+            trendMomentum = Math.max(-1, Math.min(1, trendMomentum)); // Clamp momentum
+        }
+        
+        const baseFluctuation = 0.007; // Base fluctuation percentage
+        const trendInfluence = trendMomentum * baseFluctuation * 0.5; // Trend part
+        const randomNoise = (Math.random() - 0.5) * baseFluctuation * 0.5; // Random noise part
+
+        const priceChangeFactor = trendInfluence + randomNoise;
+        
+        let fluctuatedPrice = lastPrice * (1 - priceChangeFactor); // Apply change (invert for historical)
+        fluctuatedPrice = Math.max(0.000001, fluctuatedPrice); // Ensure price is positive
+        prices.push(fluctuatedPrice);
+        lastPrice = fluctuatedPrice;
     }
+    
+    prices.reverse(); // Oldest prices first
+    prices.push(currentPrice); // Add current price at the end
+
     return prices.map(p => p.toFixed(Math.max(2, (currentPrice < 1 ? 5 : 2)))).join(',');
 }
+
 
 async function updateAllAiTrendsExternal(currentCryptoData: CryptoCardData[], tGlobal: (key: string, fallback?: string, vars?: Record<string, string | number>) => string): Promise<CryptoCardData[]> {
   const dataToAnalyze = currentCryptoData.filter(crypto => SYMBOLS_TO_DISPLAY_ON_CARDS.includes(crypto.symbol) && crypto.value > 0);
@@ -575,4 +599,5 @@ export default function DashboardPage() {
     </MainLayout>
   );
 }
+
 
