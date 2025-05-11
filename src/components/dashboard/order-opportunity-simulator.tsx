@@ -100,14 +100,13 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
     const marketPrice = cryptoPrices[targetCryptoSymbol];
 
     if (!marketPrice || marketPrice <= 0) {
-      // Display a message or handle missing price for the selected crypto
       setSimulatedRows([{
-        operation: t('dashboard.orderOpportunitySimulator.compraOperationPrefix', 'Compra') + ` ${selectedPair}`,
+        operation: t('dashboard.orderOpportunitySimulator.buyOperationPrefix', 'Compra') + ` ${selectedPair}`,
         cantidadCrypto1: `${usdtAmountNum.toFixed(2)} ${QUOTE_CURRENCY_FOR_SIMULATOR}`,
         precioMercado: t('dashboard.orderOpportunitySimulator.priceUnavailable', 'Price N/A'),
         cantidadCrypto2: '',
         comision: '',
-        profitNeto: '',
+        profitNeto: '-',
       }]);
       return;
     }
@@ -119,11 +118,11 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
     const compraCommission = usdtAmountNum * COMMISSION_RATE;
 
     newRows.push({
-      operation: t('dashboard.orderOpportunitySimulator.compraOperationPrefix', 'Compra') + ` ${selectedPair}`,
-      cantidadCrypto1: `${usdtAmountNum.toFixed(2)} ${QUOTE_CURRENCY_FOR_SIMULATOR}`,
+      operation: t('dashboard.orderOpportunitySimulator.buyOperationPrefix', 'Compra') + ` ${selectedPair}`,
+      cantidadCrypto1: `${usdtAmountNum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${QUOTE_CURRENCY_FOR_SIMULATOR}`,
       precioMercado: `${marketPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: marketPrice < 1 ? 5 : 2 })} ${QUOTE_CURRENCY_FOR_SIMULATOR}`,
       cantidadCrypto2: `${cantidadTargetCryptoBought.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 8 })} ${targetCryptoSymbol}`,
-      comision: `${compraCommission.toFixed(4)} ${QUOTE_CURRENCY_FOR_SIMULATOR}`,
+      comision: `${compraCommission.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})} ${QUOTE_CURRENCY_FOR_SIMULATOR}`,
       profitNeto: '-',
     });
 
@@ -135,11 +134,11 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
       const netProfit = (usdtReceivedFromSale - usdtAmountNum) - (compraCommission + ventaCommission);
 
       newRows.push({
-        operation: `${t('dashboard.orderOpportunitySimulator.ventaOperationPrefix', 'Venta')} ${targetCryptoSymbol}/${QUOTE_CURRENCY_FOR_SIMULATOR} (+${(perc * 100).toFixed(1)}%)`,
+        operation: `${t('dashboard.orderOpportunitySimulator.sellOperationPrefix', 'Venta')} ${targetCryptoSymbol}/${QUOTE_CURRENCY_FOR_SIMULATOR} (+${(perc * 100).toFixed(1)}%)`,
         cantidadCrypto1: `${cantidadTargetCryptoBought.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 8 })} ${targetCryptoSymbol}`,
         precioMercado: `${targetSellPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: targetSellPrice < 1 ? 5 : 2 })} ${QUOTE_CURRENCY_FOR_SIMULATOR}`,
         cantidadCrypto2: `${usdtReceivedFromSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${QUOTE_CURRENCY_FOR_SIMULATOR}`,
-        comision: `${ventaCommission.toFixed(4)} ${QUOTE_CURRENCY_FOR_SIMULATOR}`,
+        comision: `${ventaCommission.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})} ${QUOTE_CURRENCY_FOR_SIMULATOR}`,
         profitNeto: `${netProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} ${QUOTE_CURRENCY_FOR_SIMULATOR}`,
         profitNetoValue: netProfit,
       });
