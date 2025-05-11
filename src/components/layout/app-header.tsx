@@ -1,7 +1,8 @@
+
 'use client';
 
 import Link from 'next/link';
-import { Languages, LogOut, UserCircle, Settings, BarChartBig, Check } from 'lucide-react';
+import { Languages, LogOut, UserCircle, Settings, BarChartBig, Check, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -42,7 +43,7 @@ export function AppHeader() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <Settings className="h-5 w-5" />
-                  <span className="sr-only">Settings</span>
+                  <span className="sr-only">{t('settings.title', 'Settings')}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -50,6 +51,10 @@ export function AppHeader() {
                 <DropdownMenuItem onClick={() => router.push('/account')}>
                   <UserCircle className="mr-2 h-4 w-4" />
                   <span>{t('settings.accountSettings', 'Account Settings')}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('/history')}>
+                  <History className="mr-2 h-4 w-4" />
+                  <span>{t('history.menuItem', 'Order History')}</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>{t('settings.language', 'Language')}</DropdownMenuLabel>

@@ -60,24 +60,24 @@ export interface SimulationLogEntry {
 export interface SavedOrder {
   id: string; // Document ID from Firestore
   userId: string;
-  timestamp: any; // Firestore Timestamp
+  timestamp: Date; // Changed from any to Date
 
-  targetCrypto: string; 
-  quoteCurrency: string; 
+  targetCrypto: string;
+  quoteCurrency: string;
 
   // Buy leg
   amountOfTargetCryptoBought: number;
-  buyPricePerUnit: number; 
-  totalBuyValueInQuote: number; 
+  buyPricePerUnit: number;
+  totalBuyValueInQuote: number;
   buyCommissionInQuote: number;
 
   // Sell leg
-  sellPricePerUnit: number; 
-  totalSellValueInQuote: number; 
+  sellPricePerUnit: number;
+  totalSellValueInQuote: number;
   sellCommissionInQuote: number;
 
   netProfitInQuote: number;
-  originalPair: string; 
-  inputAmount: number; 
-  inputCurrency: string; 
+  originalPair: string;
+  inputAmount: number;
+  inputCurrency: string;
 }
