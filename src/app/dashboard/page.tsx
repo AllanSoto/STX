@@ -28,6 +28,9 @@ const COIN_MAPPINGS: Record<CryptoSymbol, { coingeckoId: string; coincapId: stri
   SOL: { coingeckoId: 'solana', coincapId: 'solana', binanceSymbol: 'SOLUSDT' },
   BNB: { coingeckoId: 'binancecoin', coincapId: 'binance-coin', binanceSymbol: 'BNBUSDT' },
   XRP: { coingeckoId: 'ripple', coincapId: 'xrp', binanceSymbol: 'XRPUSDT' },
+  ADA: { coingeckoId: 'cardano', coincapId: 'cardano', binanceSymbol: 'ADAUSDT' },
+  DOGE: { coingeckoId: 'dogecoin', coincapId: 'dogecoin', binanceSymbol: 'DOGEUSDT' },
+  SHIB: { coingeckoId: 'shiba-inu', coincapId: 'shiba-inu', binanceSymbol: 'SHIBUSDT' },
 };
 
 const binanceSymbolsForREST = CRYPTO_SYMBOLS.map(s => COIN_MAPPINGS[s].binanceSymbol);
@@ -345,3 +348,4 @@ export default function DashboardPage() {
     </MainLayout>
   );
 }
+
