@@ -109,6 +109,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.exchangeOperation': 'Exchange {cur1} for {cur2}',
     'dashboard.orderOpportunitySimulator.sellOperationPerc': 'Sell {targetCrypto} (+{perc}%)',
     'dashboard.orderOpportunitySimulator.priceUnavailable': 'Price N/A',
+    'dashboard.orderOpportunitySimulator.invalidMarketPrice': 'Invalid Market Price',
     'dashboard.orderOpportunitySimulator.calculating': 'Calculating...',
     'dashboard.orderOpportunitySimulator.enterValuesPrompt': 'Please select a pair and enter amount to see simulation.',
     'dashboard.orderOpportunitySimulator.commissionInfo': 'Commission is {rate}% on the transaction value in {quote_currency}.',
@@ -152,6 +153,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.password.newConfirmMatch': "New passwords don't match.", 
     'zod.orderOpportunity.selectPair': 'Please select a trading pair.',
     'zod.orderOpportunity.positiveInputAmount': 'Amount must be a positive number.',
+    'zod.orderOpportunity.marketPricePositive': 'Market price must be a positive number.',
     'zod.orderOpportunity.targetPricePositive': 'Target price must be a positive number.',
   },
   es: {
@@ -244,6 +246,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.exchangeOperation': 'Intercambiar {cur1} por {cur2}',
     'dashboard.orderOpportunitySimulator.sellOperationPerc': 'Vender {targetCrypto} (+{perc}%)',
     'dashboard.orderOpportunitySimulator.priceUnavailable': 'Precio N/D',
+    'dashboard.orderOpportunitySimulator.invalidMarketPrice': 'Precio de Mercado Inválido',
     'dashboard.orderOpportunitySimulator.calculating': 'Calculando...',
     'dashboard.orderOpportunitySimulator.enterValuesPrompt': 'Por favor, selecciona un par e ingresa el monto para ver la simulación.',
     'dashboard.orderOpportunitySimulator.commissionInfo': 'La comisión es del {rate}% sobre el valor de la transacción en {quote_currency}.',
@@ -287,9 +290,10 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.password.newConfirmMatch': 'Las contraseñas nuevas no coinciden.',
     'zod.orderOpportunity.selectPair': 'Por favor selecciona un par de trading.',
     'zod.orderOpportunity.positiveInputAmount': 'El monto debe ser un número positivo.',
+    'zod.orderOpportunity.marketPricePositive': 'El precio de mercado debe ser un número positivo.',
     'zod.orderOpportunity.targetPricePositive': 'El precio objetivo debe ser un número positivo.',
   },
-  fr: { // NOTE: French translations for new keys need to be added
+  fr: { 
     'app.name': 'SimulTradex',
     'app.loadingMessage': 'Chargement de SimulTradex...',
     'settings.myAccount': 'Mon Compte',
@@ -377,6 +381,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.exchangeOperation': 'Échanger {cur1} contre {cur2}',
     'dashboard.orderOpportunitySimulator.sellOperationPerc': 'Vendre {targetCrypto} (+{perc}%)',
     'dashboard.orderOpportunitySimulator.priceUnavailable': 'Prix N/D',
+    'dashboard.orderOpportunitySimulator.invalidMarketPrice': 'Prix du Marché Invalide',
     'dashboard.orderOpportunitySimulator.calculating': 'Calcul en cours...',
     'dashboard.orderOpportunitySimulator.enterValuesPrompt': 'Veuillez sélectionner une paire et entrer le montant pour voir la simulation.',
     'dashboard.orderOpportunitySimulator.commissionInfo': 'La commission est de {rate}% sur la valeur de la transaction en {quote_currency}.',
@@ -387,7 +392,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.saveErrorDescription': 'Impossible d\'enregistrer la simulation. Veuillez réessayer.',
     'dashboard.orderOpportunitySimulator.toast.notLoggedInError': 'Vous devez être connecté pour enregistrer les simulations.',
     'dashboard.orderOpportunitySimulator.toast.noDataToSave': 'Il n\'y a aucune donnée de simulation valide à enregistrer.',
-
 
     'dashboard.api.binance.fetchError': 'Échec de la récupération des prix de Binance: {status}',
     'dashboard.api.binance.errorTitle': 'Erreur de Récupération des Prix (Binance)',
@@ -420,9 +424,10 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.password.newConfirmMatch': 'Les nouveaux mots de passe ne correspondent pas.',
     'zod.orderOpportunity.selectPair': 'Veuillez sélectionner une paire de trading.',
     'zod.orderOpportunity.positiveInputAmount': 'Le montant doit être un nombre positif.',
+    'zod.orderOpportunity.marketPricePositive': 'Le prix du marché doit être un nombre positif.',
     'zod.orderOpportunity.targetPricePositive': 'Le prix cible doit être un nombre positif.',
   },
-  hi: { // NOTE: Hindi translations for new keys need to be added
+  hi: { 
     'app.name': 'सिमुलट्रेडेक्स',
     'app.loadingMessage': 'सिमुलट्रेडेक्स लोड हो रहा है...',
     'settings.myAccount': 'मेरा खाता',
@@ -510,6 +515,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.exchangeOperation': '{cur1} के लिए {cur2} का विनिमय करें',
     'dashboard.orderOpportunitySimulator.sellOperationPerc': '{targetCrypto} बेचें (+{perc}%)',
     'dashboard.orderOpportunitySimulator.priceUnavailable': 'कीमत अनुपलब्ध',
+    'dashboard.orderOpportunitySimulator.invalidMarketPrice': 'अमान्य बाजार मूल्य',
     'dashboard.orderOpportunitySimulator.calculating': 'गणना की जा रही है...',
     'dashboard.orderOpportunitySimulator.enterValuesPrompt': 'कृपया सिमुलेशन देखने के लिए एक जोड़ी चुनें और राशि दर्ज करें।',
     'dashboard.orderOpportunitySimulator.commissionInfo': '{quote_currency} में लेनदेन मूल्य पर कमीशन {rate}% है।',
@@ -552,9 +558,10 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.password.newConfirmMatch': 'नए पासवर्ड मेल नहीं खाते।',
     'zod.orderOpportunity.selectPair': 'कृपया एक व्यापारिक जोड़ी चुनें।',
     'zod.orderOpportunity.positiveInputAmount': 'राशि एक सकारात्मक संख्या होनी चाहिए।',
+    'zod.orderOpportunity.marketPricePositive': 'बाजार मूल्य एक सकारात्मक संख्या होनी चाहिए।',
     'zod.orderOpportunity.targetPricePositive': 'लक्ष्य मूल्य एक सकारात्मक संख्या होनी चाहिए।',
   },
-  zh: { // NOTE: Chinese translations for new keys need to be added
+  zh: { 
     'app.name': 'SimulTradex',
     'app.loadingMessage': '正在加载SimulTradex...',
     'settings.myAccount': '我的账户',
@@ -642,6 +649,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.exchangeOperation': '用 {cur1} 兑换 {cur2}',
     'dashboard.orderOpportunitySimulator.sellOperationPerc': '卖出 {targetCrypto} (+{perc}%)',
     'dashboard.orderOpportunitySimulator.priceUnavailable': '价格不可用',
+    'dashboard.orderOpportunitySimulator.invalidMarketPrice': '无效的市场价格',
     'dashboard.orderOpportunitySimulator.calculating': '计算中...',
     'dashboard.orderOpportunitySimulator.enterValuesPrompt': '请选择一个交易对并输入金额以查看模拟。',
     'dashboard.orderOpportunitySimulator.commissionInfo': '交易佣金为 {quote_currency} 交易额的 {rate}%。',
@@ -684,6 +692,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.password.newConfirmMatch': '新密码不匹配。',
     'zod.orderOpportunity.selectPair': '请选择一个交易对。',
     'zod.orderOpportunity.positiveInputAmount': '金额必须是正数。',
+    'zod.orderOpportunity.marketPricePositive': '市场价格必须是正数。',
     'zod.orderOpportunity.targetPricePositive': '目标价格必须是正数。',
   }
 };

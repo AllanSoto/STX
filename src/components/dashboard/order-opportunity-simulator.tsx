@@ -24,7 +24,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DETAILED_TRADING_PAIRS, COMMISSION_RATE, QUOTE_CURRENCY as DEFAULT_QUOTE_CURRENCY, CRYPTO_SYMBOLS, STABLECOIN_SYMBOLS } from '@/lib/constants';
-import type { CryptoSymbol, DetailedTradingPair, StableCoinSymbol } from '@/lib/constants';
+import type { CryptoSymbol, DetailedTradingPair } from '@/lib/constants';
 import type { SimulationLogEntry } from '@/lib/types';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLanguage } from '@/hooks/use-language';
@@ -39,7 +39,11 @@ const OPPORTUNITY_PERCENTAGES = [0.005, 0.01, 0.015, 0.02, 0.025, 0.03]; // +0.5
 const getSimulatorSchema = (t: (key: string, fallback?: string) => string) => z.object({
   pair: z.string().min(1, { message: t('zod.orderOpportunity.selectPair', 'Please select a trading pair.') }),
   inputAmount: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, { message: t('zod.orderOpportunity.positiveInputAmount', 'Amount must be a positive number.') }),
-  marketPriceDisplay: z.string().optional(), 
+  marketPriceInput: z.string().refine(val => {
+    if (!val) return false; // Should not be empty for calculation
+    const num = parseFloat(val.replace(/,/g, '')); // Handle potential commas
+    return !isNaN(num) && num > 0;
+  }, { message: t('zod.orderOpportunity.marketPricePositive', 'Market price must be a positive number.') }),
 });
 
 type SimulatorFormValues = z.infer<ReturnType<typeof getSimulatorSchema>>;
@@ -50,17 +54,12 @@ interface OrderOpportunitySimulatorProps {
 
 interface SimulatedRow {
   operation: string;
-  // For display - units can vary based on context (buy vs sell row)
-  displayAmount1: string; 
+  displayAmount1: string;
   displayMarketPrice: string;
-  displayAmount2: string; 
-  displayCommission: string; 
-  displayNetProfit: string;  
-  
-  // For styling profit/loss
-  netProfitValue?: number; 
-  
-  // For saving (normalized to targetCrypto/USDT context)
+  displayAmount2: string;
+  displayCommission: string;
+  displayNetProfit: string;
+  netProfitValue?: number;
   isBuyRow: boolean;
   cur1?: string;
   cur2?: string;
@@ -68,8 +67,6 @@ interface SimulatedRow {
   rawMarketPriceCur1InCur2?: number;
   rawExchangedAmountCur2?: number;
   rawCommissionBuyInUSDT?: number;
-  
-  // Sell row specific raw data for saving
   rawTargetCryptoAmountSold?: number;
   rawSellPriceTargetCryptoInUSDT?: number;
   rawUSDTReceivedFromSale?: number;
@@ -82,6 +79,7 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
   const { toast } = useToast();
   const { user } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
+  const [marketPriceManuallyEdited, setMarketPriceManuallyEdited] = useState(false);
 
   const t = useCallback((key: string, fallback?: string, vars?: Record<string, string | number>) => {
     let msg = translations[key] || fallback || key;
@@ -99,8 +97,8 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
     resolver: zodResolver(simulatorSchema),
     defaultValues: {
       pair: '',
-      inputAmount: '100', // Default to 100 units of cur1
-      marketPriceDisplay: '',
+      inputAmount: '100',
+      marketPriceInput: '',
     },
   });
 
@@ -112,6 +110,11 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
 
   const selectedPair = form.watch('pair') as DetailedTradingPair | '';
   const inputAmountStr = form.watch('inputAmount');
+  const marketPriceInputFromForm = form.watch('marketPriceInput');
+
+  useEffect(() => {
+    setMarketPriceManuallyEdited(false); // Reset manual edit flag when pair changes
+  }, [selectedPair]);
   
   useEffect(() => {
     if (selectedPair) {
@@ -127,74 +130,94 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
       }
       setCurrentTargetCryptoForSell(targetCrypto);
 
-      let marketPrice = 0;
+      let liveMarketPrice = 0;
       const cryptoPriceC1 = cryptoPrices[c1 as CryptoSymbol];
       const cryptoPriceC2 = cryptoPrices[c2 as CryptoSymbol];
 
       if (c1 === DEFAULT_QUOTE_CURRENCY && cryptoPriceC2 > 0) { // USDT/BTC
-        marketPrice = 1 / cryptoPriceC2; // Price of USDT in BTC
+        liveMarketPrice = 1 / cryptoPriceC2; // Price of USDT in BTC
       } else if (c2 === DEFAULT_QUOTE_CURRENCY && cryptoPriceC1 > 0) { // BTC/USDT
-        marketPrice = cryptoPriceC1; // Price of BTC in USDT
+        liveMarketPrice = cryptoPriceC1; // Price of BTC in USDT
       }
-      // else if (cryptoPriceC1 > 0 && cryptoPriceC2 > 0) { // CRYPTO1/CRYPTO2 (e.g. ETH/BTC) - Not supported by current cryptoPrices structure
-      //   marketPrice = cryptoPriceC1 / cryptoPriceC2; // Price of CRYPTO1 in CRYPTO2, needs prices relative to a common base or direct pair price
+      // else if (cryptoPriceC1 > 0 && cryptoPriceC2 > 0) { // ETH/BTC etc. - needs direct pair or common base price
+      //   marketPrice = cryptoPriceC1 / cryptoPriceC2;
       // }
+      
+      const currentFieldValue = form.getValues('marketPriceInput');
+      const isFieldEffectivelyEmpty = currentFieldValue === '' || currentFieldValue === t('dashboard.orderOpportunitySimulator.priceUnavailable', 'Price N/A');
 
-      if (marketPrice > 0) {
-        form.setValue('marketPriceDisplay', marketPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: marketPrice < 0.001 ? 8 : 5 }));
+      if (liveMarketPrice > 0) {
+        if (!marketPriceManuallyEdited || isFieldEffectivelyEmpty) {
+          form.setValue('marketPriceInput', liveMarketPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: liveMarketPrice < 0.001 ? 8 : 5 }));
+        }
       } else {
-        form.setValue('marketPriceDisplay', t('dashboard.orderOpportunitySimulator.priceUnavailable', 'Price N/A'));
+         if (!marketPriceManuallyEdited || isFieldEffectivelyEmpty) {
+          form.setValue('marketPriceInput', t('dashboard.orderOpportunitySimulator.priceUnavailable', 'Price N/A'));
+        }
       }
     } else {
       setCurrentCur1(DEFAULT_QUOTE_CURRENCY);
       setCurrentCur2('');
       setCurrentTargetCryptoForSell(null);
-      form.setValue('marketPriceDisplay', '');
+      form.setValue('marketPriceInput', '');
     }
-  }, [selectedPair, cryptoPrices, form, t]);
+  }, [selectedPair, cryptoPrices, form, t, marketPriceManuallyEdited]);
 
 
   useEffect(() => {
-    if (!selectedPair || !inputAmountStr || !currentTargetCryptoForSell) {
+    if (!selectedPair || !inputAmountStr || !marketPriceInputFromForm || !currentTargetCryptoForSell) {
       setSimulatedRows([]);
       return;
     }
 
     const inputAmountNum = parseFloat(inputAmountStr);
-    if (isNaN(inputAmountNum) || inputAmountNum <= 0) {
-      setSimulatedRows([]);
-      return;
+    
+    let userMarketPriceNum: number;
+    if (marketPriceInputFromForm === t('dashboard.orderOpportunitySimulator.priceUnavailable', 'Price N/A')) {
+        userMarketPriceNum = 0; 
+    } else {
+        userMarketPriceNum = parseFloat(marketPriceInputFromForm.replace(/,/g, ''));
     }
 
+    if (isNaN(inputAmountNum) || inputAmountNum <= 0 || isNaN(userMarketPriceNum) || userMarketPriceNum <= 0) {
+      const rowsToShow: SimulatedRow[] = [];
+      if (isNaN(userMarketPriceNum) || userMarketPriceNum <= 0) {
+        const [c1ForLabel, c2ForLabel] = selectedPair.split('/') as [string, string];
+         rowsToShow.push({
+            isBuyRow: true, cur1: c1ForLabel, cur2: c2ForLabel,
+            operation: t('dashboard.orderOpportunitySimulator.exchangeOperation', 'Exchange {cur1} for {cur2}', {cur1: c1ForLabel, cur2: c2ForLabel}),
+            displayAmount1: `${inputAmountNum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${c1ForLabel}`,
+            displayMarketPrice: t('dashboard.orderOpportunitySimulator.invalidMarketPrice', 'Invalid Market Price'),
+            displayAmount2: '', displayCommission: '', displayNetProfit: '-',
+        });
+      }
+      setSimulatedRows(rowsToShow);
+      return;
+    }
+    
     const [cur1, cur2] = selectedPair.split('/') as [string, string];
-    const priceOfTargetCryptoInUSDT = cryptoPrices[currentTargetCryptoForSell];
-
-    if (!priceOfTargetCryptoInUSDT || priceOfTargetCryptoInUSDT <= 0) {
-      setSimulatedRows([{
-        isBuyRow: true, cur1, cur2,
-        operation: t('dashboard.orderOpportunitySimulator.exchangeOperation', 'Exchange {cur1} for {cur2}', {cur1, cur2}),
-        displayAmount1: `${inputAmountNum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${cur1}`,
-        displayMarketPrice: t('dashboard.orderOpportunitySimulator.priceUnavailable', 'Price N/A'),
-        displayAmount2: '', displayCommission: '', displayNetProfit: '-',
-      }]);
-      return;
-    }
-
     const newRows: SimulatedRow[] = [];
 
     // "Compra" Row Logic (Initial Transaction)
-    let displayMarketPriceCur1InCur2 = 0;
     let exchangedAmountCur2 = 0;
-    let valueOfTxInUSDT = 0;
+    let valueOfTxInUSDT = 0; // Value of the initial transaction in USDT for commission calculation
 
-    if (cur1 === DEFAULT_QUOTE_CURRENCY) { // e.g., USDT/BTC
-      displayMarketPriceCur1InCur2 = priceOfTargetCryptoInUSDT > 0 ? (1 / priceOfTargetCryptoInUSDT) : 0; // BTC per USDT
-      exchangedAmountCur2 = inputAmountNum * displayMarketPriceCur1InCur2; // Amount of BTC
-      valueOfTxInUSDT = inputAmountNum; // Value is in USDT
-    } else { // e.g., BTC/USDT (cur2 must be USDT if cur1 is not)
-      displayMarketPriceCur1InCur2 = priceOfTargetCryptoInUSDT; // USDT per BTC
-      exchangedAmountCur2 = inputAmountNum * displayMarketPriceCur1InCur2; // Amount of USDT
-      valueOfTxInUSDT = exchangedAmountCur2; // Value is in USDT
+    // userMarketPriceNum is price of cur1 in cur2 (e.g., for BTC/USDT, it's USDT per BTC)
+    exchangedAmountCur2 = inputAmountNum * userMarketPriceNum;
+
+    if (cur1 === DEFAULT_QUOTE_CURRENCY) { // e.g. USDT/BTC. inputAmount is USDT. exchangedAmountCur2 is BTC.
+        valueOfTxInUSDT = inputAmountNum;
+    } else if (cur2 === DEFAULT_QUOTE_CURRENCY) { // e.g. BTC/USDT. inputAmount is BTC. exchangedAmountCur2 is USDT.
+        valueOfTxInUSDT = exchangedAmountCur2;
+    } else { // Cross-currency, e.g. ETH/BTC. Need price of cur1 in USDT.
+        const priceOfCur1InUSDT = cryptoPrices[cur1 as CryptoSymbol];
+        if (priceOfCur1InUSDT) {
+            valueOfTxInUSDT = inputAmountNum * priceOfCur1InUSDT;
+        } else {
+            console.warn(`Cannot determine USDT value for commission calculation for ${cur1}. Commission might be inaccurate.`);
+            // Fallback or set to 0, or prevent simulation
+            valueOfTxInUSDT = 0; // Or handle as error state
+        }
     }
     
     const commissionBuyInUSDT = valueOfTxInUSDT * COMMISSION_RATE;
@@ -202,29 +225,52 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
     newRows.push({
       isBuyRow: true, cur1, cur2,
       operation: t('dashboard.orderOpportunitySimulator.exchangeOperation', 'Exchange {cur1} for {cur2}', {cur1, cur2}),
-      displayAmount1: `${inputAmountNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: cur1 === DEFAULT_QUOTE_CURRENCY ? 2 : 8 })} ${cur1}`,
-      displayMarketPrice: `${displayMarketPriceCur1InCur2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: displayMarketPriceCur1InCur2 < 0.001 ? 8 : 5 })} ${cur2}/${cur1}`,
-      displayAmount2: `${exchangedAmountCur2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: cur2 === DEFAULT_QUOTE_CURRENCY ? 2 : 8 })} ${cur2}`,
+      displayAmount1: `${inputAmountNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: STABLECOIN_SYMBOLS.includes(cur1 as any) ? 2 : 8 })} ${cur1}`,
+      displayMarketPrice: `${userMarketPriceNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: userMarketPriceNum < 0.001 ? 8 : 5 })} ${cur2}/${cur1}`,
+      displayAmount2: `${exchangedAmountCur2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: STABLECOIN_SYMBOLS.includes(cur2 as any) ? 2 : 8 })} ${cur2}`,
       displayCommission: `${commissionBuyInUSDT.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})} ${DEFAULT_QUOTE_CURRENCY}`,
       displayNetProfit: '-',
       rawInputAmountCur1: inputAmountNum,
-      rawMarketPriceCur1InCur2: displayMarketPriceCur1InCur2,
+      rawMarketPriceCur1InCur2: userMarketPriceNum,
       rawExchangedAmountCur2: exchangedAmountCur2,
       rawCommissionBuyInUSDT: commissionBuyInUSDT,
     });
 
     // "Venta" Rows Logic (Selling currentTargetCryptoForSell for USDT)
     let amountOfTargetCryptoInvolved: number;
-    if (cur1 === currentTargetCryptoForSell) { // e.g. BTC/USDT, inputAmount was BTC
+    if (cur1 === currentTargetCryptoForSell) { 
         amountOfTargetCryptoInvolved = inputAmountNum;
-    } else { // e.g. USDT/BTC, exchangedAmountCur2 was BTC
+    } else { 
         amountOfTargetCryptoInvolved = exchangedAmountCur2;
     }
     
-    const initialInvestmentInUSDT = valueOfTxInUSDT; // This is the USDT value of the "buy" leg
+    const initialInvestmentInUSDT = valueOfTxInUSDT;
+
+    let basePriceForSellRowsInUSDT: number;
+    if (currentTargetCryptoForSell === cur1 && cur2 === DEFAULT_QUOTE_CURRENCY) { // Pair is TARGET/USDT, userMarketPriceNum is USDT per TARGET
+        basePriceForSellRowsInUSDT = userMarketPriceNum;
+    } else if (cur1 === DEFAULT_QUOTE_CURRENCY && currentTargetCryptoForSell === cur2 ) { // Pair is USDT/TARGET, userMarketPriceNum is TARGET per USDT
+        basePriceForSellRowsInUSDT = 1 / userMarketPriceNum;
+    } else {
+        // This case implies a more complex pair like ETH/BTC, where target is ETH or BTC.
+        // We need the price of currentTargetCryptoForSell in USDT.
+        // If user edited marketPriceInput for ETH/BTC, we need to derive ETH/USDT or BTC/USDT from that + live prices.
+        // For simplicity now, if it's not a direct USDT pair based on userMarketPriceNum's context,
+        // we'll use the live price from `cryptoPrices` for the target crypto.
+        // This makes sell rows always benchmark against live USDT price of the target crypto if the buy leg wasn't a direct USDT pair.
+        console.warn(`User market price was for ${selectedPair}. Sell opportunities for ${currentTargetCryptoForSell} will be based on its live USDT price.`);
+        basePriceForSellRowsInUSDT = cryptoPrices[currentTargetCryptoForSell];
+    }
+
+    if (!basePriceForSellRowsInUSDT || basePriceForSellRowsInUSDT <= 0) {
+        // If base price for sell rows is invalid, only show the buy row (already pushed) or an error message for sell rows.
+        console.error("Cannot calculate sell opportunities: invalid base price for ", currentTargetCryptoForSell);
+        setSimulatedRows(newRows); // Show only buy row
+        return;
+    }
 
     OPPORTUNITY_PERCENTAGES.forEach(perc => {
-      const targetSellPriceOfTargetCryptoInUSDT = priceOfTargetCryptoInUSDT * (1 + perc);
+      const targetSellPriceOfTargetCryptoInUSDT = basePriceForSellRowsInUSDT * (1 + perc);
       const usdtReceivedFromSale = amountOfTargetCryptoInvolved * targetSellPriceOfTargetCryptoInUSDT;
       const commissionSellInUSDT = usdtReceivedFromSale * COMMISSION_RATE;
       const netProfitInUSDT = (usdtReceivedFromSale - initialInvestmentInUSDT) - (commissionBuyInUSDT + commissionSellInUSDT);
@@ -247,7 +293,7 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
 
     setSimulatedRows(newRows);
 
-  }, [selectedPair, inputAmountStr, cryptoPrices, t, form, currentTargetCryptoForSell]);
+  }, [selectedPair, inputAmountStr, marketPriceInputFromForm, cryptoPrices, t, form, currentTargetCryptoForSell]);
 
 
   const handleSaveSimulation = async () => {
@@ -263,7 +309,7 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
     const buyRowData = simulatedRows.find(row => row.isBuyRow);
     const sellRowsData = simulatedRows.filter(row => !row.isBuyRow);
 
-    if (!buyRowData || !currentTargetCryptoForSell || !priceOfTargetCryptoInUSDT) {
+    if (!buyRowData || !currentTargetCryptoForSell || !buyRowData.rawMarketPriceCur1InCur2) {
        toast({
         title: t('dashboard.orderOpportunitySimulator.toast.saveErrorTitle', "Save Error"),
         description: t('dashboard.orderOpportunitySimulator.toast.noDataToSave', "There is no valid simulation data to save."),
@@ -272,27 +318,53 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
       return;
     }
     
-    const priceOfTargetCryptoInUSDT = cryptoPrices[currentTargetCryptoForSell]; // For normalization
-
     setIsSaving(true);
 
-    // Normalize data for saving (TARGET_CRYPTO/USDT perspective)
+    // Determine the actual purchase price of target crypto in USDT
+    // This needs to be based on the `rawMarketPriceCur1InCur2` (which is user-edited or API-driven for the pair)
+    // and the `selectedPair` structure.
+    let actualPurchasePriceOfTargetInUSDT: number;
+    if (buyRowData.cur1 === currentTargetCryptoForSell && buyRowData.cur2 === DEFAULT_QUOTE_CURRENCY) { // e.g. BTC/USDT pair, rawMarketPrice is USDT per BTC
+        actualPurchasePriceOfTargetInUSDT = buyRowData.rawMarketPriceCur1InCur2;
+    } else if (buyRowData.cur1 === DEFAULT_QUOTE_CURRENCY && buyRowData.cur2 === currentTargetCryptoForSell) { // e.g. USDT/BTC pair, rawMarketPrice is BTC per USDT
+        actualPurchasePriceOfTargetInUSDT = 1 / buyRowData.rawMarketPriceCur1InCur2;
+    } else {
+        // Fallback for cross-currency pairs - use live price from cryptoPrices
+        // This might differ from user's mental model if they edited a cross-currency price.
+        actualPurchasePriceOfTargetInUSDT = cryptoPrices[currentTargetCryptoForSell];
+         console.warn(`Saving simulation for ${selectedPair}. Purchase price of ${currentTargetCryptoForSell} in USDT is based on live data, not solely on user's input for the pair price.`);
+    }
+
+
     let normalizedAmountCompraUSDT: number;
     let normalizedCantidadCriptoComprada: number;
 
     if (buyRowData.cur1 === DEFAULT_QUOTE_CURRENCY) { // USDT/TARGET_CRYPTO
         normalizedAmountCompraUSDT = buyRowData.rawInputAmountCur1!;
         normalizedCantidadCriptoComprada = buyRowData.rawExchangedAmountCur2!;
-    } else { // TARGET_CRYPTO/USDT
-        normalizedAmountCompraUSDT = buyRowData.rawExchangedAmountCur2!; // This was the USDT amount from the exchange
-        normalizedCantidadCriptoComprada = buyRowData.rawInputAmountCur1!;
+    } else { // TARGET_CRYPTO/USDT or TARGET_CRYPTO/OTHER_CRYPTO
+        // If cur2 is USDT, then rawExchangedAmountCur2 is the USDT amount.
+        // If cur1 is target crypto and cur2 is USDT, this is fine.
+        if (buyRowData.cur2 === DEFAULT_QUOTE_CURRENCY) {
+             normalizedAmountCompraUSDT = buyRowData.rawExchangedAmountCur2!;
+        } else {
+            // If it's like BTC/ETH, then rawExchangedAmountCur2 is ETH.
+            // We need the USDT value of the input amount (rawInputAmountCur1 which is BTC)
+            const priceOfCur1InUSDT = cryptoPrices[buyRowData.cur1 as CryptoSymbol];
+            normalizedAmountCompraUSDT = priceOfCur1InUSDT ? buyRowData.rawInputAmountCur1! * priceOfCur1InUSDT : 0;
+        }
+        normalizedCantidadCriptoComprada = buyRowData.rawInputAmountCur1!; // This is the amount of the target crypto if cur1 is target
+        // If cur2 is target crypto, then this should be rawExchangedAmountCur2
+        if(buyRowData.cur2 === currentTargetCryptoForSell) {
+            normalizedCantidadCriptoComprada = buyRowData.rawExchangedAmountCur2!;
+        }
     }
 
 
     const simulationToSave: Omit<SimulationLogEntry, 'id' | 'usuario_id' | 'fecha'> = {
-      par_operacion: `${currentTargetCryptoForSell}/${DEFAULT_QUOTE_CURRENCY}`,
+      par_operacion: `${currentTargetCryptoForSell}/${DEFAULT_QUOTE_CURRENCY}`, // Normalized to target/USDT
       monto_compra_usdt: normalizedAmountCompraUSDT,
-      precio_compra: priceOfTargetCryptoInUSDT, // Actual market price of target crypto in USDT at time of simulation
+      precio_compra: actualPurchasePriceOfTargetInUSDT,
       cantidad_cripto_comprada: normalizedCantidadCriptoComprada,
       comision_compra: buyRowData.rawCommissionBuyInUSDT!,
       ventas_simuladas: sellRowsData.map(row => ({
@@ -347,7 +419,10 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
                   <FormItem>
                     <FormLabel>{t('dashboard.orderOpportunitySimulator.operationPairLabel', 'Trading Pair')}</FormLabel>
                     <Select 
-                        onValueChange={field.onChange} 
+                        onValueChange={(value) => {
+                            field.onChange(value);
+                            setMarketPriceManuallyEdited(false); // Reset when pair changes
+                        }} 
                         defaultValue={field.value}
                     >
                       <FormControl>
@@ -380,19 +455,26 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
                   </FormItem>
                 )}
               />
-                <FormField
-                    control={form.control}
-                    name="marketPriceDisplay"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>{t('dashboard.orderOpportunitySimulator.marketPriceDisplayLabel', `Market Price ({cur2}/{cur1})`, {cur1: currentCur1 || '...', cur2: currentCur2 || '...'})}</FormLabel>
-                        <FormControl>
-                        <Input type="text" {...field} readOnly className="bg-muted/50 cursor-default" />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
+              <FormField
+                control={form.control}
+                name="marketPriceInput"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>{t('dashboard.orderOpportunitySimulator.marketPriceDisplayLabel', `Market Price ({cur2}/{cur1})`, {cur1: currentCur1 || '...', cur2: currentCur2 || '...'})}</FormLabel>
+                    <FormControl>
+                    <Input 
+                        type="text" // Text to allow for formatted numbers and "N/A"
+                        {...field} 
+                        onChange={(e) => {
+                            field.onChange(e);
+                            setMarketPriceManuallyEdited(true);
+                        }}
+                        />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
             </div>
           </form>
         </Form>
