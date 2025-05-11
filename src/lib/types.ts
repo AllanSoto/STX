@@ -81,3 +81,10 @@ export interface SavedOrder {
   inputAmount: number;
   inputCurrency: string;
 }
+
+export interface PortfolioSnapshot {
+  id: string; // YYYY-MM-DD
+  date: Date; // JS Date object for the snapshot
+  valueUSDT: number;
+  timestamp: any; // Firestore Timestamp
+}
