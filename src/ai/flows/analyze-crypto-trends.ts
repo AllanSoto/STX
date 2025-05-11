@@ -1,4 +1,3 @@
-
 // src/ai/flows/analyze-crypto-trends.ts
 'use server';
 /**
@@ -10,7 +9,8 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z}  from 'genkit/zod'; // Use from genkit/zod as per recent best practices if applicable, or stick to 'zod' if current works. Assuming 'zod' is fine.
+// import {z} from 'zod'; // Original was 'zod', let's stick to it unless specified otherwise.
 
 const AnalyzeCryptoTrendInputSchema = z.object({
   cryptoSymbol: z.string().describe('The ticker symbol of the cryptocurrency (e.g., BTC, ETH).'),
@@ -33,6 +33,7 @@ const analyzeCryptoTrendPrompt = ai.definePrompt({
   name: 'analyzeCryptoTrendPrompt',
   input: {schema: AnalyzeCryptoTrendInputSchema},
   output: {schema: AnalyzeCryptoTrendOutputSchema},
+  model: 'googleai/gemini-1.5-flash-latest',
   prompt: `You are an AI assistant specializing in cryptocurrency trend analysis.
 
   Analyze the recent price movements of {{cryptoSymbol}} based on the following data and determine if the trend is upward, downward, or sideways.
@@ -81,36 +82,30 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
         const errorOutput: AnalyzeCryptoTrendOutput = {
           trend: 'sideways',
           confidence: 0.1,
-          reason: `AI output for ${input.cryptoSymbol} was malformed.`,
+          reason: `AI output for ${input.cryptoSymbol} was malformed. Details: ${parsedOutput.error.flatten().formErrors.join(', ')}`,
         };
         return errorOutput;
       }
       return parsedOutput.data;
     } catch (error) {
-      let errorMessage = 'Unknown AI analysis error';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      } else {
-        try {
-          // Attempt to get a string representation for logging complex errors
-          const errorString = JSON.stringify(error);
-          console.error(`Complex error object in analyzeCryptoTrendFlow for ${input.cryptoSymbol} (stringified):`, errorString);
-          // Use a generic message if stringification is too complex or reveals sensitive info
-          errorMessage = "A complex or non-standard error occurred during AI analysis.";
-        } catch (stringifyError) {
-          console.error(`Could not stringify complex error object in analyzeCryptoTrendFlow for ${input.cryptoSymbol}`);
-          errorMessage = "An unstringifiable complex error occurred during AI analysis."
-        }
-      }
-      // Log the original error as well for more detailed debugging on the server
+      // Log the original error for server-side debugging
       console.error(`Full error object in analyzeCryptoTrendFlow for ${input.cryptoSymbol}:`, error);
 
+      let userFriendlyMessage = `AI analysis failed for ${input.cryptoSymbol}. The AI service might be temporarily unavailable or experiencing issues.`;
+
+      if (error instanceof Error) {
+         // You can customize this further based on specific error messages if needed
+        if (error.message.includes('Service Unavailable') || error.message.includes('503')) {
+            userFriendlyMessage = `AI service for ${input.cryptoSymbol} is currently unavailable. Please try again later.`;
+        } else if (error.message.includes('Bad Gateway') || error.message.includes('502')) {
+             userFriendlyMessage = `AI service for ${input.cryptoSymbol} experienced a temporary network issue. Please try again later.`;
+        }
+      }
+      
       const errorOutput: AnalyzeCryptoTrendOutput = {
         trend: 'sideways',
         confidence: 0.1,
-        reason: `AI analysis failed for ${input.cryptoSymbol}: ${errorMessage}. The AI service might be temporarily unavailable or experiencing issues.`,
+        reason: userFriendlyMessage,
       };
       return errorOutput; // Ensure a well-formed, serializable object is always returned
     }
