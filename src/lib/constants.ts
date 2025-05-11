@@ -1,3 +1,4 @@
+
 export const CRYPTO_SYMBOLS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'DOGE', 'SHIB'] as const;
 export type CryptoSymbol = typeof CRYPTO_SYMBOLS[number];
 
@@ -34,3 +35,15 @@ export const COMMISSION_RATE = 0.001; // 0.1%
 export const QUOTE_CURRENCY = 'USDT'; // Standard quote currency for pairs
 export const STABLECOIN_SYMBOLS = ['USDT'] as const; // Add other stablecoins if needed
 export type StableCoinSymbol = typeof STABLECOIN_SYMBOLS[number];
+
+// Mapping for WebSocket and REST API symbols/IDs
+export const COIN_MAPPINGS_WS: Record<CryptoSymbol, { coincapId: string; binanceSymbol: string }> = {
+  BTC: { coincapId: 'bitcoin', binanceSymbol: 'BTCUSDT' },
+  ETH: { coincapId: 'ethereum', binanceSymbol: 'ETHUSDT' },
+  SOL: { coincapId: 'solana', binanceSymbol: 'SOLUSDT' },
+  BNB: { coincapId: 'binance-coin', binanceSymbol: 'BNBUSDT' },
+  XRP: { coincapId: 'xrp', binanceSymbol: 'XRPUSDT' },
+  ADA: { coincapId: 'cardano', binanceSymbol: 'ADAUSDT' },
+  DOGE: { coincapId: 'dogecoin', binanceSymbol: 'DOGEUSDT' },
+  SHIB: { coincapId: 'shiba-inu', binanceSymbol: 'SHIBUSDT' },
+};

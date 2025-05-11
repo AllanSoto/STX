@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { CryptoDisplayCard } from '@/components/dashboard/crypto-display-card';
 import { OrderOpportunitySimulator } from '@/components/dashboard/order-opportunity-simulator';
-import { PortfolioBalanceDisplay } from '@/components/dashboard/portfolio-balance-display';
+// import { PortfolioBalanceDisplay } from '@/components/dashboard/portfolio-balance-display'; // Module not found - This line is removed
 import type { CryptoCardData } from '@/components/dashboard/types';
 import { initialCryptoData } from '@/components/dashboard/types';
 import { analyzeCryptoTrend } from '@/ai/flows/analyze-crypto-trends';
@@ -70,7 +70,7 @@ export default function DashboardPage() {
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
   const { translations } = useLanguage();
   const { toast } = useToast();
-  const { user, isConnectedToBinance: isPrivateApiConnected } = useAuth();
+  const { user } = useAuth(); // Removed isConnectedToBinance as PortfolioBalanceDisplay is removed
 
   const webSocketRef = useRef<WebSocket | null>(null);
   const binanceFallbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -141,7 +141,12 @@ export default function DashboardPage() {
       
       setCryptoData(prevData =>
         prevData.map(crypto => {
-          const binanceSymbol = COIN_MAPPINGS_WS[crypto.symbol].binanceSymbol;
+          const binanceSymbolInfo = COIN_MAPPINGS_WS[crypto.symbol];
+          if (!binanceSymbolInfo) {
+            console.warn(`No Binance mapping for ${crypto.symbol}`);
+            return crypto;
+          }
+          const binanceSymbol = binanceSymbolInfo.binanceSymbol;
           const priceData = data.find(d => d.symbol === binanceSymbol);
           if (priceData) {
             const newPrice = parseFloat(priceData.price);
@@ -209,9 +214,10 @@ export default function DashboardPage() {
         setCryptoData(prevData => {
           let changed = false;
           const newData = prevData.map(cd => {
-            const binanceTicker = COIN_MAPPINGS_WS[cd.symbol]?.binanceSymbol;
-            if (!binanceTicker) return cd; // Should not happen if mappings are correct
-
+            const binanceSymbolInfo = COIN_MAPPINGS_WS[cd.symbol];
+            if (!binanceSymbolInfo) return cd;
+            const binanceTicker = binanceSymbolInfo.binanceSymbol;
+            
             const tickerData = messageArray.find(item => item.s === binanceTicker);
             if (tickerData) {
               const newPrice = parseFloat(tickerData.c);
@@ -383,20 +389,18 @@ export default function DashboardPage() {
           </Card>
         )}
 
-        {isPrivateApiConnected ? (
-           <PortfolioBalanceDisplay cryptoPrices={cryptoPricesForSimulator}/>
-        ) : (
-            <Card className="mb-8 shadow-lg bg-secondary/30">
-                <CardHeader>
-                    <CardTitle>{t('dashboard.portfolioBalance', 'Portfolio Balance')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-muted-foreground">
-                       {t('dashboard.portfolioBalance.publicSourceMessage', "Private Binance API not connected or restricted. Displaying market data from public source.")}
-                    </p>
-                </CardContent>
-            </Card>
-        )}
+        {/* PortfolioBalanceDisplay was here, removed usage */}
+        <Card className="mb-8 shadow-lg bg-secondary/30">
+            <CardHeader>
+                <CardTitle>{t('dashboard.portfolioBalance', 'Portfolio Balance')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-muted-foreground">
+                   {t('dashboard.portfolioBalance.publicSourceMessage', "Portfolio balance display from connected API is currently unavailable.")}
+                </p>
+            </CardContent>
+        </Card>
+
 
         <section className="mb-8">
           <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('dashboard.marketOverview', 'Market Overview')}</h2>
