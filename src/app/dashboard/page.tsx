@@ -5,7 +5,6 @@ import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { CryptoDisplayCard } from '@/components/dashboard/crypto-display-card';
 import { OrderOpportunitySimulator } from '@/components/dashboard/order-opportunity-simulator';
-// import { PortfolioBalanceDisplay } from '@/components/dashboard/portfolio-balance-display'; // Module not found - This line is removed
 import type { CryptoCardData } from '@/components/dashboard/types';
 import { initialCryptoData } from '@/components/dashboard/types';
 import { analyzeCryptoTrend } from '@/ai/flows/analyze-crypto-trends';
@@ -13,12 +12,11 @@ import type { CryptoSymbol } from '@/lib/constants';
 import { CRYPTO_SYMBOLS, COIN_MAPPINGS_WS, QUOTE_CURRENCY } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
 import { saveDailyPortfolioSnapshot } from '@/lib/firebase/portfolioSnapshots';
 import { format } from 'date-fns';
 
-const COINCAP_WS_URL = 'wss://ws.coincap.io/prices?assets=';
 const BINANCE_WS_URL = 'wss://stream.binance.com:9443/ws/!miniTicker@arr';
 const BINANCE_API_REST_BASE_URL = 'https://api.binance.com/api/v3';
 
@@ -26,10 +24,9 @@ const BINANCE_API_REFRESH_INTERVAL = 5000; // 5 seconds for Binance REST fallbac
 const AI_ANALYSIS_INITIAL_DELAY = 7000; // 7 seconds
 const AI_ANALYSIS_INTERVAL = 60000 * 5; // 5 minutes for AI analysis
 
-const coinCapAssetIds = CRYPTO_SYMBOLS.map(s => COIN_MAPPINGS_WS[s].coincapId).join(',');
 const binanceSymbolsForREST = CRYPTO_SYMBOLS.map(s => COIN_MAPPINGS_WS[s].binanceSymbol);
 
-const SYMBOLS_TO_DISPLAY_ON_CARDS: CryptoSymbol[] = ['BTC', 'ETH', 'SOL', 'XRP'];
+const SYMBOLS_TO_DISPLAY_ON_CARDS: CryptoSymbol[] = ['BTC', 'ETH', 'SOL', 'XRP', 'BNB'];
 
 function getMockRecentPriceData(symbol: CryptoSymbol, currentPrice: number): string {
     const prices = [currentPrice];
@@ -70,7 +67,7 @@ export default function DashboardPage() {
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
   const { translations } = useLanguage();
   const { toast } = useToast();
-  const { user } = useAuth(); // Removed isConnectedToBinance as PortfolioBalanceDisplay is removed
+  const { user } = useAuth();
 
   const webSocketRef = useRef<WebSocket | null>(null);
   const binanceFallbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -91,7 +88,6 @@ export default function DashboardPage() {
     return msg;
   }, [translations]);
 
-  // Save daily portfolio snapshot
   useEffect(() => {
     const trySaveSnapshot = async () => {
       if (user?.id && cryptoDataRef.current.some(cd => SYMBOLS_TO_DISPLAY_ON_CARDS.includes(cd.symbol) && cd.value > 0)) {
@@ -99,32 +95,28 @@ export default function DashboardPage() {
         const todayStr = format(today, 'yyyy-MM-dd');
 
         if (lastSnapshotSaveAttemptDate.current === todayStr) {
-          return; // Already attempted to save today
+          return; 
         }
         
         const portfolioValue = cryptoDataRef.current
           .filter(cd => SYMBOLS_TO_DISPLAY_ON_CARDS.includes(cd.symbol) && cd.value > 0)
-          .reduce((sum, cd) => sum + cd.value, 0); // Assumes 1 unit of each for mock portfolio
+          .reduce((sum, cd) => sum + cd.value, 0); 
 
         if (portfolioValue > 0) {
           try {
-            console.log(`Attempting to save snapshot for ${todayStr} with value ${portfolioValue}`);
             await saveDailyPortfolioSnapshot(user.id, today, portfolioValue);
-            lastSnapshotSaveAttemptDate.current = todayStr; // Mark as attempted
-            console.log(`Successfully saved portfolio snapshot for ${todayStr}.`);
+            lastSnapshotSaveAttemptDate.current = todayStr; 
           } catch (error) {
             console.error('Failed to save daily portfolio snapshot:', error);
-            // Don't toast this error as it's a background task.
           }
         }
       }
     };
 
-    // Attempt to save snapshot when prices are available
     if (!isPricesLoading) {
       trySaveSnapshot();
     }
-  }, [user, isPricesLoading, cryptoData]); // Re-run if cryptoData changes, but internal logic prevents multiple saves per day
+  }, [user, isPricesLoading, cryptoData]);
 
 
   const fetchBinancePricesREST = useCallback(async (showToastOnError = true) => {
@@ -139,27 +131,38 @@ export default function DashboardPage() {
       }
       const data: Array<{ symbol: string; price: string }> = await response.json();
       
-      setCryptoData(prevData =>
-        prevData.map(crypto => {
-          const binanceSymbolInfo = COIN_MAPPINGS_WS[crypto.symbol];
-          if (!binanceSymbolInfo) {
-            console.warn(`No Binance mapping for ${crypto.symbol}`);
+      setCryptoData(prevData => {
+        let pricesActuallyChanged = false;
+        const updatedData = prevData.map(crypto => {
+            const binanceSymbolInfo = COIN_MAPPINGS_WS[crypto.symbol];
+            if (!binanceSymbolInfo) return crypto;
+            const binanceSymbol = binanceSymbolInfo.binanceSymbol;
+            const priceData = data.find(d => d.symbol === binanceSymbol);
+            if (priceData) {
+                const newPrice = parseFloat(priceData.price);
+                if (crypto.value !== newPrice) {
+                    pricesActuallyChanged = true;
+                    return {
+                        ...crypto,
+                        previousValue: crypto.value !== 0 ? crypto.value : newPrice,
+                        value: newPrice,
+                    };
+                }
+            }
             return crypto;
-          }
-          const binanceSymbol = binanceSymbolInfo.binanceSymbol;
-          const priceData = data.find(d => d.symbol === binanceSymbol);
-          if (priceData) {
-            const newPrice = parseFloat(priceData.price);
-            return {
-              ...crypto,
-              previousValue: crypto.value !== 0 ? crypto.value : newPrice,
-              value: newPrice,
-            };
-          }
-          return crypto;
-        })
-      );
-      if (isPricesLoading) setIsPricesLoading(false);
+        });
+
+        if (pricesActuallyChanged) {
+            if (isPricesLoading) setIsPricesLoading(false);
+            return updatedData;
+        }
+        if (isPricesLoading) setIsPricesLoading(false);
+        return prevData; 
+      });
+      if (isPricesLoading && data.length === 0) {
+        setIsPricesLoading(false); 
+      }
+
     } catch (error) {
       console.error('Error fetching Binance prices (REST):', error);
       if (showToastOnError) {
@@ -169,8 +172,10 @@ export default function DashboardPage() {
           variant: "destructive",
         });
       }
+      // If fetching prices fails, and we are in loading state, we should stop loading.
+      if (isPricesLoading) setIsPricesLoading(false);
     }
-  }, [t, toast, isPricesLoading]);
+  }, [t, toast, isPricesLoading]); // isPricesLoading is kept here because its read impacts logic inside and setIsPricesLoading is called.
 
   const startBinanceRestFallback = useCallback(() => {
     if (binanceFallbackIntervalRef.current) clearInterval(binanceFallbackIntervalRef.current);
@@ -189,7 +194,7 @@ export default function DashboardPage() {
         webSocketRef.current.onerror = null;
         webSocketRef.current.onclose = null;
         webSocketRef.current.close();
-        webSocketRef.current = null; // Reset ref
+        webSocketRef.current = null;
     }
 
     console.log(`Attempting to connect to Binance WebSocket: ${BINANCE_WS_URL}`);
@@ -209,7 +214,7 @@ export default function DashboardPage() {
 
     ws.onmessage = (event) => {
       try {
-        const messageArray = JSON.parse(event.data as string) as Array<{ e: string; E: number; s: string; c: string; /* other fields */ }>;
+        const messageArray = JSON.parse(event.data as string) as Array<{ e: string; E: number; s: string; c: string; }>;
         
         setCryptoData(prevData => {
           let changed = false;
@@ -258,7 +263,7 @@ export default function DashboardPage() {
       });
 
       if (webSocketRef.current) {
-          webSocketRef.current.close(); // Ensure closure
+          webSocketRef.current.close(); 
           webSocketRef.current = null;
       }
       startBinanceRestFallback();
@@ -272,7 +277,7 @@ export default function DashboardPage() {
         startBinanceRestFallback();
       }
     };
-  }, [t, toast, startBinanceRestFallback, isPricesLoading]);
+  }, [t, toast, startBinanceRestFallback, isPricesLoading]); // isPricesLoading is kept as it's read in onopen
 
 
   useEffect(() => {
@@ -340,7 +345,6 @@ export default function DashboardPage() {
                 if (isMounted) performAiUpdate();
             }, AI_ANALYSIS_INTERVAL);
         } else if (isMounted) {
-          // if no prices loaded yet, reschedule the first AI update slightly later
            setTimeout(() => {
              if (isMounted && cryptoDataRef.current.some(c => c.value > 0)) performAiUpdate();
            }, AI_ANALYSIS_INITIAL_DELAY);
@@ -354,8 +358,7 @@ export default function DashboardPage() {
         clearInterval(aiIntervalTimerId);
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [t, toast]); // Removed cryptoData from deps to avoid re-triggering AI on every price tick
+  }, [t, toast]);
 
   const cryptoPricesForSimulator = useMemo(() => 
     cryptoData.reduce((acc, curr) => {
@@ -389,14 +392,13 @@ export default function DashboardPage() {
           </Card>
         )}
 
-        {/* PortfolioBalanceDisplay was here, removed usage */}
         <Card className="mb-8 shadow-lg bg-secondary/30">
             <CardHeader>
                 <CardTitle>{t('dashboard.portfolioBalance', 'Portfolio Balance')}</CardTitle>
             </CardHeader>
             <CardContent>
                 <p className="text-muted-foreground">
-                   {t('dashboard.portfolioBalance.publicSourceMessage', "Portfolio balance display from connected API is currently unavailable.")}
+                   {t('dashboard.portfolioBalance.publicSourceMessage', "Private Binance API not connected or restricted. Displaying market data from public source.")}
                 </p>
             </CardContent>
         </Card>
@@ -407,7 +409,7 @@ export default function DashboardPage() {
           {isPricesLoading && filteredCryptoDataForDisplay.every(c => c.value === 0) ? (
              <p>{t('dashboard.loadingPrices', 'Loading live prices...')}</p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {filteredCryptoDataForDisplay.map((data, i) => (
                 <CryptoDisplayCard 
                   key={data.symbol || i} 
