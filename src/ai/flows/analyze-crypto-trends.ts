@@ -1,3 +1,4 @@
+
 // src/ai/flows/analyze-crypto-trends.ts
 'use server';
 /**
@@ -46,8 +47,6 @@ const analyzeCryptoTrendPrompt = ai.definePrompt({
   Ensure that the output is formatted according to the AnalyzeCryptoTrendOutputSchema.
   `,
    config: {
-    // Adding safety settings to potentially mitigate some service issues if they are content-related,
-    // though 503 is usually a service availability issue.
     safetySettings: [
       { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
       { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
@@ -68,32 +67,52 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
       const result = await analyzeCryptoTrendPrompt(input);
       if (!result || !result.output) {
         console.error(`analyzeCryptoTrendPrompt for ${input.cryptoSymbol} returned no output or undefined output. Result:`, result);
-        return {
+        const errorOutput: AnalyzeCryptoTrendOutput = {
           trend: 'sideways',
           confidence: 0.1,
-          reason: `AI analysis for ${input.cryptoSymbol} failed to produce a valid output.`,
+          reason: `AI analysis for ${input.cryptoSymbol} failed to produce a valid output. Service may be temporarily unavailable or returned an empty response.`,
         };
+        return errorOutput;
       }
-      // Validate the output against the schema before returning
+      
       const parsedOutput = AnalyzeCryptoTrendOutputSchema.safeParse(result.output);
       if (!parsedOutput.success) {
         console.error(`AI output for ${input.cryptoSymbol} did not match schema. Errors:`, parsedOutput.error.flatten());
-        return {
+        const errorOutput: AnalyzeCryptoTrendOutput = {
           trend: 'sideways',
           confidence: 0.1,
           reason: `AI output for ${input.cryptoSymbol} was malformed.`,
         };
+        return errorOutput;
       }
       return parsedOutput.data;
     } catch (error) {
-      console.error(`Error in analyzeCryptoTrendFlow for ${input.cryptoSymbol}:`, error);
-      // Return a default/error state that matches the schema
-      return {
+      let errorMessage = 'Unknown AI analysis error';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else {
+        try {
+          // Attempt to get a string representation for logging complex errors
+          const errorString = JSON.stringify(error);
+          console.error(`Complex error object in analyzeCryptoTrendFlow for ${input.cryptoSymbol} (stringified):`, errorString);
+          // Use a generic message if stringification is too complex or reveals sensitive info
+          errorMessage = "A complex or non-standard error occurred during AI analysis.";
+        } catch (stringifyError) {
+          console.error(`Could not stringify complex error object in analyzeCryptoTrendFlow for ${input.cryptoSymbol}`);
+          errorMessage = "An unstringifiable complex error occurred during AI analysis."
+        }
+      }
+      // Log the original error as well for more detailed debugging on the server
+      console.error(`Full error object in analyzeCryptoTrendFlow for ${input.cryptoSymbol}:`, error);
+
+      const errorOutput: AnalyzeCryptoTrendOutput = {
         trend: 'sideways',
         confidence: 0.1,
-        reason: `AI analysis failed for ${input.cryptoSymbol}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        reason: `AI analysis failed for ${input.cryptoSymbol}: ${errorMessage}. The AI service might be temporarily unavailable or experiencing issues.`,
       };
+      return errorOutput; // Ensure a well-formed, serializable object is always returned
     }
   }
 );
-
