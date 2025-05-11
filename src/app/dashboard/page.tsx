@@ -1,10 +1,10 @@
 // src/app/dashboard/page.tsx
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { CryptoDisplayCard } from '@/components/dashboard/crypto-display-card';
-import { OrderOpportunitySimulator } from '@/components/dashboard/order-opportunity-simulator'; // New component
+import { OrderOpportunitySimulator } from '@/components/dashboard/order-opportunity-simulator';
 import type { CryptoCardData } from '@/components/dashboard/types';
 import { initialCryptoData } from '@/components/dashboard/types';
 import { analyzeCryptoTrend } from '@/ai/flows/analyze-crypto-trends';
@@ -14,24 +14,38 @@ import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const BINANCE_API_BASE_URL = 'https://api.binance.com/api/v3';
-const PRICE_FETCH_INTERVAL = 5000; // 5 seconds for REST fallback
+const COINGECKO_API_BASE_URL = 'https://api.coingecko.com/api/v3/simple/price';
+const COINCAP_WS_URL = 'wss://ws.coincap.io/prices';
+
+const COINGECKO_API_REFRESH_INTERVAL = 60000; // 60 seconds for REST fallback if WS fails completely
 const AI_ANALYSIS_INITIAL_DELAY = 7000; // 7 seconds
 const AI_ANALYSIS_INTERVAL = 60000; // 60 seconds
 
-// Mock function to get recent price data for AI analysis (remains for historical context for AI)
-// TODO: Replace with actual historical data if available, or derive from price stream
+// Mapping for CoinGecko IDs and CoinCap IDs
+const COIN_MAPPINGS: Record<CryptoSymbol, { coingeckoId: string; coincapId: string }> = {
+  BTC: { coingeckoId: 'bitcoin', coincapId: 'bitcoin' },
+  ETH: { coingeckoId: 'ethereum', coincapId: 'ethereum' },
+  SOL: { coingeckoId: 'solana', coincapId: 'solana' },
+  BNB: { coingeckoId: 'binancecoin', coincapId: 'binance-coin' },
+  XRP: { coingeckoId: 'ripple', coincapId: 'xrp' },
+};
+
+const coinGeckoAssetIds = CRYPTO_SYMBOLS.map(s => COIN_MAPPINGS[s].coingeckoId).join(',');
+const coinCapAssetIds = CRYPTO_SYMBOLS.map(s => COIN_MAPPINGS[s].coincapId).join(',');
+
+
+// Mock function to get recent price data for AI analysis
 function getMockRecentPriceData(symbol: CryptoSymbol, currentPrice: number): string {
     const prices = [currentPrice];
     for (let i = 0; i < 9; i++) {
-        const priceFluctuation = (Math.random() - 0.5) * 0.02 * currentPrice; // +/- 1% fluctuation
-        prices.unshift(Math.max(0, currentPrice - priceFluctuation * (i + 1))); // Going back in time
+        const priceFluctuation = (Math.random() - 0.5) * 0.02 * currentPrice;
+        prices.unshift(Math.max(0, currentPrice - priceFluctuation * (i + 1)));
     }
     return prices.map(p => p.toFixed(Math.max(2, (currentPrice < 1 ? 5 : 2)))).join(',');
 }
 
-
-async function updateAllAiTrends(currentCryptoData: CryptoCardData[]): Promise<CryptoCardData[]> {
+// This function is defined outside the component, so it's stable
+async function updateAllAiTrendsExternal(currentCryptoData: CryptoCardData[]): Promise<CryptoCardData[]> {
   const dataToAnalyze = currentCryptoData.filter(crypto => crypto.value > 0);
   if (dataToAnalyze.length === 0) return currentCryptoData;
 
@@ -54,6 +68,7 @@ async function updateAllAiTrends(currentCryptoData: CryptoCardData[]): Promise<C
   });
 }
 
+
 export default function DashboardPage() {
   const [cryptoData, setCryptoData] = useState<CryptoCardData[]>(initialCryptoData);
   const [isPricesLoading, setIsPricesLoading] = useState(true);
@@ -61,6 +76,12 @@ export default function DashboardPage() {
   const { translations } = useLanguage();
   const { toast } = useToast();
   const webSocketRef = useRef<WebSocket | null>(null);
+  const fallbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const cryptoDataRef = useRef<CryptoCardData[]>(initialCryptoData);
+
+  useEffect(() => {
+    cryptoDataRef.current = cryptoData;
+  }, [cryptoData]);
 
   const t = useCallback((key: string, fallback?: string, vars?: Record<string, string | number>) => {
     let msg = translations[key] || fallback || key;
@@ -72,24 +93,22 @@ export default function DashboardPage() {
     return msg;
   }, [translations]);
 
-  const fetchBinancePricesREST = useCallback(async () => {
-    const symbolsToFetch = CRYPTO_SYMBOLS.map(s => `${s}${QUOTE_CURRENCY}`);
-    const symbolsParam = JSON.stringify(symbolsToFetch);
+  const fetchCoinGeckoPricesREST = useCallback(async () => {
     try {
-      const response = await fetch(`${BINANCE_API_BASE_URL}/ticker/price?symbols=${symbolsParam}`);
+      const response = await fetch(`${COINGECKO_API_BASE_URL}?ids=${coinGeckoAssetIds}&vs_currencies=${QUOTE_CURRENCY.toLowerCase()}`);
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Binance API error (REST):', errorData);
-        throw new Error(t('dashboard.api.binance.fetchError', 'Failed to fetch prices from Binance: {status}', { status: response.statusText }));
+        const errorData = await response.text();
+        console.error('CoinGecko API error (REST):', errorData);
+        throw new Error(t('dashboard.api.coingecko.fetchError', 'Failed to fetch prices from CoinGecko: {status}', { status: response.statusText }));
       }
-      const data: { symbol: string; price: string }[] = await response.json();
+      const data: Record<string, Record<string, number>> = await response.json();
       
       setCryptoData(prevData =>
         prevData.map(crypto => {
-          const pairSymbol = `${crypto.symbol}${QUOTE_CURRENCY}`;
-          const foundPrice = data.find(p => p.symbol === pairSymbol);
-          if (foundPrice) {
-            const newPrice = parseFloat(foundPrice.price);
+          const coingeckoId = COIN_MAPPINGS[crypto.symbol].coingeckoId;
+          const priceData = data[coingeckoId];
+          if (priceData && priceData[QUOTE_CURRENCY.toLowerCase()] !== undefined) {
+            const newPrice = priceData[QUOTE_CURRENCY.toLowerCase()];
             return {
               ...crypto,
               previousValue: crypto.value !== 0 ? crypto.value : newPrice,
@@ -99,110 +118,163 @@ export default function DashboardPage() {
           return crypto;
         })
       );
-      if (isPricesLoading) setIsPricesLoading(false);
+      setIsPricesLoading(false); // Successfully fetched, turn off initial loading
     } catch (error) {
-      console.error('Error fetching Binance prices (REST):', error);
+      console.error('Error fetching CoinGecko prices (REST):', error);
       toast({
-        title: t('dashboard.api.binance.errorTitle', 'Price Fetch Error'),
-        description: error instanceof Error ? error.message : t('dashboard.api.binance.unknownError', 'Could not fetch live prices from Binance.'),
+        title: t('dashboard.api.coingecko.errorTitle', 'Price Fetch Error (CoinGecko)'),
+        description: error instanceof Error ? error.message : t('dashboard.api.coingecko.unknownError', 'Could not fetch live prices from CoinGecko.'),
         variant: "destructive",
       });
+      // isPricesLoading remains true or is handled by WebSocket status
     }
-  }, [t, toast, isPricesLoading]);
+  }, [t, toast, setCryptoData, setIsPricesLoading]);
+
 
   const connectWebSocket = useCallback(() => {
     if (webSocketRef.current && webSocketRef.current.readyState === WebSocket.OPEN) {
-      return; // Already connected
+      return; 
+    }
+    if (webSocketRef.current) { // Clean up existing socket before reconnecting
+        webSocketRef.current.close();
     }
 
-    const streamNames = CRYPTO_SYMBOLS.map(s => `${s.toLowerCase()}${QUOTE_CURRENCY.toLowerCase()}@ticker`).join('/');
-    const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${streamNames}`);
+    const ws = new WebSocket(`${COINCAP_WS_URL}?assets=${coinCapAssetIds}`);
     webSocketRef.current = ws;
 
     ws.onopen = () => {
-      console.log('Binance WebSocket connected.');
-      setIsPricesLoading(false);
+      console.log('CoinCap WebSocket connected.');
+      setIsPricesLoading(false); // Connected, turn off initial loading
+      if (fallbackIntervalRef.current) { // Clear CoinGecko fallback if WebSocket connects
+        clearInterval(fallbackIntervalRef.current);
+        fallbackIntervalRef.current = null;
+        console.log('Cleared CoinGecko REST fallback interval as WebSocket connected.');
+      }
     };
 
     ws.onmessage = (event) => {
       try {
-        const message = JSON.parse(event.data as string);
-        if (message.e === '24hrTicker') { // Check for ticker event type
-          const symbol = message.s.replace(QUOTE_CURRENCY, '') as CryptoSymbol;
-          const newPrice = parseFloat(message.c); // 'c' is the last price
+        const message = JSON.parse(event.data as string) as Record<string, string>;
+        const updatedSymbols: CryptoSymbol[] = [];
 
-          if (CRYPTO_SYMBOLS.includes(symbol)) {
-            setCryptoData(prevData =>
-              prevData.map(cd =>
-                cd.symbol === symbol
-                  ? { ...cd, previousValue: cd.value !== 0 ? cd.value : newPrice, value: newPrice }
-                  : cd
-              )
-            );
-            if (isPricesLoading) setIsPricesLoading(false);
-          }
+        setCryptoData(prevData => {
+          let changed = false;
+          const newData = prevData.map(cd => {
+            const coinCapId = COIN_MAPPINGS[cd.symbol].coincapId;
+            if (message[coinCapId]) {
+              const newPrice = parseFloat(message[coinCapId]);
+              if (cd.value !== newPrice) {
+                updatedSymbols.push(cd.symbol);
+                changed = true;
+                return { ...cd, previousValue: cd.value !== 0 ? cd.value : newPrice, value: newPrice };
+              }
+            }
+            return cd;
+          });
+          if(changed) return newData;
+          return prevData; // No change, return previous state to avoid unnecessary re-render
+        });
+        
+        if (updatedSymbols.length > 0) {
+          setIsPricesLoading(false); // Prices received, turn off initial loading if it was on
         }
+
       } catch (error) {
-        console.error('Error processing WebSocket message:', error, event.data);
+        console.error('Error processing CoinCap WebSocket message:', error, event.data);
       }
     };
 
-    ws.onerror = (error) => {
-      console.error('Binance WebSocket error:', error);
+    ws.onerror = (event: Event) => {
+      console.error('CoinCap WebSocket error event:', event); 
+      
+      let errorDetailsMessage = 'Unknown WebSocket error occurred with CoinCap.';
+      if (event instanceof ErrorEvent && event.message) { // ErrorEvent is more specific
+        errorDetailsMessage = `Error message: ${event.message}, Type: ${event.type}`;
+      } else if (event.type) {
+        errorDetailsMessage = `Event type: ${event.type}`;
+      }
+      
+      console.error(
+        `CoinCap WebSocket detailed error: ${errorDetailsMessage}. WebSocket readyState: ${ws?.readyState}. Asset IDs: ${coinCapAssetIds}`
+      );
+      
       toast({
         title: t('dashboard.websocket.errorTitle', 'WebSocket Error'),
-        description: t('dashboard.websocket.errorDescription', 'Connection to live price feed failed. Falling back to periodic updates.'),
-        variant: "destructive",
+        description: t('dashboard.websocket.errorDescriptionCoinCap', 'Connection to CoinCap live price feed failed. Falling back to CoinGecko periodic updates.'),
+        variant: "warning", // Changed to warning as fallback exists
       });
-      // Fallback to REST API polling if WebSocket fails
-      fetchBinancePricesREST();
-      const intervalId = setInterval(fetchBinancePricesREST, PRICE_FETCH_INTERVAL);
-      // Clean up this interval if the component unmounts or WebSocket reconnects
-      return () => clearInterval(intervalId); 
+
+      // Fallback to CoinGecko REST API polling if WebSocket fails
+      if (!fallbackIntervalRef.current) { // Start fallback only if not already running
+        fetchCoinGeckoPricesREST(); // Initial fetch for fallback
+        fallbackIntervalRef.current = setInterval(fetchCoinGeckoPricesREST, COINGECKO_API_REFRESH_INTERVAL);
+        console.log('Started CoinGecko REST fallback interval due to WebSocket error.');
+      }
     };
 
-    ws.onclose = () => {
-      console.log('Binance WebSocket disconnected.');
-      // Optional: Attempt to reconnect or notify user. For now, rely on REST fallback initiated by onerror.
+    ws.onclose = (event: CloseEvent) => {
+      console.log(`CoinCap WebSocket disconnected. Code: ${event.code}, Reason: ${event.reason}`);
+      // Optionally attempt to reconnect or rely on onerror to setup fallback
+      if (!event.wasClean && !fallbackIntervalRef.current) { // If not a clean close and no fallback active
+        console.log('WebSocket closed unexpectedly, attempting to set up CoinGecko fallback.');
+        fetchCoinGeckoPricesREST(); // Initial fetch for fallback
+        fallbackIntervalRef.current = setInterval(fetchCoinGeckoPricesREST, COINGECKO_API_REFRESH_INTERVAL);
+      }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [t, toast, fetchBinancePricesREST, isPricesLoading]); // isPricesLoading might cause re-connections, review if problematic
+  }, [t, toast, setCryptoData, setIsPricesLoading, fetchCoinGeckoPricesREST]);
+
 
   useEffect(() => {
     connectWebSocket();
-    const restIntervalId = setInterval(fetchBinancePricesREST, PRICE_FETCH_INTERVAL * 2); // Fetch REST less frequently if WS is primary
 
     return () => {
       if (webSocketRef.current) {
         webSocketRef.current.close();
+        webSocketRef.current = null;
       }
-      clearInterval(restIntervalId);
+      if (fallbackIntervalRef.current) {
+        clearInterval(fallbackIntervalRef.current);
+        fallbackIntervalRef.current = null;
+      }
     };
-  }, [connectWebSocket, fetchBinancePricesREST]);
+  }, [connectWebSocket]);
 
 
   // AI Trend Analysis (periodically)
   useEffect(() => {
     let isMounted = true;
+    let aiIntervalTimerId: NodeJS.Timeout | null = null;
+
     const performAiUpdate = async () => {
-      // Only run AI analysis if there's actual price data
-      if (!isMounted || cryptoData.every(c => c.value === 0)) return;
+      if (!isMounted || cryptoDataRef.current.every(c => c.value === 0)) return;
 
       setIsAiLoading(true);
       try {
-        const currentDataForAI = JSON.parse(JSON.stringify(cryptoData)) as CryptoCardData[];
-        const updatedDataWithTrends = await updateAllAiTrends(currentDataForAI);
+        // Use the ref for the most current data without adding cryptoData to dependencies
+        const currentDataForAI = JSON.parse(JSON.stringify(cryptoDataRef.current)) as CryptoCardData[];
+        const updatedDataWithTrends = await updateAllAiTrendsExternal(currentDataForAI);
         
         if (isMounted) {
-          setCryptoData(updatedDataWithTrends);
+          // Merge AI results carefully, cryptoData might have newer prices
+          setCryptoData(prevData => {
+            return prevData.map(currentCrypto => {
+              const trendUpdate = updatedDataWithTrends.find(upd => upd.symbol === currentCrypto.symbol);
+              if (trendUpdate && trendUpdate.trendAnalysis) {
+                return { ...currentCrypto, trendAnalysis: trendUpdate.trendAnalysis };
+              }
+              return currentCrypto;
+            });
+          });
         }
       } catch (error) {
         console.error("Error in performAiUpdate:", error);
-        toast({
-          title: t('dashboard.ai.errorTitle', 'AI Analysis Error'),
-          description: t('dashboard.ai.errorDescription', 'Could not update AI trends.'),
-          variant: "destructive",
-        });
+        if (isMounted) {
+          toast({
+            title: t('dashboard.ai.errorTitle', 'AI Analysis Error'),
+            description: t('dashboard.ai.errorDescription', 'Could not update AI trends.'),
+            variant: "destructive",
+          });
+        }
       } finally {
         if (isMounted) {
           setIsAiLoading(false);
@@ -210,28 +282,23 @@ export default function DashboardPage() {
       }
     };
     
-    const initialAiTimeoutId = setTimeout(() => {
-      if (isMounted) performAiUpdate();
-      const aiIntervalId = setInterval(() => {
-        if (isMounted) performAiUpdate();
-      }, AI_ANALYSIS_INTERVAL);
-      
-      // Cleanup for the interval
-      if (isMounted) { // Check mount status before returning cleanup
-          // This cleanup will be registered only if the timeout completes and interval starts
-          // However, the outer effect cleanup already handles isMounted.
-      }
-       return () => { // This cleanup is for the interval started by setTimeout
-          if (isMounted) clearInterval(aiIntervalId);
-       }
+    const initialTimeoutId = setTimeout(() => {
+        if (isMounted) {
+            performAiUpdate(); // First call
+            aiIntervalTimerId = setInterval(() => { // Subsequent calls
+                if (isMounted) performAiUpdate();
+            }, AI_ANALYSIS_INTERVAL);
+        }
     }, AI_ANALYSIS_INITIAL_DELAY);
 
     return () => {
       isMounted = false;
-      clearTimeout(initialAiTimeoutId);
+      clearTimeout(initialTimeoutId);
+      if (aiIntervalTimerId) {
+        clearInterval(aiIntervalTimerId);
+      }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [t, toast]); // cryptoData removed to avoid re-triggering AI too frequently based on price updates. AI runs on its own schedule.
+  }, [t, toast, setIsAiLoading, setCryptoData]); // updateAllAiTrendsExternal is stable
 
   const cryptoPricesForSimulator = useMemo(() => 
     cryptoData.reduce((acc, curr) => {
@@ -258,7 +325,8 @@ export default function DashboardPage() {
                 <CryptoDisplayCard 
                   key={data.symbol || i} 
                   data={data} 
-                  isLoading={isPricesLoading || (isAiLoading && !data.trendAnalysis && data.value !==0)} 
+                  isLoading={isPricesLoading && data.value === 0} // Simplified isLoading for card
+                  isAiTrendLoading={isAiLoading && !data.trendAnalysis && data.value !==0}
                 />
               ))}
             </div>
@@ -266,10 +334,10 @@ export default function DashboardPage() {
         </section>
 
         <section className="mb-8">
-          {/* The new combined simulator replaces both OrderSimulator and OpportunityList */}
           <OrderOpportunitySimulator cryptoPrices={cryptoPricesForSimulator} />
         </section>
       </div>
     </MainLayout>
   );
 }
+

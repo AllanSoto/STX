@@ -12,17 +12,18 @@ import { useLanguage } from '@/hooks/use-language';
 
 interface CryptoDisplayCardProps {
   data: CryptoCardData;
-  isLoading: boolean; 
+  isLoading: boolean; // True if initial price for this card is still loading
+  isAiTrendLoading: boolean; // True if AI trend for this card is loading
 }
 
-export function CryptoDisplayCard({ data, isLoading }: CryptoDisplayCardProps) {
+export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoDisplayCardProps) {
   const { symbol, value, previousValue, trendAnalysis } = data;
   const [priceChangeClass, setPriceChangeClass] = useState('');
   const { translations } = useLanguage();
   const t = (key: string, fallback?: string) => translations[key] || fallback || key;
 
   useEffect(() => {
-    if (previousValue && previousValue !== 0 && value !== 0) {
+    if (previousValue !== undefined && previousValue !== 0 && value !== 0) {
       if (value > previousValue) {
         setPriceChangeClass('text-primary'); 
       } else if (value < previousValue) {
@@ -35,7 +36,7 @@ export function CryptoDisplayCard({ data, isLoading }: CryptoDisplayCardProps) {
     }
   }, [value, previousValue]);
 
-  if (value === 0 && isLoading) { 
+  if (isLoading) { // Show skeleton if initial price is loading
     return (
       <Card className="shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -50,7 +51,6 @@ export function CryptoDisplayCard({ data, isLoading }: CryptoDisplayCardProps) {
     );
   }
 
-  const isTrendLoading = isLoading && !trendAnalysis && value !== 0;
 
   const getTrendText = () => {
     if (!trendAnalysis) return t('dashboard.cryptoCard.trend.notAvailable', 'Trend N/A');
@@ -73,7 +73,9 @@ export function CryptoDisplayCard({ data, isLoading }: CryptoDisplayCardProps) {
            <CryptoIcon symbol={symbol} className="mr-2" />
           {symbol}
         </CardTitle>
-        {trendAnalysis && (
+        {isAiTrendLoading ? (
+            <Skeleton className="h-5 w-5 rounded-full" />
+        ): trendAnalysis ? (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
@@ -85,8 +87,7 @@ export function CryptoDisplayCard({ data, isLoading }: CryptoDisplayCardProps) {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-        )}
-        {isTrendLoading && !trendAnalysis && <Skeleton className="h-5 w-5 rounded-full" />}
+        ) : null /* No icon if not loading and no analysis */ }
       </CardHeader>
       <CardContent>
         <div className={`text-2xl font-bold ${priceChangeClass}`}>
@@ -95,7 +96,7 @@ export function CryptoDisplayCard({ data, isLoading }: CryptoDisplayCardProps) {
             maximumFractionDigits: value < 1 ? 5 : 2 
           })}
         </div>
-        {isTrendLoading ? ( 
+        {isAiTrendLoading ? ( 
             <Skeleton className="h-4 w-20 mt-1" />
         ) : (
             <p className={`text-xs ${trendAnalysis && trendAnalysis.trend === 'upward' ? 'text-primary' : trendAnalysis && trendAnalysis.trend === 'downward' ? 'text-destructive' : 'text-muted-foreground'}`}>
