@@ -25,8 +25,8 @@ const BINANCE_WS_URL = 'wss://stream.binance.com:9443/ws/!miniTicker@arr';
 const BINANCE_API_REST_BASE_URL = 'https://api.binance.com/api/v3';
 
 const BINANCE_API_REFRESH_INTERVAL = 5000; // 5 seconds for Binance REST fallback
-const AI_ANALYSIS_INITIAL_DELAY = 7000; // 7 seconds
-const AI_ANALYSIS_INTERVAL = 60000 * 5; // 5 minutes for AI analysis
+const AI_ANALYSIS_INITIAL_DELAY = 5000; // 5 seconds (reduced from 7)
+const AI_ANALYSIS_INTERVAL = 60000 * 1; // 1 minute for AI analysis (reduced from 5)
 const ALERT_CHECK_INTERVAL = 10000; // 10 seconds to check alerts (client-side simulation)
 
 
@@ -599,5 +599,4 @@ export default function DashboardPage() {
     </MainLayout>
   );
 }
-
 
