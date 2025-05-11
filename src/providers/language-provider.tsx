@@ -26,8 +26,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'settings.logout': 'Log out',
     'dashboard.title': 'Dashboard',
     'dashboard.marketOverview': 'Market Overview',
-    'dashboard.orderSimulator': 'Order Simulator', // Old, might be replaced by new component's title
-    'dashboard.opportunitySimulator': 'Opportunity Simulator', // Old, might be replaced
+    'dashboard.orderSimulator': 'Order Simulator', 
+    'dashboard.opportunitySimulator': 'Opportunity Simulator', 
     'dashboard.loadingPrices': 'Loading live prices...',
     'login.title': 'Log In',
     'login.description': 'Log in to your account',
@@ -130,7 +130,10 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.ai.errorDescription': 'Could not update AI trends.',
     'dashboard.websocket.errorTitle': 'WebSocket Error',
     'dashboard.websocket.errorDescriptionBinance': 'Connection to Binance live price feed failed. Falling back to periodic updates.',
-    'dashboard.websocket.errorDescriptionCoinCap': 'Connection to CoinCap live price feed failed. Falling back to CoinGecko periodic updates.',
+    'dashboard.websocket.errorDescriptionCoinCap': 'Connection to CoinCap live price feed failed. Falling back to Binance periodic updates.',
+    'dashboard.websocket.errorUnknownCoinCap': 'Unknown WebSocket error occurred with CoinCap.',
+    'dashboard.websocket.errorMessage': 'Error message: {message}, Type: {type}',
+    'dashboard.websocket.eventType': 'Event type: {type}',
     
     'zod.email.invalid': 'Invalid email address.',
     'zod.password.required': 'Password is required.',
@@ -264,7 +267,10 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.ai.errorDescription': 'No se pudieron actualizar las tendencias de IA.',
     'dashboard.websocket.errorTitle': 'Error de WebSocket',
     'dashboard.websocket.errorDescriptionBinance': 'Falló la conexión al feed de precios en vivo de Binance. Cambiando a actualizaciones periódicas.',
-    'dashboard.websocket.errorDescriptionCoinCap': 'Falló la conexión al feed de precios en vivo de CoinCap. Cambiando a actualizaciones periódicas de CoinGecko.',
+    'dashboard.websocket.errorDescriptionCoinCap': 'Falló la conexión al feed de precios en vivo de CoinCap. Cambiando a actualizaciones periódicas de Binance.',
+    'dashboard.websocket.errorUnknownCoinCap': 'Ocurrió un error desconocido de WebSocket con CoinCap.',
+    'dashboard.websocket.errorMessage': 'Mensaje de error: {message}, Tipo: {type}',
+    'dashboard.websocket.eventType': 'Tipo de evento: {type}',
 
     'zod.email.invalid': 'Dirección de correo electrónico no válida.',
     'zod.password.required': 'La contraseña es obligatoria.',
@@ -287,7 +293,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.orderOpportunity.positiveUsdtAmount': 'El monto debe ser un número positivo.',
     'zod.orderOpportunity.targetPricePositive': 'El precio objetivo debe ser un número positivo.',
   },
-  // Other languages remain as previously, ensure to add new keys if needed
   fr: {
     'app.name': 'SimulTradex',
     'app.loadingMessage': 'Chargement de SimulTradex...',
@@ -397,7 +402,10 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.ai.errorDescription': 'Impossible de mettre à jour les tendances IA.',
     'dashboard.websocket.errorTitle': 'Erreur WebSocket',
     'dashboard.websocket.errorDescriptionBinance': 'La connexion au flux de prix en direct de Binance a échoué. Passage aux mises à jour périodiques.',
-    'dashboard.websocket.errorDescriptionCoinCap': 'La connexion au flux de prix en direct de CoinCap a échoué. Passage aux mises à jour périodiques de CoinGecko.',
+    'dashboard.websocket.errorDescriptionCoinCap': 'La connexion au flux de prix en direct de CoinCap a échoué. Passage aux mises à jour périodiques de Binance.',
+    'dashboard.websocket.errorUnknownCoinCap': 'Une erreur WebSocket inconnue est survenue avec CoinCap.',
+    'dashboard.websocket.errorMessage': 'Message d\'erreur : {message}, Type : {type}',
+    'dashboard.websocket.eventType': 'Type d\'événement : {type}',
 
     'zod.email.invalid': 'Adresse e-mail invalide.',
     'zod.password.required': 'Le mot de passe est requis.',
@@ -529,7 +537,10 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.ai.errorDescription': 'एआई रुझान अपडेट नहीं किए जा सके।',
     'dashboard.websocket.errorTitle': 'वेबसॉकेट त्रुटि',
     'dashboard.websocket.errorDescriptionBinance': 'बायनेंस लाइव मूल्य फ़ीड से कनेक्शन विफल। आवधिक अपडेट पर वापस जा रहे हैं।',
-    'dashboard.websocket.errorDescriptionCoinCap': 'कॉइनकैप लाइव मूल्य फ़ीड से कनेक्शन विफल। कॉइनगेको आवधिक अपडेट पर वापस जा रहे हैं।',
+    'dashboard.websocket.errorDescriptionCoinCap': 'कॉइनकैप लाइव मूल्य फ़ीड से कनेक्शन विफल। बायनेंस आवधिक अपडेट पर वापस जा रहे हैं।',
+    'dashboard.websocket.errorUnknownCoinCap': 'कॉइनकैप के साथ अज्ञात वेबसॉकेट त्रुटि हुई।',
+    'dashboard.websocket.errorMessage': 'त्रुटि संदेश: {message}, प्रकार: {type}',
+    'dashboard.websocket.eventType': 'घटना प्रकार: {type}',
 
     'zod.email.invalid': 'अमान्य ईमेल पता।',
     'zod.password.required': 'पासवर्ड आवश्यक है।',
@@ -661,7 +672,10 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.ai.errorDescription': '无法更新AI趋势。',
     'dashboard.websocket.errorTitle': 'WebSocket 错误',
     'dashboard.websocket.errorDescriptionBinance': '连接币安实时价格源失败。将回退到周期性更新。',
-    'dashboard.websocket.errorDescriptionCoinCap': '连接 CoinCap 实时价格源失败。将回退到 CoinGecko 周期性更新。',
+    'dashboard.websocket.errorDescriptionCoinCap': '连接 CoinCap 实时价格源失败。将回退到币安周期性更新。',
+    'dashboard.websocket.errorUnknownCoinCap': '与 CoinCap 连接发生未知 WebSocket 错误。',
+    'dashboard.websocket.errorMessage': '错误信息：{message}，类型：{type}',
+    'dashboard.websocket.eventType': '事件类型：{type}',
 
     'zod.email.invalid': '无效的电子邮件地址。',
     'zod.password.required': '密码是必需的。',
@@ -740,4 +754,3 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     </LanguageContext.Provider>
   );
 };
-
