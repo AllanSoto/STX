@@ -85,6 +85,16 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
     outputSchema: AnalyzeCryptoTrendOutputSchema,
   },
   async (input): Promise<AnalyzeCryptoTrendOutput> => {
+    if (!process.env.GOOGLE_API_KEY) {
+      const apiKeyMissingError = "GOOGLE_API_KEY is not set in the server environment. AI features cannot function.";
+      console.error(apiKeyMissingError);
+      return {
+        trend: 'sideways',
+        confidence: 0,
+        reason: `AI service configuration error for ${input.cryptoSymbol}: ${apiKeyMissingError} Please contact support or ensure the API key is correctly configured on the server.`,
+      };
+    }
+
     try {
       const result = await analyzeCryptoTrendPrompt(input);
       if (!result || !result.output) {
@@ -112,11 +122,13 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
       console.error(`Full error object in analyzeCryptoTrendFlow for ${input.cryptoSymbol}:`, error);
 
       let specificDetail = "The AI service might be temporarily unavailable or experiencing issues.";
-      if (error instanceof Error && typeof error.message === 'string') { // Check if error.message is a string
+      if (error instanceof Error && typeof error.message === 'string') {
         if (error.message.includes('Service Unavailable') || error.message.includes('503')) {
             specificDetail = `AI service for ${input.cryptoSymbol} is currently unavailable. Please try again later. (${error.message})`;
         } else if (error.message.includes('Bad Gateway') || error.message.includes('502')) {
              specificDetail = `AI service for ${input.cryptoSymbol} experienced a temporary network issue. Please try again later. (${error.message})`;
+        } else if (error.message.toLowerCase().includes('api key not valid') || error.message.toLowerCase().includes('permission denied') || error.message.toLowerCase().includes('authentication')) {
+             specificDetail = `AI service authentication/authorization failed for ${input.cryptoSymbol}. Please check API key and permissions. (${error.message})`;
         } else if (error.message.includes('fetch') && (error.message.toLowerCase().includes('failed to fetch') || error.message.includes('network error'))) {
           specificDetail = `Network error prevented AI analysis for ${input.cryptoSymbol}. Please check your internet connection. (${error.message})`;
         } else {
@@ -139,4 +151,3 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
     }
   }
 );
-
