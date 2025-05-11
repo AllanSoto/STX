@@ -35,6 +35,10 @@ const COIN_MAPPINGS: Record<CryptoSymbol, { coingeckoId: string; coincapId: stri
 
 const binanceSymbolsForREST = CRYPTO_SYMBOLS.map(s => COIN_MAPPINGS[s].binanceSymbol);
 
+// Symbols to display on the dashboard cards
+const SYMBOLS_TO_DISPLAY_ON_CARDS: CryptoSymbol[] = ['BTC', 'ETH', 'SOL', 'XRP'];
+
+
 // Mock function to get recent price data for AI analysis
 function getMockRecentPriceData(symbol: CryptoSymbol, currentPrice: number): string {
     const prices = [currentPrice];
@@ -216,6 +220,7 @@ export default function DashboardPage() {
 
       if (webSocketRef.current) { // Ensure we close the failed WebSocket
           webSocketRef.current.close();
+          webSocketRef.current = null; // Important to nullify after close to allow reconnect attempt or fallback
       }
       startBinanceRestFallback();
     };
@@ -317,6 +322,11 @@ export default function DashboardPage() {
       return acc;
     }, {} as Record<CryptoSymbol, number>),
   [cryptoData]);
+  
+  const filteredCryptoDataForDisplay = useMemo(() => {
+    return cryptoData.filter(cd => SYMBOLS_TO_DISPLAY_ON_CARDS.includes(cd.symbol));
+  }, [cryptoData]);
+
 
   return (
     <MainLayout>
@@ -325,15 +335,15 @@ export default function DashboardPage() {
         
         <section className="mb-8">
           <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('dashboard.marketOverview', 'Market Overview')}</h2>
-          {isPricesLoading && cryptoData.every(c => c.value === 0) ? (
+          {isPricesLoading && filteredCryptoDataForDisplay.every(c => c.value === 0) ? (
              <p>{t('dashboard.loadingPrices', 'Loading live prices...')}</p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {cryptoData.map((data, i) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {filteredCryptoDataForDisplay.map((data, i) => (
                 <CryptoDisplayCard 
                   key={data.symbol || i} 
                   data={data} 
-                  isLoading={isPricesLoading && data.value === 0} // Still loading if master flag is true AND this specific coin has no value
+                  isLoading={isPricesLoading && data.value === 0} 
                   isAiTrendLoading={isAiLoading && !data.trendAnalysis && data.value !==0}
                 />
               ))}
