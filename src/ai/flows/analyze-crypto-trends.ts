@@ -9,7 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit'; // Changed from 'genkit/zod' to 'genkit'
+import {z} from 'genkit'; 
 
 const AnalyzeCryptoTrendInputSchema = z.object({
   cryptoSymbol: z.string().describe('The ticker symbol of the cryptocurrency (e.g., BTC, ETH).'),
@@ -28,21 +28,22 @@ export async function analyzeCryptoTrend(input: AnalyzeCryptoTrendInput): Promis
   try {
     return await analyzeCryptoTrendFlow(input);
   } catch (error) {
-    // This is a top-level catch for the exported server action.
-    // It ensures that any error from analyzeCryptoTrendFlow, even if unexpected
-    // or not caught by its internal try-catch, results in a serializable error object.
     console.error(`Critical error in analyzeCryptoTrend wrapper for ${input.cryptoSymbol}:`, error);
     
-    let userFriendlyMessage = `A critical server-side error occurred while analyzing the trend for ${input.cryptoSymbol}.`;
-    if (error instanceof Error) {
-      // Avoid sending overly detailed or sensitive error messages to the client directly.
-      // Log full error on server, return generic or sanitized message.
-      userFriendlyMessage += ` Please check server logs for details.`;
+    let detailMessage = "Please check server logs for details.";
+    if (error instanceof Error && error.message) {
+      detailMessage += ` Error: ${error.message}`;
+    } else if (typeof error === 'string') {
+      detailMessage += ` Error: ${error}`;
+    } else {
+      detailMessage = `An unexpected error type was caught at the top level. Check server logs for ${input.cryptoSymbol}.`;
     }
+
+    const userFriendlyMessage = `A critical server-side error occurred while analyzing the trend for ${input.cryptoSymbol}. ${detailMessage}`;
     
     const errorOutput: AnalyzeCryptoTrendOutput = {
       trend: 'sideways',
-      confidence: 0, // Indicate very low confidence for critical errors
+      confidence: 0,
       reason: userFriendlyMessage,
     };
     return errorOutput;
@@ -108,28 +109,33 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
       }
       return parsedOutput.data;
     } catch (error) {
-      // Log the original error for server-side debugging
       console.error(`Full error object in analyzeCryptoTrendFlow for ${input.cryptoSymbol}:`, error);
 
-      let userFriendlyMessage = `AI analysis failed for ${input.cryptoSymbol}. The AI service might be temporarily unavailable or experiencing issues.`;
-
-      if (error instanceof Error) {
-         // You can customize this further based on specific error messages if needed
+      let specificDetail = "The AI service might be temporarily unavailable or experiencing issues.";
+      if (error instanceof Error && typeof error.message === 'string') { // Check if error.message is a string
         if (error.message.includes('Service Unavailable') || error.message.includes('503')) {
-            userFriendlyMessage = `AI service for ${input.cryptoSymbol} is currently unavailable. Please try again later.`;
+            specificDetail = `AI service for ${input.cryptoSymbol} is currently unavailable. Please try again later. (${error.message})`;
         } else if (error.message.includes('Bad Gateway') || error.message.includes('502')) {
-             userFriendlyMessage = `AI service for ${input.cryptoSymbol} experienced a temporary network issue. Please try again later.`;
+             specificDetail = `AI service for ${input.cryptoSymbol} experienced a temporary network issue. Please try again later. (${error.message})`;
         } else if (error.message.includes('fetch') && (error.message.toLowerCase().includes('failed to fetch') || error.message.includes('network error'))) {
-          userFriendlyMessage = `Network error prevented AI analysis for ${input.cryptoSymbol}. Please check your internet connection.`;
+          specificDetail = `Network error prevented AI analysis for ${input.cryptoSymbol}. Please check your internet connection. (${error.message})`;
+        } else {
+          specificDetail = `An error occurred during AI analysis: ${error.message}`;
         }
+      } else if (typeof error === 'string') {
+        specificDetail = `An error occurred during AI analysis: ${error}`;
+      } else {
+        specificDetail = `An unexpected error type occurred during AI analysis. Check server logs for ${input.cryptoSymbol}.`;
       }
+      
+      const userFriendlyMessage = `AI analysis failed for ${input.cryptoSymbol}. ${specificDetail}`;
       
       const errorOutput: AnalyzeCryptoTrendOutput = {
         trend: 'sideways',
         confidence: 0.1,
         reason: userFriendlyMessage,
       };
-      return errorOutput; // Ensure a well-formed, serializable object is always returned
+      return errorOutput;
     }
   }
 );
