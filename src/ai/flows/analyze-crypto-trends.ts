@@ -9,8 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z}  from 'genkit/zod'; // Use from genkit/zod as per recent best practices if applicable, or stick to 'zod' if current works. Assuming 'zod' is fine.
-// import {z} from 'zod'; // Original was 'zod', let's stick to it unless specified otherwise.
+import {z} from 'genkit'; // Changed from 'genkit/zod' to 'genkit'
 
 const AnalyzeCryptoTrendInputSchema = z.object({
   cryptoSymbol: z.string().describe('The ticker symbol of the cryptocurrency (e.g., BTC, ETH).'),
@@ -99,6 +98,8 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
             userFriendlyMessage = `AI service for ${input.cryptoSymbol} is currently unavailable. Please try again later.`;
         } else if (error.message.includes('Bad Gateway') || error.message.includes('502')) {
              userFriendlyMessage = `AI service for ${input.cryptoSymbol} experienced a temporary network issue. Please try again later.`;
+        } else if (error.message.includes('fetch') && (error.message.toLowerCase().includes('failed to fetch') || error.message.includes('network error'))) {
+          userFriendlyMessage = `Network error prevented AI analysis for ${input.cryptoSymbol}. Please check your internet connection.`;
         }
       }
       
