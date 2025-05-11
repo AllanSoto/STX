@@ -47,30 +47,17 @@ export async function analyzeCryptoTrend(input: AnalyzeCryptoTrendInput): Promis
       );
       return {
         trend: 'sideways',
-        confidence: 0, // Indicates complete failure or uncertainty
-        reason: `Internal error: AI flow for ${input.cryptoSymbol} returned an unexpected data shape. Please check server logs.`,
+        confidence: 0,
+        reason: `Internal error: AI flow for ${input.cryptoSymbol} returned an unexpected data shape. Check server logs.`,
       };
     }
   } catch (error: any) {
     console.error(`Critical error in analyzeCryptoTrend wrapper for ${input.cryptoSymbol}:`, error);
-    
-    let errorMessage = "An unknown error occurred during trend analysis.";
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    } else if (typeof error === 'string') {
-      errorMessage = error;
-    } else if (error && typeof error.toString === 'function') {
-      // Try toString as a fallback if it's not a standard Error or string
-      errorMessage = error.toString();
-    }
-    // Avoid JSON.stringify on unknown error types as it might fail
-
-    const userFriendlyMessage = `Analysis for ${input.cryptoSymbol} failed: ${errorMessage}`;
-    
+    const failureReason = error instanceof Error ? error.name : 'UnknownError';
     return {
       trend: 'sideways',
       confidence: 0,
-      reason: userFriendlyMessage,
+      reason: `Analysis for ${input.cryptoSymbol} failed due to ${failureReason}. Check server logs for details.`,
     };
   }
 }
@@ -79,7 +66,7 @@ const analyzeCryptoTrendPrompt = ai.definePrompt({
   name: 'analyzeCryptoTrendPrompt',
   input: {schema: AnalyzeCryptoTrendInputSchema},
   output: {schema: AnalyzeCryptoTrendOutputSchema},
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-1.5-flash-latest', // Using 1.5-flash as 2.0-flash was causing issues
   prompt: `You are an AI assistant specializing in cryptocurrency trend analysis.
 
   Analyze the recent price movements of {{cryptoSymbol}} based on the following data and determine if the trend is upward, downward, or sideways.
@@ -111,12 +98,11 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
   },
   async (input): Promise<AnalyzeCryptoTrendOutput> => {
     if (!process.env.GOOGLE_API_KEY) {
-      const apiKeyMissingError = "GOOGLE_API_KEY is not set in the server environment. AI features cannot function.";
-      console.error(apiKeyMissingError);
+      console.error("GOOGLE_API_KEY is not set in the server environment. AI features cannot function.");
       return {
         trend: 'sideways',
         confidence: 0,
-        reason: `AI service configuration error for ${input.cryptoSymbol}: ${apiKeyMissingError} Please contact support or ensure the API key is correctly configured on the server.`,
+        reason: `AI service configuration error for ${input.cryptoSymbol}: GOOGLE_API_KEY missing.`,
       };
     }
 
@@ -127,7 +113,7 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
         return {
           trend: 'sideways',
           confidence: 0,
-          reason: `AI analysis for ${input.cryptoSymbol} failed to produce a valid output. Service may be temporarily unavailable or returned an empty response.`,
+          reason: `AI analysis for ${input.cryptoSymbol} returned no output.`,
         };
       }
       
@@ -137,38 +123,17 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
         return {
           trend: 'sideways',
           confidence: 0,
-          reason: `AI output for ${input.cryptoSymbol} was malformed. Details: ${parsedOutput.error.flatten().formErrors.join(', ')}`,
+          reason: `AI output for ${input.cryptoSymbol} was malformed. Check server logs.`,
         };
       }
       return parsedOutput.data;
     } catch (error) {
-      console.error(`Full error object in analyzeCryptoTrendFlow for ${input.cryptoSymbol}:`, error);
-
-      let specificDetail = "The AI service might be temporarily unavailable or experiencing issues.";
-      if (error instanceof Error && typeof error.message === 'string') {
-        if (error.message.includes('Service Unavailable') || error.message.includes('503')) {
-            specificDetail = `AI service for ${input.cryptoSymbol} is currently unavailable. Please try again later. (${error.message})`;
-        } else if (error.message.includes('Bad Gateway') || error.message.includes('502')) {
-             specificDetail = `AI service for ${input.cryptoSymbol} experienced a temporary network issue. Please try again later. (${error.message})`;
-        } else if (error.message.toLowerCase().includes('api key not valid') || error.message.toLowerCase().includes('permission denied') || error.message.toLowerCase().includes('authentication')) {
-             specificDetail = `AI service authentication/authorization failed for ${input.cryptoSymbol}. Please check API key and permissions. (${error.message})`;
-        } else if (error.message.includes('fetch') && (error.message.toLowerCase().includes('failed to fetch') || error.message.includes('network error'))) {
-          specificDetail = `Network error prevented AI analysis for ${input.cryptoSymbol}. Please check your internet connection. (${error.message})`;
-        } else {
-          specificDetail = `An error occurred during AI analysis: ${error.message}`;
-        }
-      } else if (typeof error === 'string') {
-        specificDetail = `An error occurred during AI analysis: ${error}`;
-      } else {
-        specificDetail = `An unexpected error type occurred during AI analysis. Check server logs for ${input.cryptoSymbol}.`;
-      }
-      
-      const userFriendlyMessage = `AI analysis failed for ${input.cryptoSymbol}. ${specificDetail}`;
-      
+      console.error(`Error during AI flow execution for ${input.cryptoSymbol}:`, error);
+      const failureType = error instanceof Error ? error.name : 'GenkitFlowError';
       return {
         trend: 'sideways',
         confidence: 0,
-        reason: userFriendlyMessage,
+        reason: `AI flow for ${input.cryptoSymbol} encountered an error: ${failureType}. Check server logs.`,
       };
     }
   }
