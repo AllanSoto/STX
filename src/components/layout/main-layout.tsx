@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { AppHeader } from './app-header';
@@ -16,25 +16,29 @@ import {
   SidebarMenuItem, 
   SidebarMenuButton,
   SidebarSeparator,
-  SidebarGroup,
-  SidebarGroupLabel
+  // SidebarGroup, // No longer directly used for language dropdown trigger
+  // SidebarGroupLabel // No longer directly used for language dropdown trigger
 } from '@/components/ui/sidebar';
-import { BarChartBig, Settings, History, Wallet, LogOut, Check, LayoutDashboard, Languages as LanguagesIcon } from 'lucide-react';
+import { BarChartBig, Settings, History, Wallet, LogOut, Check, LayoutDashboard, Languages as LanguagesIcon, ChevronDown, Copyright } from 'lucide-react';
 import { LANGUAGES, APP_NAME as DEFAULT_APP_NAME } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
 import type { LanguageCode } from '@/providers/language-provider';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const { language: currentLanguage, setLanguage, translations } = useLanguage();
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
+  const currentYear = new Date().getFullYear();
 
   const t = (key: string, fallback?: string) => translations[key] || fallback || key;
 
   const handleLanguageChange = (langCode: string) => {
     setLanguage(langCode as LanguageCode);
+    setIsLanguageMenuOpen(false); // Close menu after selection
   };
 
   useEffect(() => {
@@ -46,7 +50,6 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
   if (isLoading || !user) {
     return (
       <div className="flex flex-col min-h-screen">
-        {/* Render a minimal AppHeader or a simplified one for loading/logged-out state */}
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container flex h-14 items-center">
             <Link href="/" className="flex items-center space-x-2">
@@ -67,7 +70,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <SidebarProvider defaultOpen={true}> {/* Sidebar can be open by default on desktop */}
+    <SidebarProvider defaultOpen={true}>
       <Sidebar side="left" collapsible="icon" variant="sidebar" className="border-r">
         <SidebarHeader className="p-2">
           <Link href="/dashboard" className="flex items-center gap-2 px-2 py-2">
@@ -122,31 +125,49 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
           
           <SidebarSeparator className="my-4" />
           
-          <SidebarGroup>
-            <SidebarGroupLabel className="flex items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0.5">
-              <LanguagesIcon className="h-5 w-5 mr-2 group-data-[collapsible=icon]:mr-0" />
-              <span className="group-data-[collapsible=icon]:hidden">{t('settings.language')}</span>
-            </SidebarGroupLabel>
-            <SidebarMenu>
+          {/* Language Selection Collapsible Menu */}
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
+              className="justify-between"
+              aria-expanded={isLanguageMenuOpen}
+              tooltip={{content: t('settings.language'), side: 'right', align: 'center' }}
+            >
+              <div className="flex items-center">
+                <LanguagesIcon className="h-5 w-5" />
+                <span className="group-data-[collapsible=icon]:hidden ml-2">{t('settings.language')}</span>
+              </div>
+              <ChevronDown
+                className={cn(
+                  'h-4 w-4 transition-transform group-data-[collapsible=icon]:hidden',
+                  isLanguageMenuOpen ? 'rotate-180' : ''
+                )}
+              />
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          {isLanguageMenuOpen && (
+            <SidebarMenu className="pl-7 pr-2 py-1 group-data-[collapsible=icon]:hidden">
               {LANGUAGES.map((lang) => (
                 <SidebarMenuItem key={lang.code}>
-                  <SidebarMenuButton 
-                    onClick={() => handleLanguageChange(lang.code)} 
+                  <SidebarMenuButton
+                    onClick={() => handleLanguageChange(lang.code)}
                     isActive={currentLanguage === lang.code}
-                    tooltip={{content: lang.name, side: 'right', align: 'center' }}
+                    size="sm"
+                    className="justify-between w-full"
                   >
-                    {/* For collapsed state, an icon or first 2 letters could be shown, but tooltip is primary */}
-                    {/* <span className="w-5 h-5 flex items-center justify-center group-data-[collapsible=icon]:block hidden">{lang.code.toUpperCase()}</span> */}
-                    <span className="group-data-[collapsible=icon]:hidden">{lang.name}</span>
-                    {currentLanguage === lang.code && <Check className="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden" />}
+                    <span>{lang.name}</span>
+                    {currentLanguage === lang.code && (
+                      <Check className="h-4 w-4" />
+                    )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
-          </SidebarGroup>
+          )}
         </SidebarContent>
 
-        <SidebarFooter className="p-2 border-t">
+        <SidebarFooter className="p-2 border-t mt-auto"> {/* mt-auto pushes footer to bottom */}
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton 
@@ -158,10 +179,26 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
+          <div className="mt-4 p-2 text-center text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+            <p>&copy; {currentYear} {t('app.name', DEFAULT_APP_NAME)}.</p>
+            <p>{t('footer.createdBy', 'Creado con IA por Allan Soto')}</p>
+          </div>
+          <div className="hidden p-2 text-center text-xs text-muted-foreground group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center">
+             <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Copyright className="h-5 w-5 mx-auto" />
+                    </TooltipTrigger>
+                    <TooltipContent side="right" align="center">
+                        <p>&copy; {currentYear} {t('app.name', DEFAULT_APP_NAME)}.</p>
+                        <p>{t('footer.createdBy', 'Creado con IA por Allan Soto')}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+          </div>
         </SidebarFooter>
       </Sidebar>
 
-      {/* Main content area that adjusts its margin based on sidebar state */}
       <div className="flex flex-col flex-1 transition-all duration-200 ease-linear md:ml-[var(--sidebar-width-icon)] peer-data-[state=expanded]:md:ml-[var(--sidebar-width)]">
         <AppHeader />
         <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 bg-background">

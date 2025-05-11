@@ -300,7 +300,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'activeAlerts.toast.toggleErrorTitle': 'Error Updating Alert',
     'activeAlerts.toast.toggleErrorDescription': 'Could not update alert status.',
 
-
     'zod.email.invalid': 'Invalid email address.',
     'zod.password.required': 'Password is required.',
     'zod.password.minLength': 'Password must be at least 8 characters.',
@@ -325,6 +324,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.orderOpportunity.targetPricePositive': 'Target price must be a positive number.',
     'zod.alert.targetPricePositive': 'Target price must be a positive number.',
     'zod.alert.directionRequired': 'Please select a direction for the alert.',
+    'footer.createdBy': 'Created with AI by Allan Soto',
   },
   es: {
     'app.name': 'SimulTradex',
@@ -618,6 +618,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.orderOpportunity.targetPricePositive': 'El precio objetivo debe ser un número positivo.',
     'zod.alert.targetPricePositive': 'El precio objetivo debe ser un número positivo.',
     'zod.alert.directionRequired': 'Por favor, selecciona una dirección para la alerta.',
+    'footer.createdBy': 'Creado con IA por Allan Soto',
   },
   fr: { 
     'app.name': 'SimulTradex',
@@ -909,6 +910,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.orderOpportunity.targetPricePositive': 'Le prix cible doit être un nombre positif.',
     'zod.alert.targetPricePositive': 'Le prix cible doit être un nombre positif.',
     'zod.alert.directionRequired': 'Veuillez sélectionner une direction pour l\'alerte.',
+    'footer.createdBy': 'Créé avec IA par Allan Soto',
   },
   hi: { 
     'app.name': 'सिमुलट्रेडेक्स',
@@ -1201,6 +1203,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.orderOpportunity.targetPricePositive': 'लक्ष्य मूल्य एक सकारात्मक संख्या होनी चाहिए।',
     'zod.alert.targetPricePositive': 'लक्ष्य मूल्य एक धनात्मक संख्या होनी चाहिए।',
     'zod.alert.directionRequired': 'कृपया चेतावनी के लिए एक दिशा चुनें।',
+    'footer.createdBy': 'IA द्वारा एलन सोटो द्वारा बनाया गया',
   },
   zh: { 
     'app.name': 'SimulTradex',
@@ -1493,6 +1496,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.orderOpportunity.targetPricePositive': '目标价格必须是正数。',
     'zod.alert.targetPricePositive': '目标价格必须是正数。',
     'zod.alert.directionRequired': '请选择提醒的方向。',
+    'footer.createdBy': '由 Allan Soto 使用 AI 创建',
   }
 };
 
