@@ -17,7 +17,7 @@ import {
   SidebarMenuButton,
   SidebarSeparator,
 } from '@/components/ui/sidebar';
-import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'; // Added TooltipProvider, Tooltip, TooltipTrigger, TooltipContent
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { BarChartBig, Settings, History, Wallet, LogOut, Check, LayoutDashboard, Languages as LanguagesIcon, ChevronDown, Copyright } from 'lucide-react';
 import { LANGUAGES, APP_NAME as DEFAULT_APP_NAME } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
@@ -69,6 +69,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
+    <TooltipProvider>
     <SidebarProvider defaultOpen={true}>
       <Sidebar side="left" collapsible="icon" variant="sidebar" className="border-r">
         <SidebarHeader className="p-2">
@@ -82,42 +83,50 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton 
+                asChild
                 isActive={pathname === '/dashboard'} 
-                onClick={() => router.push('/dashboard')} 
                 tooltip={{content: t('dashboard.title'), side: 'right', align: 'center' }}
               >
-                <LayoutDashboard className="h-5 w-5" />
-                <span className="group-data-[collapsible=icon]:hidden">{t('dashboard.title')}</span>
+                <Link href="/dashboard">
+                  <LayoutDashboard className="h-5 w-5" />
+                  <span className="group-data-[collapsible=icon]:hidden">{t('dashboard.title')}</span>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton 
+                asChild
                 isActive={pathname === '/account'} 
-                onClick={() => router.push('/account')} 
                 tooltip={{content: t('settings.accountSettings'), side: 'right', align: 'center' }}
               >
-                <Settings className="h-5 w-5" />
-                <span className="group-data-[collapsible=icon]:hidden">{t('settings.accountSettings')}</span>
+                <Link href="/account">
+                  <Settings className="h-5 w-5" />
+                  <span className="group-data-[collapsible=icon]:hidden">{t('settings.accountSettings')}</span>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton 
+                asChild
                 isActive={pathname === '/history'} 
-                onClick={() => router.push('/history')} 
                 tooltip={{content: t('history.menuItem'), side: 'right', align: 'center' }}
               >
-                <History className="h-5 w-5" />
-                <span className="group-data-[collapsible=icon]:hidden">{t('history.menuItem')}</span>
+                <Link href="/history">
+                  <History className="h-5 w-5" />
+                  <span className="group-data-[collapsible=icon]:hidden">{t('history.menuItem')}</span>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton 
+                asChild
                 isActive={pathname === '/balance'} 
-                onClick={() => router.push('/balance')} 
                 tooltip={{content: t('balance.menuItem'), side: 'right', align: 'center' }}
               >
-                <Wallet className="h-5 w-5" />
-                <span className="group-data-[collapsible=icon]:hidden">{t('balance.menuItem')}</span>
+                <Link href="/balance">
+                  <Wallet className="h-5 w-5" />
+                  <span className="group-data-[collapsible=icon]:hidden">{t('balance.menuItem')}</span>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -205,5 +214,6 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
     </SidebarProvider>
+    </TooltipProvider>
   );
 }
