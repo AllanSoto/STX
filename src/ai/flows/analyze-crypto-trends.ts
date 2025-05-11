@@ -51,29 +51,25 @@ export async function analyzeCryptoTrend(input: AnalyzeCryptoTrendInput): Promis
         reason: `Internal error: AI flow for ${input.cryptoSymbol} returned an unexpected data shape. Please check server logs.`,
       };
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Critical error in analyzeCryptoTrend wrapper for ${input.cryptoSymbol}:`, error);
     
-    let detailMessage = "An unknown error occurred. Please check server logs for details.";
+    let errorMessage = "An unknown error occurred during trend analysis.";
     if (error instanceof Error) {
-      detailMessage = error.message;
+      errorMessage = error.message;
     } else if (typeof error === 'string') {
-      detailMessage = error;
-    } else {
-      // Try to stringify non-standard errors, otherwise provide a generic message.
-      try {
-        detailMessage = JSON.stringify(error);
-      } catch (e) {
-        detailMessage = "Received an unserializable error object.";
-      }
+      errorMessage = error;
+    } else if (error && typeof error.toString === 'function') {
+      // Try toString as a fallback if it's not a standard Error or string
+      errorMessage = error.toString();
     }
+    // Avoid JSON.stringify on unknown error types as it might fail
 
-    const userFriendlyMessage = `A critical server-side error occurred while analyzing the trend for ${input.cryptoSymbol}. Details: ${detailMessage}`;
+    const userFriendlyMessage = `Analysis for ${input.cryptoSymbol} failed: ${errorMessage}`;
     
-    // Ensure a valid AnalyzeCryptoTrendOutput is always returned
     return {
       trend: 'sideways',
-      confidence: 0, // Indicates complete failure or uncertainty
+      confidence: 0,
       reason: userFriendlyMessage,
     };
   }
@@ -128,9 +124,9 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
       const result = await analyzeCryptoTrendPrompt(input);
       if (!result || !result.output) {
         console.error(`analyzeCryptoTrendPrompt for ${input.cryptoSymbol} returned no output or undefined output. Result:`, result);
-        return { // Ensure return type matches AnalyzeCryptoTrendOutput
+        return {
           trend: 'sideways',
-          confidence: 0, // Use 0 for complete uncertainty/failure
+          confidence: 0,
           reason: `AI analysis for ${input.cryptoSymbol} failed to produce a valid output. Service may be temporarily unavailable or returned an empty response.`,
         };
       }
@@ -138,9 +134,9 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
       const parsedOutput = AnalyzeCryptoTrendOutputSchema.safeParse(result.output);
       if (!parsedOutput.success) {
         console.error(`AI output for ${input.cryptoSymbol} did not match schema. Errors:`, parsedOutput.error.flatten());
-        return { // Ensure return type matches AnalyzeCryptoTrendOutput
+        return {
           trend: 'sideways',
-          confidence: 0, // Use 0 for complete uncertainty/failure
+          confidence: 0,
           reason: `AI output for ${input.cryptoSymbol} was malformed. Details: ${parsedOutput.error.flatten().formErrors.join(', ')}`,
         };
       }
@@ -169,12 +165,11 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
       
       const userFriendlyMessage = `AI analysis failed for ${input.cryptoSymbol}. ${specificDetail}`;
       
-      return { // Ensure return type matches AnalyzeCryptoTrendOutput
+      return {
         trend: 'sideways',
-        confidence: 0, // Use 0 for complete uncertainty/failure
+        confidence: 0,
         reason: userFriendlyMessage,
       };
     }
   }
 );
-
