@@ -16,6 +16,7 @@ export const DETAILED_TRADING_PAIRS = [
   'USDT/BTC',
   'USDT/ETH',
   'USDT/BNB',
+  'USDT/XRP', // Added as per request
 ] as const;
 
 export type DetailedTradingPair = typeof DETAILED_TRADING_PAIRS[number];
@@ -36,13 +37,17 @@ export const STABLECOIN_SYMBOLS = ['USDT'] as const; // Add other stablecoins if
 export type StableCoinSymbol = typeof STABLECOIN_SYMBOLS[number];
 
 // Mapping for WebSocket, REST API symbols/IDs, and CoinGecko IDs
-export const COIN_DATA: Record<CryptoSymbol, { binanceSymbol: string; coinGeckoId: string }> = {
-  BTC: { binanceSymbol: 'BTCUSDT', coinGeckoId: 'bitcoin' },
-  ETH: { binanceSymbol: 'ETHUSDT', coinGeckoId: 'ethereum' },
-  SOL: { binanceSymbol: 'SOLUSDT', coinGeckoId: 'solana' },
-  BNB: { binanceSymbol: 'BNBUSDT', coinGeckoId: 'binancecoin' }, // Note: CoinGecko ID is 'binancecoin' not 'binance-coin'
-  XRP: { binanceSymbol: 'XRPUSDT', coinGeckoId: 'ripple' }, // Note: CoinGecko ID is 'ripple' not 'xrp'
-  ADA: { binanceSymbol: 'ADAUSDT', coinGeckoId: 'cardano' },
-  DOGE: { binanceSymbol: 'DOGEUSDT', coinGeckoId: 'dogecoin' },
-  SHIB: { binanceSymbol: 'SHIBUSDT', coinGeckoId: 'shiba-inu' },
+export const COIN_DATA: Record<CryptoSymbol, { binanceSymbol: string; coinGeckoId: string, coinCapId: string }> = {
+  BTC: { binanceSymbol: 'BTCUSDT', coinGeckoId: 'bitcoin', coinCapId: 'bitcoin' },
+  ETH: { binanceSymbol: 'ETHUSDT', coinGeckoId: 'ethereum', coinCapId: 'ethereum' },
+  SOL: { binanceSymbol: 'SOLUSDT', coinGeckoId: 'solana', coinCapId: 'solana' },
+  BNB: { binanceSymbol: 'BNBUSDT', coinGeckoId: 'binancecoin', coinCapId: 'binance-coin' },
+  XRP: { binanceSymbol: 'XRPUSDT', coinGeckoId: 'ripple', coinCapId: 'xrp' },
+  ADA: { binanceSymbol: 'ADAUSDT', coinGeckoId: 'cardano', coinCapId: 'cardano' },
+  DOGE: { binanceSymbol: 'DOGEUSDT', coinGeckoId: 'dogecoin', coinCapId: 'dogecoin' },
+  SHIB: { binanceSymbol: 'SHIBUSDT', coinGeckoId: 'shiba-inu', coinCapId: 'shiba-inu' },
 };
+
+// For CoinCap WebSocket, which uses IDs like 'bitcoin', 'ethereum'
+export const COINCAP_ASSET_IDS = Object.values(COIN_DATA).map(data => data.coinCapId);
+
