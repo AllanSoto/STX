@@ -122,7 +122,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.description': 'Simulate an exchange and see potential sell opportunities at incremental profit percentages.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Trading Pair',
     'dashboard.orderOpportunitySimulator.inputAmountLabel': 'Amount ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceUsdtLabel': 'Purchase Price of {targetCrypto} (USDT)',
+    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': 'Purchase Price of {targetCrypto} ({quote})',
+    'dashboard.orderOpportunitySimulator.sellPriceCryptoLabel': 'Sell Price of {targetCrypto} ({quote})',
     'dashboard.orderOpportunitySimulator.valorCriptoLabel': 'Crypto Value',
     'dashboard.orderOpportunitySimulator.marketPriceDisplayLabel': 'Market Price ({cur2}/{cur1})',
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Select Trading Pair',
@@ -162,7 +163,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.saveDisabledDescription': 'Saving simulations is disabled as user authentication has been removed.',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': 'Order Save Disabled',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': 'Saving orders is disabled as user authentication has been removed.',
-    'dashboard.orderOpportunitySimulator.sellPriceCryptoLabel': 'Sell Price {targetCrypto}',
+    
 
     'dashboard.api.binance.fetchError': 'Failed to fetch prices from Binance: {status}',
     'dashboard.api.binance.errorTitle': 'Price Fetch Error (Binance)',
@@ -443,7 +444,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.description': 'Simula un intercambio y visualiza oportunidades de venta potenciales con porcentajes de ganancia incrementales.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Par de Trading',
     'dashboard.orderOpportunitySimulator.inputAmountLabel': 'Cantidad ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceUsdtLabel': 'Precio de Compra de {targetCrypto} (USDT)',
+    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': 'Precio de Compra de {targetCrypto} ({quote})',
+    'dashboard.orderOpportunitySimulator.sellPriceCryptoLabel': 'Precio de Venta de {targetCrypto} ({quote})',
     'dashboard.orderOpportunitySimulator.valorCriptoLabel': 'Valor Cripto',
     'dashboard.orderOpportunitySimulator.marketPriceDisplayLabel': 'Precio de Mercado ({cur2}/{cur1})',
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Selecciona Par de Trading',
@@ -483,7 +485,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.saveDisabledDescription': 'Guardar simulaciones está deshabilitado ya que se eliminó la autenticación de usuarios.',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': 'Guardar Orden Deshabilitado',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': 'Guardar órdenes está deshabilitado ya que se eliminó la autenticación de usuarios.',
-    'dashboard.orderOpportunitySimulator.sellPriceCryptoLabel': 'Precio de Venta {targetCrypto}',
 
     'dashboard.api.binance.fetchError': 'Error al obtener precios de Binance: {status}',
     'dashboard.api.binance.errorTitle': 'Error al Obtener Precios (Binance)',
@@ -765,7 +766,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.description': 'Simulez un échange et visualisez les opportunités de vente potentielles avec des pourcentages de profit incrémentiels.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Paire de Trading',
     'dashboard.orderOpportunitySimulator.inputAmountLabel': 'Montant ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceUsdtLabel': 'Prix d\'Achat de {targetCrypto} (USDT)',
+    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': 'Prix d\'Achat de {targetCrypto} ({quote})',
+    'dashboard.orderOpportunitySimulator.sellPriceCryptoLabel': 'Prix de Vente de {targetCrypto} ({quote})',
     'dashboard.orderOpportunitySimulator.valorCriptoLabel': 'Valeur Crypto',
     'dashboard.orderOpportunitySimulator.marketPriceDisplayLabel': 'Prix du Marché ({cur2}/{cur1})',
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Sélectionner Paire de Trading',
@@ -805,7 +807,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.saveDisabledDescription': 'La sauvegarde des simulations est désactivée car l\'authentification utilisateur a été supprimée.',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': 'Sauvegarde d\'Ordre Désactivée',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': 'La sauvegarde des ordres est désactivée car l\'authentification utilisateur a été supprimée.',
-    'dashboard.orderOpportunitySimulator.sellPriceCryptoLabel': 'Prix de Vente {targetCrypto}',
 
     'dashboard.api.binance.fetchError': 'Échec de la récupération des prix de Binance : {status}',
     'dashboard.api.binance.errorTitle': 'Erreur de Récupération des Prix (Binance)',
@@ -1087,7 +1088,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.description': 'एक एक्सचेंज का अनुकरण करें और वृद्धिशील लाभ प्रतिशत पर संभावित बिक्री के अवसर देखें।',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'ट्रेडिंग जोड़ी',
     'dashboard.orderOpportunitySimulator.inputAmountLabel': 'राशि ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceUsdtLabel': '{targetCrypto} की खरीद मूल्य (USDT)',
+    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': '{targetCrypto} का खरीद मूल्य ({quote})',
+    'dashboard.orderOpportunitySimulator.sellPriceCryptoLabel': '{targetCrypto} का बिक्री मूल्य ({quote})',
     'dashboard.orderOpportunitySimulator.valorCriptoLabel': 'क्रिप्टो मूल्य',
     'dashboard.orderOpportunitySimulator.marketPriceDisplayLabel': 'बाजार मूल्य ({cur2}/{cur1})',
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'ट्रेडिंग जोड़ी चुनें',
@@ -1127,7 +1129,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.saveDisabledDescription': 'अनुकरण सहेजना अक्षम है क्योंकि उपयोगकर्ता प्रमाणीकरण हटा दिया गया है।',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': 'ऑर्डर सहेजना अक्षम',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': 'ऑर्डर सहेजना अक्षम है क्योंकि उपयोगकर्ता प्रमाणीकरण हटा दिया गया है।',
-    'dashboard.orderOpportunitySimulator.sellPriceCryptoLabel': '{targetCrypto} का बिक्री मूल्य',
 
 
     'dashboard.api.binance.fetchError': 'बायनेंस से कीमतें प्राप्त करने में विफल: {status}',
@@ -1190,7 +1191,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'balance.filters.dateRange': "दिनांक सीमा",
     'balance.filters.startDate': "प्रारंभ तिथि",
     'balance.filters.endDate': "अंतिम तिथि",
-    'balance.filters.pickDate': "एक तिथि चुनें",
+    'history.filters.pickDate': "एक तिथि चुनें",
     'balance.filters.resetButton': "फ़िल्टर रीसेट करें",
     'balance.summary.title': 'फ़िल्टर की गई अवधि का सारांश',
     'balance.summary.totalInvested': "कुल निवेशित (फ़िल्टर की गई अवधि)",
@@ -1303,7 +1304,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.orderOpportunity.positiveInputAmount': 'राशि एक सकारात्मक संख्या होनी चाहिए।',
     'zod.orderOpportunity.marketPricePositive': 'बाजार मूल्य एक सकारात्मक संख्या होनी चाहिए।',
     'zod.orderOpportunity.purchasePriceUsdtPositive': 'यूएसडीटी में खरीद मूल्य एक सकारात्मक संख्या होनी चाहिए।',
-    'zod.orderOpportunity.targetPricePositive': 'लक्ष्य मूल्य एक सकारात्मक संख्या होनी चाहिए。',
+    'zod.orderOpportunity.targetPricePositive': 'लक्ष्य मूल्य एक धनात्मक संख्या होनी चाहिए。',
     'zod.alert.targetPricePositive': 'लक्ष्य मूल्य एक धनात्मक संख्या होनी चाहिए।',
     'zod.alert.directionRequired': 'कृपया चेतावनी के लिए एक दिशा चुनें।',
     'footer.createdBy': 'IA द्वारा एलन सोटो द्वारा बनाया गया',
@@ -1411,7 +1412,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.description': '模拟交易并查看增量利润百分比下的潜在卖出机会。',
     'dashboard.orderOpportunitySimulator.operationPairLabel': '交易对',
     'dashboard.orderOpportunitySimulator.inputAmountLabel': '数量 ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceUsdtLabel': '{targetCrypto}的购买价格 (USDT)',
+    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': '{targetCrypto}的购买价格 ({quote})',
+    'dashboard.orderOpportunitySimulator.sellPriceCryptoLabel': '{targetCrypto}的卖出价格 ({quote})',
     'dashboard.orderOpportunitySimulator.valorCriptoLabel': '加密货币价值',
     'dashboard.orderOpportunitySimulator.marketPriceDisplayLabel': '市场价格 ({cur2}/{cur1})',
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': '选择交易对',
@@ -1451,7 +1453,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.saveDisabledDescription': '由于用户认证已移除，保存模拟功能已禁用。',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': '订单保存已禁用',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': '由于用户认证已移除，保存订单功能已禁用。',
-    'dashboard.orderOpportunitySimulator.sellPriceCryptoLabel': '{targetCrypto}的卖出价格',
 
     'dashboard.api.binance.fetchError': '从币安获取价格失败：{status}',
     'dashboard.api.binance.errorTitle': '价格获取错误 (币安)',
@@ -1704,3 +1705,4 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     </LanguageContext.Provider>
   );
 };
+
