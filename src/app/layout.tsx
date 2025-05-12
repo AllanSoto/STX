@@ -1,9 +1,12 @@
-import type { Metadata } from 'next';
+
+'use client';
+
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import { Toaster } from '@/components/ui/toaster';
+// import { Toaster } from '@/components/ui/toaster'; // Original import
 import { AuthProvider } from '@/providers/auth-provider';
 import { LanguageProvider } from '@/providers/language-provider';
+import dynamic from 'next/dynamic'; // Added for dynamic import
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -15,10 +18,14 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-export const metadata: Metadata = {
-  title: 'SimulTradex',
-  description: 'Simulate crypto trading and analyze trends.',
-};
+// Dynamically import Toaster with SSR disabled
+const DynamicToaster = dynamic(() => import('@/components/ui/toaster').then(mod => mod.Toaster), {
+  ssr: false,
+  loading: () => null, // Render nothing while loading, consistent with client-only approach
+});
+
+// Metadata should be defined in page.tsx files or a server component layout.
+// Removed export const metadata: Metadata = { ... }; due to 'use client' directive.
 
 export default function RootLayout({
   children,
@@ -38,10 +45,11 @@ export default function RootLayout({
         <LanguageProvider>
           <AuthProvider>
             {children}
-            <Toaster />
+            <DynamicToaster /> {/* Use dynamically imported Toaster */}
           </AuthProvider>
         </LanguageProvider>
       </body>
     </html>
   );
 }
+
