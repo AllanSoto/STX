@@ -19,7 +19,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
   type TooltipContentProps
-} from "@/components/ui/tooltip"
+} from "@/components/ui/tooltip";
+import { useLanguage } from "@/hooks/use-language"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -187,7 +188,7 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile, toggleSidebar, side } = useSidebar() 
+    const { isMobile, state, open, openMobile, setOpenMobile, toggleSidebar, side } = useSidebar() 
 
     if (collapsible === "none") {
       return (
@@ -237,7 +238,7 @@ const Sidebar = React.forwardRef<
         data-variant={variant}
         data-side={side} 
         style={{
-          width: state === 'expanded' ? 'var(--sidebar-width)' : 'var(--sidebar-width-icon)',
+          width: open ? 'var(--sidebar-width)' : 'var(--sidebar-width-icon)', // Use open directly
           transition: 'width 0.2s ease-linear',
           position: 'relative' 
         }}
@@ -264,7 +265,7 @@ const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button>
 >(({ className, onClick, ...props }, ref) => {
-  const { toggleSidebar, open, openMobile, isMobile, state } = useSidebar(); 
+  const { toggleSidebar, open, openMobile, isMobile } = useSidebar(); 
 
   return (
     <Button
@@ -290,17 +291,22 @@ const SidebarRail = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<"button"> & { "data-sidebar-host-side": "left" | "right"}
 >(({ className, ...props }, ref) => {
-  const { state, toggleSidebar, open } = useSidebar();
+  const { open, toggleSidebar } = useSidebar();
+  const { hydrated } = useLanguage(); // Use hydrated state
   const hostSide = props["data-sidebar-host-side"];
+
+  const ariaLabel = hydrated ? (open ? "Collapse sidebar" : "Expand sidebar") : "Toggle sidebar";
+  const title = hydrated ? (open ? "Collapse" : "Expand") : "Toggle sidebar";
+
 
   return (
     <button
       ref={ref}
       data-sidebar="rail"
-      aria-label="Toggle Sidebar"
+      aria-label={ariaLabel}
       tabIndex={-1}
       onClick={toggleSidebar}
-      title="Toggle Sidebar"
+      title={title}
       className={cn(
         "absolute z-10 hidden h-10 w-6 cursor-pointer items-center justify-center rounded-md bg-sidebar-accent/70 text-sidebar-accent-foreground shadow-sm transition-all duration-200 ease-linear hover:bg-sidebar-accent sm:flex",
         "top-[calc(50%-theme(spacing.5))]", 
@@ -770,4 +776,3 @@ export {
   SidebarTrigger,
   useSidebar,
 }
-
