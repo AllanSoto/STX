@@ -35,7 +35,7 @@ export default function RootLayout({
   // Client-side hydration will match this initial server render.
   // Subsequent language changes are handled client-side by LanguageProvider.
   return (
-    <html lang="en" className="dark" suppressHydrationWarning> {/* Keep lang="en" hardcoded here and add suppressHydrationWarning */}
+    <html lang="en" className="dark" suppressHydrationWarning>{/* Keep lang="en" hardcoded here and add suppressHydrationWarning */}
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <LanguageProvider>
           <AuthProvider>
