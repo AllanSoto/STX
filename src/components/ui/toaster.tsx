@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react" // Import React
 import { useToast } from "@/hooks/use-toast"
 import {
   Toast,
@@ -12,6 +13,17 @@ import {
 
 export function Toaster() {
   const { toasts } = useToast()
+  const [isClient, setIsClient] = React.useState(false)
+
+  React.useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  if (!isClient) {
+    // Render null on the server and during the initial client render before useEffect runs.
+    // This prevents the ToastProvider and its aria-label from being part of the SSR/hydration comparison.
+    return null
+  }
 
   return (
     <ToastProvider label="Notifications (F8)"> {/* Explicitly set a static label */}
