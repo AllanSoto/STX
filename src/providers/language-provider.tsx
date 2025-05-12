@@ -32,6 +32,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.portfolioBalance': 'Portfolio Balance',
     'dashboard.portfolioBalance.publicSourceMessage': "Displaying market data from public source.",
     'dashboard.cryptoCard.alertButton.title': 'Set Price Alert',
+    'dashboard.cryptoCard.alertButton.label': 'Set Price Alert',
     'dashboard.alerts.fetchErrorTitle': 'Alerts Error',
     'dashboard.alerts.fetchErrorDescription': 'Could not load your active price alerts.',
     'dashboard.alerts.triggeredTitle': 'Price Alert Triggered!',
@@ -65,8 +66,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.description': 'Simulate an exchange and see potential sell opportunities at incremental profit percentages.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Trading Pair',
     'dashboard.orderOpportunitySimulator.inputAmountLabel': 'Amount ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': 'Price of {targetCrypto} in {baseCurrency}',
-    'dashboard.orderOpportunitySimulator.valorCriptoLabel': 'Exchanged {crypto}',
+    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': 'Price of {crypto1} in {crypto2}', // Updated: Price of Crypto1 (e.g. XRP) in Crypto2 (e.g. USDT)
+    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': 'Exchanged Crypto ({crypto})', // New: For the "Crypto Intercambiado" field
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Select Trading Pair',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'Operation',
     'dashboard.orderOpportunitySimulator.table.header.amountCur1Display': 'Amount ({currency1})',
@@ -80,7 +81,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.sellOperationPerc': 'Sell {targetCrypto} (+{perc}%)',
     'dashboard.orderOpportunitySimulator.priceUnavailable': 'Price N/A',
     'dashboard.orderOpportunitySimulator.priceUnavailableShort': 'N/A',
-    'dashboard.orderOpportunitySimulator.priceEditPlaceholder': 'e.g., 52000',
+    'dashboard.orderOpportunitySimulator.priceEditPlaceholder': 'e.g., 0.5',
     'dashboard.orderOpportunitySimulator.invalidMarketPrice': 'Invalid Market Price',
     'dashboard.orderOpportunitySimulator.invalidPurchasePrice': 'Invalid Purchase Price',
     'dashboard.orderOpportunitySimulator.calculationError': 'Calculation Error',
@@ -338,8 +339,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.description': 'Simula un intercambio y visualiza oportunidades de venta potenciales con porcentajes de ganancia incrementales.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Par de Trading',
     'dashboard.orderOpportunitySimulator.inputAmountLabel': 'Cantidad ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': 'Precio de {targetCrypto} en {baseCurrency}',
-    'dashboard.orderOpportunitySimulator.valorCriptoLabel': '{crypto} intercambiado',
+    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': 'Precio de Compra de {crypto1} en {crypto2}', // Updated: Precio de Crypto1 (ej. XRP) en Crypto2 (ej. USDT)
+    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': 'Cripto Intercambiado ({crypto})', // New: Para el campo "Crypto Intercambiado"
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Selecciona Par de Trading',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'Operación',
     'dashboard.orderOpportunitySimulator.table.header.amountCur1Display': 'Cantidad ({currency1})',
@@ -353,7 +354,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.sellOperationPerc': 'Vender {targetCrypto} (+{perc}%)',
     'dashboard.orderOpportunitySimulator.priceUnavailable': 'Precio N/D',
     'dashboard.orderOpportunitySimulator.priceUnavailableShort': 'N/D',
-    'dashboard.orderOpportunitySimulator.priceEditPlaceholder': 'ej., 52000',
+    'dashboard.orderOpportunitySimulator.priceEditPlaceholder': 'ej., 0.5',
     'dashboard.orderOpportunitySimulator.invalidMarketPrice': 'Precio de Mercado Inválido',
     'dashboard.orderOpportunitySimulator.invalidPurchasePrice': 'Precio de Compra Inválido',
     'dashboard.orderOpportunitySimulator.calculationError': 'Error de Cálculo',
@@ -610,8 +611,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.description': 'Simulez un échange et visualisez les opportunités de vente potentielles avec des pourcentages de profit incrémentiels.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Paire de Trading',
     'dashboard.orderOpportunitySimulator.inputAmountLabel': 'Montant ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': 'Prix de {targetCrypto} en {baseCurrency}',
-    'dashboard.orderOpportunitySimulator.valorCriptoLabel': '{crypto} échangé',
+    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': 'Prix d\'Achat de {crypto1} ({crypto2})', // Updated
+    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': 'Crypto Échangé ({crypto})', // New
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Sélectionner Paire de Trading',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'Opération',
     'dashboard.orderOpportunitySimulator.table.header.amountCur1Display': 'Montant ({currency1})',
@@ -625,7 +626,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.sellOperationPerc': 'Vendre {targetCrypto} (+{perc}%)',
     'dashboard.orderOpportunitySimulator.priceUnavailable': 'Prix N/A',
     'dashboard.orderOpportunitySimulator.priceUnavailableShort': 'N/A',
-    'dashboard.orderOpportunitySimulator.priceEditPlaceholder': 'ex., 52000',
+    'dashboard.orderOpportunitySimulator.priceEditPlaceholder': 'ex., 0.5',
     'dashboard.orderOpportunitySimulator.invalidMarketPrice': 'Prix du Marché Invalide',
     'dashboard.orderOpportunitySimulator.invalidPurchasePrice': 'Prix d\'Achat Invalide',
     'dashboard.orderOpportunitySimulator.calculationError': 'Erreur de Calcul',
@@ -882,8 +883,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.description': 'एक एक्सचेंज का अनुकरण करें और वृद्धिशील लाभ प्रतिशत पर संभावित बिक्री के अवसर देखें।',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'ट्रेडिंग जोड़ी',
     'dashboard.orderOpportunitySimulator.inputAmountLabel': 'राशि ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': '{baseCurrency} में {targetCrypto} का मूल्य',
-    'dashboard.orderOpportunitySimulator.valorCriptoLabel': '{crypto} एक्सचेंज किया गया',
+    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': '{crypto1} का खरीद मूल्य {crypto2} में', // Updated
+    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': 'एक्सचेंज किया गया क्रिप्टो ({crypto})', // New
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'ट्रेडिंग जोड़ी चुनें',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'ऑपरेशन',
     'dashboard.orderOpportunitySimulator.table.header.amountCur1Display': 'राशि ({currency1})',
@@ -897,7 +898,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.sellOperationPerc': '{targetCrypto} बेचें (+{perc}%)',
     'dashboard.orderOpportunitySimulator.priceUnavailable': 'मूल्य उपलब्ध नहीं',
     'dashboard.orderOpportunitySimulator.priceUnavailableShort': 'उपलब्ध नहीं',
-    'dashboard.orderOpportunitySimulator.priceEditPlaceholder': 'जैसे, 52000',
+    'dashboard.orderOpportunitySimulator.priceEditPlaceholder': 'जैसे, 0.5',
     'dashboard.orderOpportunitySimulator.invalidMarketPrice': 'अमान्य बाजार मूल्य',
     'dashboard.orderOpportunitySimulator.invalidPurchasePrice': 'अमान्य खरीद मूल्य',
     'dashboard.orderOpportunitySimulator.calculationError': 'गणना त्रुटि',
@@ -1156,8 +1157,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.description': '模拟交易并查看增量利润百分比下的潜在卖出机会。',
     'dashboard.orderOpportunitySimulator.operationPairLabel': '交易对',
     'dashboard.orderOpportunitySimulator.inputAmountLabel': '数量 ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': '{baseCurrency}中的{targetCrypto}价格',
-    'dashboard.orderOpportunitySimulator.valorCriptoLabel': '兑换的{crypto}',
+    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': '{crypto1}的购买价格 ({crypto2}中)', // Updated
+    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': '兑换的加密货币 ({crypto})', // New
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': '选择交易对',
     'dashboard.orderOpportunitySimulator.table.header.operation': '操作',
     'dashboard.orderOpportunitySimulator.table.header.amountCur1Display': '数量 ({currency1})',
@@ -1171,7 +1172,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.sellOperationPerc': '卖出{targetCrypto} (+{perc}%)',
     'dashboard.orderOpportunitySimulator.priceUnavailable': '价格不可用',
     'dashboard.orderOpportunitySimulator.priceUnavailableShort': '不可用',
-    'dashboard.orderOpportunitySimulator.priceEditPlaceholder': '例如, 52000',
+    'dashboard.orderOpportunitySimulator.priceEditPlaceholder': '例如, 0.5',
     'dashboard.orderOpportunitySimulator.invalidMarketPrice': '无效的市场价格',
     'dashboard.orderOpportunitySimulator.invalidPurchasePrice': '无效的购买价格',
     'dashboard.orderOpportunitySimulator.calculationError': '计算错误',
