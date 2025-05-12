@@ -65,20 +65,20 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.title': 'Order & Opportunity Simulator',
     'dashboard.orderOpportunitySimulator.description': 'Simulate an exchange and see potential sell opportunities at incremental profit percentages.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Trading Pair',
-    'dashboard.orderOpportunitySimulator.inputAmountLabel': 'Amount ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': 'Price of {crypto1} in {crypto2}', // Updated: Price of Crypto1 (e.g. XRP) in Crypto2 (e.g. USDT)
-    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': 'Exchanged Crypto ({crypto})', // New: For the "Crypto Intercambiado" field
+    'dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel': 'Amount to Spend ({currency})', // currency will be quote currency of pair
+    'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': 'Purchase Price of {baseCurrency} (in {quoteCurrency})',
+    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': 'Exchanged Crypto ({crypto})', // crypto will be base currency of pair
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Select Trading Pair',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'Operation',
-    'dashboard.orderOpportunitySimulator.table.header.amountCur1Display': 'Amount ({currency1})',
+    'dashboard.orderOpportunitySimulator.table.header.amountToTransact': 'Amount to Transact ({currency1})', // c1 will be quote for buy, base for sell
     'dashboard.orderOpportunitySimulator.table.header.marketPriceDisplay': 'Market Price',
-    'dashboard.orderOpportunitySimulator.table.header.amountCur2Display': 'Amount ({currency2})',
+    'dashboard.orderOpportunitySimulator.table.header.amountExchanged': 'Amount Exchanged ({currency2})', // c2 will be base for buy, quote for sell
     'dashboard.orderOpportunitySimulator.table.header.commissionDisplay': 'Commission ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.netProfitDisplay': 'Net Profit ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.actions': 'Actions',
-    'dashboard.orderOpportunitySimulator.buyOperation': 'Buy {targetCrypto} with {baseCurrency}',
-    'dashboard.orderOpportunitySimulator.exchangeOperation': 'Exchange {cur1} for {cur2}',
-    'dashboard.orderOpportunitySimulator.sellOperationPerc': 'Sell {targetCrypto} (+{perc}%)',
+    'dashboard.orderOpportunitySimulator.buyOperation': 'Buy {targetCrypto} with {baseCurrency}', // targetCrypto=Base, baseCurrency=Quote
+    'dashboard.orderOpportunitySimulator.exchangeOperation': 'Exchange {cur1} for {cur2}', // Generic, maybe not used for buy row anymore
+    'dashboard.orderOpportunitySimulator.sellOperationPerc': 'Sell {targetCrypto} (+{perc}%)', // targetCrypto=Base
     'dashboard.orderOpportunitySimulator.priceUnavailable': 'Price N/A',
     'dashboard.orderOpportunitySimulator.priceUnavailableShort': 'N/A',
     'dashboard.orderOpportunitySimulator.priceEditPlaceholder': 'e.g., 0.5',
@@ -338,14 +338,14 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.title': 'Simulador de Órdenes y Oportunidades',
     'dashboard.orderOpportunitySimulator.description': 'Simula un intercambio y visualiza oportunidades de venta potenciales con porcentajes de ganancia incrementales.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Par de Trading',
-    'dashboard.orderOpportunitySimulator.inputAmountLabel': 'Cantidad ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': 'Precio de Compra de {crypto1} en {crypto2}', // Updated: Precio de Crypto1 (ej. XRP) en Crypto2 (ej. USDT)
-    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': 'Cripto Intercambiado ({crypto})', // New: Para el campo "Crypto Intercambiado"
+    'dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel': 'Cantidad a Gastar ({currency})', // currency será la divisa cotizada del par
+    'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': 'Precio de Compra de {baseCurrency} (en {quoteCurrency})',
+    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': 'Cripto Intercambiado ({crypto})', // crypto será la divisa base del par
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Selecciona Par de Trading',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'Operación',
-    'dashboard.orderOpportunitySimulator.table.header.amountCur1Display': 'Cantidad ({currency1})',
+    'dashboard.orderOpportunitySimulator.table.header.amountToTransact': 'Cantidad a Transactuar ({currency1})',
     'dashboard.orderOpportunitySimulator.table.header.marketPriceDisplay': 'Precio de Mercado',
-    'dashboard.orderOpportunitySimulator.table.header.amountCur2Display': 'Cantidad ({currency2})',
+    'dashboard.orderOpportunitySimulator.table.header.amountExchanged': 'Cantidad Intercambiada ({currency2})',
     'dashboard.orderOpportunitySimulator.table.header.commissionDisplay': 'Comisión ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.netProfitDisplay': 'Ganancia Neta ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.actions': 'Acciones',
@@ -610,14 +610,14 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.title': 'Simulateur d\'Ordres et d\'Opportunités',
     'dashboard.orderOpportunitySimulator.description': 'Simulez un échange et visualisez les opportunités de vente potentielles avec des pourcentages de profit incrémentiels.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Paire de Trading',
-    'dashboard.orderOpportunitySimulator.inputAmountLabel': 'Montant ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': 'Prix d\'Achat de {crypto1} ({crypto2})', // Updated
-    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': 'Crypto Échangé ({crypto})', // New
+    'dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel': 'Montant à Dépenser ({currency})',
+    'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': 'Prix d\'Achat de {baseCurrency} (en {quoteCurrency})',
+    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': 'Crypto Échangé ({crypto})',
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Sélectionner Paire de Trading',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'Opération',
-    'dashboard.orderOpportunitySimulator.table.header.amountCur1Display': 'Montant ({currency1})',
+    'dashboard.orderOpportunitySimulator.table.header.amountToTransact': 'Montant à Transacter ({currency1})',
     'dashboard.orderOpportunitySimulator.table.header.marketPriceDisplay': 'Prix du Marché',
-    'dashboard.orderOpportunitySimulator.table.header.amountCur2Display': 'Montant ({currency2})',
+    'dashboard.orderOpportunitySimulator.table.header.amountExchanged': 'Montant Échangé ({currency2})',
     'dashboard.orderOpportunitySimulator.table.header.commissionDisplay': 'Commission ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.netProfitDisplay': 'Profit Net ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.actions': 'Actions',
@@ -882,14 +882,14 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.title': 'ऑर्डर और अवसर सिम्युलेटर',
     'dashboard.orderOpportunitySimulator.description': 'एक एक्सचेंज का अनुकरण करें और वृद्धिशील लाभ प्रतिशत पर संभावित बिक्री के अवसर देखें।',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'ट्रेडिंग जोड़ी',
-    'dashboard.orderOpportunitySimulator.inputAmountLabel': 'राशि ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': '{crypto1} का खरीद मूल्य {crypto2} में', // Updated
-    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': 'एक्सचेंज किया गया क्रिप्टो ({crypto})', // New
+    'dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel': 'खर्च करने के लिए राशि ({currency})',
+    'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': '{baseCurrency} का खरीद मूल्य ({quoteCurrency} में)',
+    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': 'एक्सचेंज किया गया क्रिप्टो ({crypto})',
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'ट्रेडिंग जोड़ी चुनें',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'ऑपरेशन',
-    'dashboard.orderOpportunitySimulator.table.header.amountCur1Display': 'राशि ({currency1})',
+    'dashboard.orderOpportunitySimulator.table.header.amountToTransact': 'लेनदेन राशि ({currency1})',
     'dashboard.orderOpportunitySimulator.table.header.marketPriceDisplay': 'बाजार मूल्य',
-    'dashboard.orderOpportunitySimulator.table.header.amountCur2Display': 'राशि ({currency2})',
+    'dashboard.orderOpportunitySimulator.table.header.amountExchanged': 'एक्सचेंज की गई राशि ({currency2})',
     'dashboard.orderOpportunitySimulator.table.header.commissionDisplay': 'कमीशन ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.netProfitDisplay': 'शुद्ध लाभ ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.actions': 'कार्रवाई',
@@ -1156,14 +1156,14 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.title': '订单与机会模拟器',
     'dashboard.orderOpportunitySimulator.description': '模拟交易并查看增量利润百分比下的潜在卖出机会。',
     'dashboard.orderOpportunitySimulator.operationPairLabel': '交易对',
-    'dashboard.orderOpportunitySimulator.inputAmountLabel': '数量 ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceCryptoLabel': '{crypto1}的购买价格 ({crypto2}中)', // Updated
-    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': '兑换的加密货币 ({crypto})', // New
+    'dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel': '花费金额 ({currency})',
+    'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': '{baseCurrency}的购买价格 (以{quoteCurrency}计价)',
+    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': '兑换的加密货币 ({crypto})',
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': '选择交易对',
     'dashboard.orderOpportunitySimulator.table.header.operation': '操作',
-    'dashboard.orderOpportunitySimulator.table.header.amountCur1Display': '数量 ({currency1})',
+    'dashboard.orderOpportunitySimulator.table.header.amountToTransact': '交易数量 ({currency1})',
     'dashboard.orderOpportunitySimulator.table.header.marketPriceDisplay': '市场价格',
-    'dashboard.orderOpportunitySimulator.table.header.amountCur2Display': '数量 ({currency2})',
+    'dashboard.orderOpportunitySimulator.table.header.amountExchanged': '兑换数量 ({currency2})',
     'dashboard.orderOpportunitySimulator.table.header.commissionDisplay': '手续费 ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.netProfitDisplay': '净利润 ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.actions': '操作',
@@ -1446,3 +1446,4 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     </LanguageContext.Provider>
   );
 };
+
