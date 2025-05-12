@@ -1,4 +1,5 @@
 
+// src/components/dashboard/crypto-display-card.tsx
 'use client';
 
 import type { CryptoCardData } from './types';
@@ -14,8 +15,8 @@ import { useLanguage } from '@/hooks/use-language';
 
 interface CryptoDisplayCardProps {
   data: CryptoCardData;
-  isLoading: boolean; 
-  isAiTrendLoading: boolean; 
+  isLoading: boolean;
+  isAiTrendLoading: boolean;
   // onSetAlertClick removed
 }
 
@@ -28,27 +29,27 @@ export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoD
   useEffect(() => {
     if (previousValue !== undefined && previousValue !== 0 && value !== 0) {
       if (value > previousValue) {
-        setPriceChangeClass('text-primary'); 
+        setPriceChangeClass('text-primary');
       } else if (value < previousValue) {
-        setPriceChangeClass('text-destructive'); 
+        setPriceChangeClass('text-destructive');
       } else {
-        setPriceChangeClass(''); 
+        setPriceChangeClass('');
       }
     } else {
-      setPriceChangeClass(''); 
+      setPriceChangeClass('');
     }
   }, [value, previousValue]);
 
-  if (isLoading) { 
+  if (isLoading) {
     return (
       <Card className="shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <Skeleton className="h-6 w-16" /> 
-          <Skeleton className="h-6 w-6 rounded-full" /> 
+          <Skeleton className="h-6 w-16" />
+          <Skeleton className="h-6 w-6 rounded-full" />
         </CardHeader>
         <CardContent>
-          <Skeleton className="h-8 w-32 mb-1" /> 
-          <Skeleton className="h-4 w-24" /> 
+          <Skeleton className="h-8 w-32 mb-1" />
+          <Skeleton className="h-4 w-24" />
         </CardContent>
       </Card>
     );
@@ -83,8 +84,10 @@ export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoD
         ): trendAnalysis ? (
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger>
-                <TrendArrow trend={trendAnalysis.trend} />
+              <TooltipTrigger asChild>
+                <button type="button" className="focus:outline-none">
+                  <TrendArrow trend={trendAnalysis.trend} />
+                </button>
               </TooltipTrigger>
               <TooltipContent>
                 <p>{t('dashboard.cryptoCard.tooltip.reason', 'Reason:')} {trendAnalysis.reason}</p>
@@ -92,16 +95,17 @@ export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoD
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-        ) : <div className="h-5 w-5"></div> 
+        ) : <div className="h-5 w-5"></div>
+      }
       </CardHeader>
       <CardContent className="flex-grow">
         <div className={`text-2xl font-bold ${priceChangeClass}`}>
-          ${value.toLocaleString(undefined, { 
-            minimumFractionDigits: 2, 
-            maximumFractionDigits: value < 1 ? 5 : 2 
+          ${value.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: value < 1 ? 5 : 2
           })}
         </div>
-        {isAiTrendLoading ? ( 
+        {isAiTrendLoading ? (
             <Skeleton className="h-4 w-20 mt-1" />
         ) : (
             <p className={`text-xs ${trendAnalysis && trendAnalysis.trend === 'upward' ? 'text-primary' : trendAnalysis && trendAnalysis.trend === 'downward' ? 'text-destructive' : 'text-muted-foreground'}`}>
@@ -110,19 +114,6 @@ export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoD
         )}
       </CardContent>
       {/* Set Alert button removed from the card footer */}
-      {/* <div className="p-4 pt-0">
-        <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            // onClick={() => onSetAlertClick(symbol, value)} // onSetAlertClick removed
-            disabled={value === 0}
-            title={t('dashboard.cryptoCard.alertButton.title', 'Set Price Alert')}
-          >
-            <Bell className="mr-2 h-4 w-4" />
-            {t('dashboard.cryptoCard.alertButton.label', 'Set Alert')}
-        </Button>
-      </div> */}
     </Card>
   );
 }
