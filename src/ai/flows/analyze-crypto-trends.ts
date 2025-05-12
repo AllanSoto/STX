@@ -8,7 +8,7 @@
  * - AnalyzeCryptoTrendOutput - The return type for the analyzeCryptoTrend function.
  */
 
-import {ai} from '@/ai/genkit';
+import {ai, isAiOperational} from '@/ai/genkit'; // Added isAiOperational import
 import {z} from 'zod';
 
 const AnalyzeCryptoTrendInputSchema = z.object({
@@ -25,6 +25,15 @@ const AnalyzeCryptoTrendOutputSchema = z.object({
 export type AnalyzeCryptoTrendOutput = z.infer<typeof AnalyzeCryptoTrendOutputSchema>;
 
 export async function analyzeCryptoTrend(input: AnalyzeCryptoTrendInput): Promise<AnalyzeCryptoTrendOutput> {
+  if (!isAiOperational()) {
+    console.warn("AI is not operational. analyzeCryptoTrend will return a default response. Input:", input);
+    return {
+      trend: 'sideways',
+      confidence: 0,
+      reason: 'AI system is not operational. Trend analysis unavailable.',
+    };
+  }
+  
   try {
     return await analyzeCryptoTrendFlow(input);
   } catch (error) {
