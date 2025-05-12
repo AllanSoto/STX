@@ -10,16 +10,15 @@ import type { CryptoCardData } from '@/components/dashboard/types';
 import { initialCryptoData } from '@/components/dashboard/types';
 import { analyzeCryptoTrend } from '@/ai/flows/analyze-crypto-trends';
 import type { CryptoSymbol, PriceAlert } from '@/lib/types';
-import { CRYPTO_SYMBOLS, COIN_MAPPINGS_WS, QUOTE_CURRENCY } from '@/lib/constants';
+import { CRYPTO_SYMBOLS, COIN_DATA, QUOTE_CURRENCY } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
-import { saveDailyPortfolioSnapshot } from '@/lib/firebase/portfolioSnapshots';
 import { getActivePriceAlertsForUser, deactivatePriceAlert } from '@/lib/firebase/alerts';
 import { AlertModal } from '@/components/dashboard/alert-modal';
-import { format } from 'date-fns';
 import type { TrendAnalysis } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { fetchCoinGeckoHistoricalPrices } from '@/services/coingecko';
 
 
 const BINANCE_WS_URL = 'wss://stream.binance.com:9443/ws/!miniTicker@arr';
@@ -31,40 +30,10 @@ const AI_ANALYSIS_INTERVAL = 60000 * 1;
 const ALERT_CHECK_INTERVAL = 10000; 
 
 
-const binanceSymbolsForREST = CRYPTO_SYMBOLS.map(s => COIN_MAPPINGS_WS[s]?.binanceSymbol).filter(Boolean) as string[];
+const binanceSymbolsForREST = CRYPTO_SYMBOLS.map(s => COIN_DATA[s]?.binanceSymbol).filter(Boolean) as string[];
 
 
 const SYMBOLS_TO_DISPLAY_ON_CARDS: CryptoSymbol[] = ['BTC', 'ETH', 'SOL', 'XRP', 'BNB'];
-
-function getMockRecentPriceData(symbol: CryptoSymbol, currentPrice: number): string {
-    const prices: number[] = [];
-    let lastPrice = currentPrice;
-    let trendMomentum = (Math.random() - 0.5) * 2; 
-
-    for (let i = 0; i < 19; i++) {
-        if (Math.random() < 0.15) { 
-            trendMomentum = (Math.random() - 0.5) * 2;
-        } else if (Math.random() < 0.3) { 
-            trendMomentum += (Math.random() - 0.5) * 0.5;
-            trendMomentum = Math.max(-1, Math.min(1, trendMomentum)); 
-        }
-        
-        const baseFluctuation = 0.007; 
-        const trendInfluence = trendMomentum * baseFluctuation * 0.5; 
-        const randomNoise = (Math.random() - 0.5) * baseFluctuation * 0.5; 
-        const priceChangeFactor = trendInfluence + randomNoise;
-        
-        let fluctuatedPrice = lastPrice * (1 - priceChangeFactor); 
-        fluctuatedPrice = Math.max(0.000001, fluctuatedPrice); 
-        prices.push(fluctuatedPrice);
-        lastPrice = fluctuatedPrice;
-    }
-    
-    prices.reverse(); 
-    prices.push(currentPrice); 
-
-    return prices.map(p => p.toFixed(Math.max(2, (currentPrice < 1 ? 5 : 2)))).join(',');
-}
 
 
 async function updateAllAiTrendsExternal(currentCryptoData: CryptoCardData[], tGlobal: (key: string, fallback?: string, vars?: Record<string, string | number>) => string): Promise<CryptoCardData[]> {
@@ -72,7 +41,16 @@ async function updateAllAiTrendsExternal(currentCryptoData: CryptoCardData[], tG
   if (dataToAnalyze.length === 0) return currentCryptoData;
 
   const dataPromises = dataToAnalyze.map(async (crypto) => {
-    const recentPriceData = getMockRecentPriceData(crypto.symbol, crypto.value);
+    const recentPriceData = await fetchCoinGeckoHistoricalPrices(crypto.symbol, 30); // Fetch last 30 days for trend
+    if (!recentPriceData) {
+      console.warn(`Could not fetch historical prices for ${crypto.symbol} for AI trend analysis.`);
+      const errorTrendAnalysis: TrendAnalysis = {
+        trend: 'sideways', 
+        confidence: 0,
+        reason: tGlobal('dashboard.ai.historicalDataError', 'Could not fetch historical data for {symbol}.', {symbol: crypto.symbol}),
+      };
+      return { ...crypto, trendAnalysis: errorTrendAnalysis };
+    }
     try {
       const trendAnalysisOutput = await analyzeCryptoTrend({ cryptoSymbol: crypto.symbol, recentPriceData });
       return { ...crypto, trendAnalysis: trendAnalysisOutput };
@@ -108,7 +86,6 @@ export default function DashboardPage() {
   const webSocketRef = useRef<WebSocket | null>(null);
   const binanceFallbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const cryptoDataRef = useRef<CryptoCardData[]>(initialCryptoData);
-  const lastSnapshotSaveAttemptDate = useRef<string | null>(null);
 
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
   const [alertCryptoSymbol, setAlertCryptoSymbol] = useState<CryptoSymbol | null>(null);
@@ -168,38 +145,6 @@ export default function DashboardPage() {
     fetchActiveAlerts(); 
   };
 
-
-  useEffect(() => {
-    const trySaveSnapshot = async () => {
-      if (user?.id && cryptoDataRef.current.some(cd => SYMBOLS_TO_DISPLAY_ON_CARDS.includes(cd.symbol) && cd.value > 0)) {
-        const today = new Date();
-        const todayStr = format(today, 'yyyy-MM-dd');
-
-        if (lastSnapshotSaveAttemptDate.current === todayStr) {
-          return; 
-        }
-        
-        const portfolioValue = cryptoDataRef.current
-          .filter(cd => SYMBOLS_TO_DISPLAY_ON_CARDS.includes(cd.symbol) && cd.value > 0)
-          .reduce((sum, cd) => sum + cd.value, 0); 
-
-        if (portfolioValue > 0) {
-          try {
-            await saveDailyPortfolioSnapshot(user.id, today, portfolioValue);
-            lastSnapshotSaveAttemptDate.current = todayStr; 
-          } catch (error) {
-            console.error('Failed to save daily portfolio snapshot:', error);
-          }
-        }
-      }
-    };
-
-    if (!isPricesLoading) {
-      trySaveSnapshot();
-    }
-  }, [user, isPricesLoading, cryptoData]);
-
-
   const fetchBinancePricesREST = useCallback(async (showToastOnError = true) => {
     if (binanceSymbolsForREST.length === 0) {
       console.warn("No symbols configured for Binance REST API fetch.");
@@ -219,7 +164,7 @@ export default function DashboardPage() {
       setCryptoData(prevData => {
         let pricesActuallyChanged = false;
         const updatedData = prevData.map(crypto => {
-            const binanceSymbolInfo = COIN_MAPPINGS_WS[crypto.symbol];
+            const binanceSymbolInfo = COIN_DATA[crypto.symbol];
             if (!binanceSymbolInfo) return crypto;
             const binanceSymbol = binanceSymbolInfo.binanceSymbol;
             const priceData = data.find(d => d.symbol === binanceSymbol);
@@ -247,7 +192,6 @@ export default function DashboardPage() {
       if (isPricesLoading && data.length === 0 && binanceSymbolsForREST.length > 0) {
         setIsPricesLoading(false); 
       }
-
 
     } catch (error) {
       console.error('Error fetching Binance prices (REST):', error);
@@ -304,7 +248,7 @@ export default function DashboardPage() {
         setCryptoData(prevData => {
           let changed = false;
           const newData = prevData.map(cd => {
-            const binanceSymbolInfo = COIN_MAPPINGS_WS[cd.symbol];
+            const binanceSymbolInfo = COIN_DATA[cd.symbol];
             if (!binanceSymbolInfo) return cd;
             const binanceTicker = binanceSymbolInfo.binanceSymbol;
             
@@ -590,3 +534,4 @@ export default function DashboardPage() {
     </MainLayout>
   );
 }
+

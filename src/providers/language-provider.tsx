@@ -12,7 +12,7 @@ interface LanguageContextType {
   language: LanguageCode;
   setLanguage: (language: LanguageCode) => void;
   translations: Record<string, string>;
-  hydrated: boolean; // New state
+  hydrated: boolean; 
 }
 
 const translationsData: Record<LanguageCode, Record<string, string>> = {
@@ -42,6 +42,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.alerts.fetchErrorDescription': 'Could not load your active price alerts.',
     'dashboard.alerts.triggeredTitle': 'Price Alert Triggered!',
     'dashboard.alerts.triggeredDescription': '{symbol} has reached your target price of ${targetPrice}. Current price: ${currentPrice}.',
+    'dashboard.ai.historicalDataError': 'Could not fetch historical data for {symbol}.',
 
 
     'login.title': 'Log In',
@@ -197,19 +198,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'balance.loadingError': "Failed to load balance data from orders.",
     'balance.toast.loadErrorTitle': 'Error Loading Orders',
     'balance.toast.loadErrorDescription': 'Could not load order P/L data.',
-    'balance.portfolioSnapshot.title': 'Portfolio Snapshot',
-    'balance.snapshot.loadingError': 'Failed to load portfolio snapshot data.',
-    'balance.snapshot.toast.loadErrorTitle': 'Snapshot Error',
-    'balance.daily.title': 'Daily Portfolio Change',
-    'balance.daily.description': 'Today vs Yesterday',
-    'balance.daily.noData': 'No daily snapshot data available yet.',
-    'balance.daily.yesterdayValue': 'Yesterday: {value}',
-    'balance.monthly.title': 'Monthly Portfolio Change',
-    'balance.monthly.description': 'Current Month Performance',
-    'balance.monthly.noData': 'No monthly snapshot data available yet.',
-    'balance.monthly.noChartData': 'Not enough data for monthly chart.',
-    'balance.monthly.startValue': 'Start of month: {value}',
-    'balance.monthly.chart.value': 'Value',
     'balance.orderProfit.title': 'Order Profit/Loss Analysis',
     'balance.orderProfit.chart.title': 'Net Profit Over Time (from Orders)',
 
@@ -320,6 +308,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.alerts.fetchErrorDescription': 'No se pudieron cargar sus alertas de precio activas.',
     'dashboard.alerts.triggeredTitle': '¡Alerta de Precio Activada!',
     'dashboard.alerts.triggeredDescription': '{symbol} ha alcanzado su precio objetivo de ${targetPrice}. Precio actual: ${currentPrice}.',
+    'dashboard.ai.historicalDataError': 'No se pudieron obtener los datos históricos para {symbol}.',
 
 
     'login.title': 'Iniciar Sesión',
@@ -458,19 +447,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'balance.page.title': "Resumen de Balance",
     'balance.page.loading': 'Cargando información de balance...',
     'balance.menuItem': "Balance",
-    'balance.portfolioSnapshot.title': 'Instantánea de Portafolio',
-    'balance.snapshot.loadingError': 'Error al cargar datos de la instantánea del portafolio.',
-    'balance.snapshot.toast.loadErrorTitle': 'Error de Instantánea',
-    'balance.daily.title': 'Cambio Diario del Portafolio',
-    'balance.daily.description': 'Hoy vs Ayer',
-    'balance.daily.noData': 'Aún no hay datos de instantáneas diarias disponibles.',
-    'balance.daily.yesterdayValue': 'Ayer: {value}',
-    'balance.monthly.title': 'Cambio Mensual del Portafolio',
-    'balance.monthly.description': 'Rendimiento del Mes Actual',
-    'balance.monthly.noData': 'Aún no hay datos de instantáneas mensuales disponibles.',
-    'balance.monthly.noChartData': 'No hay suficientes datos para el gráfico mensual.',
-    'balance.monthly.startValue': 'Inicio de mes: {value}',
-    'balance.monthly.chart.value': 'Valor',
     'balance.orderProfit.title': 'Análisis de Ganancia/Pérdida por Órdenes',
     'balance.orderProfit.chart.title': 'Ganancia Neta en el Tiempo (de Órdenes)',
 
@@ -579,6 +555,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.alerts.fetchErrorDescription': 'Impossible de charger vos alertes de prix actives.',
     'dashboard.alerts.triggeredTitle': 'Alerte de Prix Déclenchée !',
     'dashboard.alerts.triggeredDescription': '{symbol} a atteint votre prix cible de ${targetPrice}. Prix actuel : ${currentPrice}.',
+    'dashboard.ai.historicalDataError': 'Impossible de récupérer les données historiques pour {symbol}.',
 
     'login.title': 'Se Connecter',
     'login.description': 'Connectez-vous à votre compte',
@@ -717,19 +694,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'balance.page.title': "Aperçu du Solde",
     'balance.page.loading': 'Chargement des informations du solde...',
     'balance.menuItem': "Solde",
-    'balance.portfolioSnapshot.title': 'Instantané du Portefeuille',
-    'balance.snapshot.loadingError': 'Échec du chargement des données de l\'instantané du portefeuille.',
-    'balance.snapshot.toast.loadErrorTitle': 'Erreur d\'Instantané',
-    'balance.daily.title': 'Variation Quotidienne du Portefeuille',
-    'balance.daily.description': 'Aujourd\'hui vs Hier',
-    'balance.daily.noData': 'Aucune donnée d\'instantané quotidien disponible pour le moment.',
-    'balance.daily.yesterdayValue': 'Hier: {value}',
-    'balance.monthly.title': 'Variation Mensuelle du Portefeuille',
-    'balance.monthly.description': 'Performance du Mois en Cours',
-    'balance.monthly.noData': 'Aucune donnée d\'instantané mensuel disponible pour le moment.',
-    'balance.monthly.noChartData': 'Pas assez de données pour le graphique mensuel.',
-    'balance.monthly.startValue': 'Début du mois: {value}',
-    'balance.monthly.chart.value': 'Valeur',
     'balance.orderProfit.title': 'Analyse des Profits/Pertes sur Ordres',
     'balance.orderProfit.chart.title': 'Bénéfice Net au Fil du Temps (des Ordres)',
 
@@ -838,6 +802,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.alerts.fetchErrorDescription': 'आपकी सक्रिय मूल्य चेतावनियां लोड नहीं की जा सकीं।',
     'dashboard.alerts.triggeredTitle': 'मूल्य चेतावनी सक्रिय!',
     'dashboard.alerts.triggeredDescription': '{symbol} आपके लक्ष्य मूल्य ${targetPrice} पर पहुंच गया है। वर्तमान मूल्य: ${currentPrice}।',
+    'dashboard.ai.historicalDataError': '{symbol} के लिए ऐतिहासिक डेटा प्राप्त नहीं किया जा सका।',
 
 
     'login.title': 'लॉग इन करें',
@@ -977,18 +942,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'balance.page.title': "बैलेंस अवलोकन",
     'balance.page.loading': 'बैलेंस जानकारी लोड हो रही है...',
     'balance.menuItem': "बैलेंस",
-    'balance.portfolioSnapshot.title': 'पोर्टफोलियो स्नैपशॉट',
-    'balance.snapshot.loadingError': 'पोर्टफोलियो स्नैपशॉट डेटा लोड करने में विफल।',
-    'balance.snapshot.toast.loadErrorTitle': 'स्नैपशॉट त्रुटि',
-    'balance.daily.title': 'दैनिक पोर्टफोलियो परिवर्तन',
-    'balance.daily.description': 'आज बनाम कल',
-    'balance.daily.noData': 'अभी तक कोई दैनिक स्नैपशॉट डेटा उपलब्ध नहीं है।',
-    'balance.daily.yesterdayValue': 'कल: {value}',
-    'balance.monthly.title': 'मासिक पोर्टफोलियो परिवर्तन',
-    'balance.monthly.description': 'वर्तमान माह का प्रदर्शन',
-    'balance.monthly.noChartData': 'मासिक चार्ट के लिए पर्याप्त डेटा नहीं है।',
-    'balance.monthly.startValue': 'माह की शुरुआत: {value}',
-    'balance.monthly.chart.value': 'मूल्य',
     'balance.orderProfit.title': 'ऑर्डर लाभ/हानि विश्लेषण',
     'balance.orderProfit.chart.title': 'समय के साथ शुद्ध लाभ (ऑर्डर से)',
 
@@ -1097,6 +1050,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.alerts.fetchErrorDescription': '无法加载您的活动价格提醒。',
     'dashboard.alerts.triggeredTitle': '价格提醒已触发！',
     'dashboard.alerts.triggeredDescription': '{symbol} 已达到您的目标价格 ${targetPrice}。当前价格：${currentPrice}。',
+    'dashboard.ai.historicalDataError': '无法获取 {symbol} 的历史数据。',
 
     'login.title': '登录',
     'login.description': '登录您的帐户',
@@ -1235,18 +1189,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'balance.page.title': "余额概览",
     'balance.page.loading': '正在加载余额信息...',
     'balance.menuItem': "余额",
-    'balance.portfolioSnapshot.title': '投资组合快照',
-    'balance.snapshot.loadingError': '加载投资组合快照数据失败。',
-    'balance.snapshot.toast.loadErrorTitle': '快照错误',
-    'balance.daily.title': '每日投资组合变动',
-    'balance.daily.description': '今天 vs 昨天',
-    'balance.daily.noData': '尚无每日快照数据。',
-    'balance.daily.yesterdayValue': '昨天: {value}',
-    'balance.monthly.title': '每月投资组合变动',
-    'balance.monthly.description': '当月表现',
-    'balance.monthly.noChartData': '没有足够的月度图表数据。',
-    'balance.monthly.startValue': '月初: {value}',
-    'balance.monthly.chart.value': '价值',
     'balance.orderProfit.title': '订单盈亏分析',
     'balance.orderProfit.chart.title': '净利润随时间变化（来自订单）',
 
@@ -1353,8 +1295,6 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
       setCurrentLanguage(storedLanguage);
       setTranslations(translationsData[storedLanguage]);
     } else {
-      // If no stored language or invalid, stick with DEFAULT_LANGUAGE
-      // localStorage will be set if it wasn't already DEFAULT_LANGUAGE
       if (typeof window !== 'undefined' && storedLanguage !== DEFAULT_LANGUAGE) {
          localStorage.setItem('simultradex_language', DEFAULT_LANGUAGE);
       }

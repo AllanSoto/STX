@@ -5,7 +5,6 @@ export interface User {
   id: string;
   email: string;
   password?: string; // For mock password storage
-  // Removed binanceApiKey and binanceApiSecret
 }
 
 export interface SimulatedTrade {
@@ -78,13 +77,6 @@ export interface SavedOrder {
   originalPair: string;
   inputAmount: number;
   inputCurrency: string;
-}
-
-export interface PortfolioSnapshot {
-  id: string; 
-  date: Date; 
-  valueUSDT: number;
-  timestamp: any; 
 }
 
 export type AlertDirection = 'above' | 'below';

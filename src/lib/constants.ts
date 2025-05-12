@@ -16,7 +16,6 @@ export const DETAILED_TRADING_PAIRS = [
   'USDT/BTC',
   'USDT/ETH',
   'USDT/BNB',
-  // Add more pairs here if needed. This list can be fetched from Firebase in the future.
 ] as const;
 
 export type DetailedTradingPair = typeof DETAILED_TRADING_PAIRS[number];
@@ -36,14 +35,14 @@ export const QUOTE_CURRENCY = 'USDT'; // Standard quote currency for pairs
 export const STABLECOIN_SYMBOLS = ['USDT'] as const; // Add other stablecoins if needed
 export type StableCoinSymbol = typeof STABLECOIN_SYMBOLS[number];
 
-// Mapping for WebSocket and REST API symbols/IDs
-export const COIN_MAPPINGS_WS: Record<CryptoSymbol, { coincapId: string; binanceSymbol: string }> = {
-  BTC: { coincapId: 'bitcoin', binanceSymbol: 'BTCUSDT' },
-  ETH: { coincapId: 'ethereum', binanceSymbol: 'ETHUSDT' },
-  SOL: { coincapId: 'solana', binanceSymbol: 'SOLUSDT' },
-  BNB: { coincapId: 'binance-coin', binanceSymbol: 'BNBUSDT' },
-  XRP: { coincapId: 'xrp', binanceSymbol: 'XRPUSDT' },
-  ADA: { coincapId: 'cardano', binanceSymbol: 'ADAUSDT' },
-  DOGE: { coincapId: 'dogecoin', binanceSymbol: 'DOGEUSDT' },
-  SHIB: { coincapId: 'shiba-inu', binanceSymbol: 'SHIBUSDT' },
+// Mapping for WebSocket, REST API symbols/IDs, and CoinGecko IDs
+export const COIN_DATA: Record<CryptoSymbol, { binanceSymbol: string; coinGeckoId: string }> = {
+  BTC: { binanceSymbol: 'BTCUSDT', coinGeckoId: 'bitcoin' },
+  ETH: { binanceSymbol: 'ETHUSDT', coinGeckoId: 'ethereum' },
+  SOL: { binanceSymbol: 'SOLUSDT', coinGeckoId: 'solana' },
+  BNB: { binanceSymbol: 'BNBUSDT', coinGeckoId: 'binancecoin' }, // Note: CoinGecko ID is 'binancecoin' not 'binance-coin'
+  XRP: { binanceSymbol: 'XRPUSDT', coinGeckoId: 'ripple' }, // Note: CoinGecko ID is 'ripple' not 'xrp'
+  ADA: { binanceSymbol: 'ADAUSDT', coinGeckoId: 'cardano' },
+  DOGE: { binanceSymbol: 'DOGEUSDT', coinGeckoId: 'dogecoin' },
+  SHIB: { binanceSymbol: 'SHIBUSDT', coinGeckoId: 'shiba-inu' },
 };

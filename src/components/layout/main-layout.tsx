@@ -133,7 +133,6 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
           
           <SidebarSeparator className="my-4" />
           
-          {/* Language Selection Collapsible Menu */}
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
@@ -175,7 +174,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
           )}
         </SidebarContent>
 
-        <SidebarFooter className="p-2 border-t mt-auto"> {/* mt-auto pushes footer to bottom */}
+        <SidebarFooter className="p-2 border-t mt-auto"> 
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton 
@@ -209,7 +208,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
 
       <div className="flex flex-col flex-1 transition-all duration-200 ease-linear md:ml-[var(--sidebar-width-icon)] peer-data-[state=expanded]:md:ml-[var(--sidebar-width)]">
         <AppHeader />
-        <main className="flex-1"> {/* Removed default padding, pages will handle their own padding */}
+        <main className="flex-1"> 
           {children}
         </main>
       </div>

@@ -2,7 +2,6 @@
 'use client';
 
 import { MainLayout } from '@/components/layout/main-layout';
-// import { ApiKeyForm } from '@/components/account/api-key-form'; // Removed
 import { PasswordChangeForm } from '@/components/account/password-change-form';
 import { ActiveAlertsList } from '@/components/account/active-alerts-list';
 import { useAuth } from '@/hooks/use-auth';
@@ -31,7 +30,6 @@ export default function AccountPage() {
         )}
 
         <div className="grid gap-8 md:grid-cols-1"> 
-          {/* <ApiKeyForm /> Removed */}
           <PasswordChangeForm />
         </div>
         
