@@ -12,6 +12,7 @@ interface LanguageContextType {
   language: LanguageCode;
   setLanguage: (language: LanguageCode) => void;
   translations: Record<string, string>;
+  hydrated: boolean; // New state
 }
 
 const translationsData: Record<LanguageCode, Record<string, string>> = {
@@ -1344,6 +1345,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [translations, setTranslations] = useState<Record<string, string>>(
     translationsData[DEFAULT_LANGUAGE]
   );
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     const storedLanguage = typeof window !== 'undefined' ? localStorage.getItem('simultradex_language') as LanguageCode | null : null;
@@ -1351,11 +1353,13 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
       setCurrentLanguage(storedLanguage);
       setTranslations(translationsData[storedLanguage]);
     } else {
-      setTranslations(translationsData[DEFAULT_LANGUAGE]);
-      if (typeof window !== 'undefined') {
+      // If no stored language or invalid, stick with DEFAULT_LANGUAGE
+      // localStorage will be set if it wasn't already DEFAULT_LANGUAGE
+      if (typeof window !== 'undefined' && storedLanguage !== DEFAULT_LANGUAGE) {
          localStorage.setItem('simultradex_language', DEFAULT_LANGUAGE);
       }
     }
+    setHydrated(true); 
   }, []);
 
   const setLanguage = useCallback((langCode: LanguageCode) => {
@@ -1376,13 +1380,13 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (hydrated && typeof window !== 'undefined') {
       document.documentElement.lang = language;
     }
-  }, [language]);
+  }, [language, hydrated]);
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, translations }}>
+    <LanguageContext.Provider value={{ language, setLanguage, translations, hydrated }}>
       {children}
     </LanguageContext.Provider>
   );
