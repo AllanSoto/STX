@@ -5,7 +5,6 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/providers/auth-provider';
 import { LanguageProvider } from '@/providers/language-provider';
-// Removed LanguageContext and useContext imports as AppContent is removed.
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -22,8 +21,6 @@ export const metadata: Metadata = {
   description: 'Simulate crypto trading and analyze trends.', // Default description
 };
 
-// AppContent component has been removed for this diagnostic step.
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -32,16 +29,20 @@ export default function RootLayout({
   // The lang attribute here is 'en'.
   // The LanguageProvider's useEffect will update `document.documentElement.lang`
   // client-side after hydration.
+  // Server-side rendering of lang attribute depends on initial state, which is 'en'.
+  // Client-side hydration will match this initial server render.
+  // Subsequent language changes are handled client-side by LanguageProvider.
   return (
-    <html lang="en" className="dark"> {/* Keep lang="en" hardcoded here */}
+    <html lang="en" className="dark">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <LanguageProvider>
           <AuthProvider>
             {children}
-            <Toaster /> {/* Toaster placed directly */}
+            <Toaster />
           </AuthProvider>
         </LanguageProvider>
       </body>
     </html>
   );
 }
+
