@@ -70,7 +70,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <TooltipProvider>
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={false}>
       <Sidebar side="left" collapsible="icon" variant="sidebar" className="border-r">
         <SidebarHeader className="p-2">
           <Link href="/dashboard" className="flex items-center gap-2 px-2 py-2">
