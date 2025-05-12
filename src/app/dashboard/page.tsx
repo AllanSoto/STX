@@ -1,3 +1,4 @@
+
 // src/app/dashboard/page.tsx
 'use client';
 
@@ -12,22 +13,22 @@ import type { CryptoSymbol, PriceAlert } from '@/lib/types';
 import { CRYPTO_SYMBOLS, COIN_MAPPINGS_WS, QUOTE_CURRENCY } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
 import { saveDailyPortfolioSnapshot } from '@/lib/firebase/portfolioSnapshots';
 import { getActivePriceAlertsForUser, deactivatePriceAlert } from '@/lib/firebase/alerts';
 import { AlertModal } from '@/components/dashboard/alert-modal';
 import { format } from 'date-fns';
 import type { TrendAnalysis } from '@/lib/types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 
 const BINANCE_WS_URL = 'wss://stream.binance.com:9443/ws/!miniTicker@arr';
 const BINANCE_API_REST_BASE_URL = 'https://api.binance.com/api/v3';
 
-const BINANCE_API_REFRESH_INTERVAL = 5000; // 5 seconds for Binance REST fallback
+const BINANCE_API_REFRESH_INTERVAL = 5000; 
 const AI_ANALYSIS_INITIAL_DELAY = 5000; 
 const AI_ANALYSIS_INTERVAL = 60000 * 1; 
-const ALERT_CHECK_INTERVAL = 10000; // 10 seconds to check alerts (client-side simulation)
+const ALERT_CHECK_INTERVAL = 10000; 
 
 
 const binanceSymbolsForREST = CRYPTO_SYMBOLS.map(s => COIN_MAPPINGS_WS[s]?.binanceSymbol).filter(Boolean) as string[];
@@ -35,11 +36,9 @@ const binanceSymbolsForREST = CRYPTO_SYMBOLS.map(s => COIN_MAPPINGS_WS[s]?.binan
 
 const SYMBOLS_TO_DISPLAY_ON_CARDS: CryptoSymbol[] = ['BTC', 'ETH', 'SOL', 'XRP', 'BNB'];
 
-// Updated mock function to generate slightly more structured price data for AI analysis
 function getMockRecentPriceData(symbol: CryptoSymbol, currentPrice: number): string {
     const prices: number[] = [];
     let lastPrice = currentPrice;
-
     let trendMomentum = (Math.random() - 0.5) * 2; 
 
     for (let i = 0; i < 19; i++) {
@@ -53,7 +52,6 @@ function getMockRecentPriceData(symbol: CryptoSymbol, currentPrice: number): str
         const baseFluctuation = 0.007; 
         const trendInfluence = trendMomentum * baseFluctuation * 0.5; 
         const randomNoise = (Math.random() - 0.5) * baseFluctuation * 0.5; 
-
         const priceChangeFactor = trendInfluence + randomNoise;
         
         let fluctuatedPrice = lastPrice * (1 - priceChangeFactor); 
@@ -112,7 +110,6 @@ export default function DashboardPage() {
   const cryptoDataRef = useRef<CryptoCardData[]>(initialCryptoData);
   const lastSnapshotSaveAttemptDate = useRef<string | null>(null);
 
-  // Price Alert States
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
   const [alertCryptoSymbol, setAlertCryptoSymbol] = useState<CryptoSymbol | null>(null);
   const [alertCurrentPrice, setAlertCurrentPrice] = useState<number | null>(null);
@@ -406,17 +403,14 @@ export default function DashboardPage() {
 
       setIsAiLoading(true);
       try {
-        // Ensure cryptoDataRef.current is used here for the most up-to-date data before AI call
         const currentDataForAI = JSON.parse(JSON.stringify(cryptoDataRef.current)) as CryptoCardData[];
         const updatedDataWithTrends = await updateAllAiTrendsExternal(currentDataForAI, t);
         
         if (isMounted) {
           setCryptoData(prevData => {
-            // Merge trends into the existing data to preserve price updates that might have happened during AI call
             return prevData.map(currentCrypto => {
               const trendUpdate = updatedDataWithTrends.find(upd => upd.symbol === currentCrypto.symbol);
               if (trendUpdate && trendUpdate.trendAnalysis) {
-                // Only update trendAnalysis, keep other fields (like value, previousValue) from prevData
                 return { ...currentCrypto, trendAnalysis: trendUpdate.trendAnalysis };
               }
               return currentCrypto;
@@ -456,7 +450,6 @@ export default function DashboardPage() {
     };
   }, [t, toast]); 
 
-  // Client-side alert checking (simulation)
   useEffect(() => {
     const checkAlerts = async () => {
       if (!user || activeAlertsRef.current.length === 0 || cryptoDataRef.current.every(cd => cd.value === 0)) {
@@ -551,18 +544,16 @@ export default function DashboardPage() {
           </Card>
         )}
 
-
         <Card className="mb-8 shadow-lg bg-secondary/30">
             <CardHeader>
                 <CardTitle>{t('dashboard.portfolioBalance', 'Portfolio Balance')}</CardTitle>
             </CardHeader>
             <CardContent>
                 <p className="text-muted-foreground">
-                   {t('dashboard.portfolioBalance.publicSourceMessage', "Private Binance API not connected or restricted. Displaying market data from public source.")}
+                   {t('dashboard.portfolioBalance.publicSourceMessage', "Displaying market data from public source.")}
                 </p>
             </CardContent>
         </Card>
-
 
         <section className="mb-8">
           <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('dashboard.marketOverview', 'Market Overview')}</h2>

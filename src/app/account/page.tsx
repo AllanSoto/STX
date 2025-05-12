@@ -2,9 +2,9 @@
 'use client';
 
 import { MainLayout } from '@/components/layout/main-layout';
-import { ApiKeyForm } from '@/components/account/api-key-form';
+// import { ApiKeyForm } from '@/components/account/api-key-form'; // Removed
 import { PasswordChangeForm } from '@/components/account/password-change-form';
-import { ActiveAlertsList } from '@/components/account/active-alerts-list'; // Import the new component
+import { ActiveAlertsList } from '@/components/account/active-alerts-list';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/hooks/use-language';
@@ -30,8 +30,8 @@ export default function AccountPage() {
           </Card>
         )}
 
-        <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
-          <ApiKeyForm />
+        <div className="grid gap-8 md:grid-cols-1"> 
+          {/* <ApiKeyForm /> Removed */}
           <PasswordChangeForm />
         </div>
         

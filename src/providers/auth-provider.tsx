@@ -22,8 +22,7 @@ interface AuthContextType {
   login: (email: string, pass: string) => Promise<void>;
   signup: (email: string, pass: string) => Promise<void>;
   logout: () => void;
-  updateApiKey: (apiKey: string, apiSecret: string) => void;
-  isConnectedToBinance: boolean;
+  // Removed updateApiKey and isConnectedToBinance
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,7 +41,7 @@ const isStrongPassword = (password: string): boolean => {
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isConnectedToBinance, setIsConnectedToBinance] = useState(false);
+  // Removed isConnectedToBinance state
   const router = useRouter();
   const { translations } = useLanguage(); 
   const t = (key: string, fallback?: string) => translations[key] || fallback || key;
@@ -54,9 +53,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const parsedUser = JSON.parse(storedUser) as User;
         setUser(parsedUser);
-        if (parsedUser.binanceApiKey && parsedUser.binanceApiSecret) {
-          setIsConnectedToBinance(true);
-        }
+        // Removed Binance connection check
       } catch (error) {
         console.error("Failed to parse user from localStorage", error);
         localStorage.removeItem('simultradex_user');
@@ -89,7 +86,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     }
     
-    if (storedUser && storedUser.email === email && storedUser.password === pass) {
+    // Ensure password property exists on storedUser for comparison
+    if (storedUser && storedUser.email === email && storedUser.password && storedUser.password === pass) {
       setUser(storedUser);
       router.push('/dashboard');
     } else {
@@ -108,6 +106,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
         } catch (e) {
             console.error("Error parsing stored user during signup:", e);
+            // If parsing fails, it's safer to remove the potentially corrupted item
             localStorage.removeItem('simultradex_user');
         }
     }
@@ -115,7 +114,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const newUser: User = { 
       id: 'mock-user-id-' + Date.now(), 
       email, 
-      password: pass 
+      password: pass // Storing password directly; consider hashing in a real app
     };
     setUser(newUser);
     persistUser(newUser);
@@ -124,32 +123,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = useCallback(() => {
     setUser(null);
-    setIsConnectedToBinance(false);
+    // Removed setIsConnectedToBinance(false);
     persistUser(null); 
     router.push('/login');
   }, [router]);
 
-  const updateApiKey = useCallback((apiKey: string, apiSecret: string) => {
-    setUser(currentUser => {
-      if (currentUser) {
-        const updatedUser = { ...currentUser, binanceApiKey: apiKey, binanceApiSecret: apiSecret };
-        persistUser(updatedUser);
-        if (apiKey && apiSecret && apiKey !== 'test_key_invalid') { 
-          setIsConnectedToBinance(true);
-        } else {
-          setIsConnectedToBinance(false);
-        }
-        return updatedUser;
-      }
-      return null;
-    });
-  }, []);
-
+  // Removed updateApiKey function
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, signup, logout, updateApiKey, isConnectedToBinance }}>
+    <AuthContext.Provider value={{ user, isLoading, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
-

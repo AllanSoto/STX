@@ -1,11 +1,11 @@
+
 import type { CryptoSymbol } from './constants';
 
 export interface User {
   id: string;
   email: string;
-  password?: string; // Added for mock password storage
-  binanceApiKey?: string;
-  binanceApiSecret?: string; // Should be handled with extreme care
+  password?: string; // For mock password storage
+  // Removed binanceApiKey and binanceApiSecret
 }
 
 export interface SimulatedTrade {
@@ -14,7 +14,7 @@ export interface SimulatedTrade {
   cryptoSymbol: CryptoSymbol;
   buyPrice: number;
   sellPrice: number;
-  quantity: number; // Added quantity to simulated trade
+  quantity: number; 
   commission: number;
   netProfitLoss: number;
 }
@@ -46,10 +46,10 @@ export interface SimulatedSaleEntry {
 }
 
 export interface SimulationLogEntry {
-  id: string; // Document ID from Firestore
+  id: string; 
   usuario_id: string;
-  fecha: any; // Firestore Timestamp, will be typed more accurately if using Firebase SDK types directly
-  par_operacion: string; // e.g., USDT/BTC
+  fecha: any; 
+  par_operacion: string; 
   monto_compra_usdt: number;
   precio_compra: number;
   cantidad_cripto_comprada: number;
@@ -58,20 +58,18 @@ export interface SimulationLogEntry {
 }
 
 export interface SavedOrder {
-  id: string; // Document ID from Firestore
+  id: string; 
   userId: string;
-  timestamp: Date; // Changed from any to Date
+  timestamp: Date; 
 
   targetCrypto: string;
   quoteCurrency: string;
 
-  // Buy leg
   amountOfTargetCryptoBought: number;
   buyPricePerUnit: number;
   totalBuyValueInQuote: number;
   buyCommissionInQuote: number;
 
-  // Sell leg
   sellPricePerUnit: number;
   totalSellValueInQuote: number;
   sellCommissionInQuote: number;
@@ -83,22 +81,22 @@ export interface SavedOrder {
 }
 
 export interface PortfolioSnapshot {
-  id: string; // YYYY-MM-DD
-  date: Date; // JS Date object for the snapshot
+  id: string; 
+  date: Date; 
   valueUSDT: number;
-  timestamp: any; // Firestore Timestamp
+  timestamp: any; 
 }
 
 export type AlertDirection = 'above' | 'below';
 
 export interface PriceAlert {
-  id: string; // Document ID from Firestore
+  id: string; 
   userId: string;
   symbol: CryptoSymbol;
   targetPrice: number;
-  direction: AlertDirection; // 'above' or 'below'
+  direction: AlertDirection; 
   active: boolean;
-  createdAt: any; // Firestore Timestamp
-  updatedAt: any; // Firestore Timestamp
-  triggeredAt?: any; // Firestore Timestamp, optional
+  createdAt: any; 
+  updatedAt: any; 
+  triggeredAt?: any; 
 }
