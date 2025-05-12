@@ -1,4 +1,3 @@
-
 // src/providers/language-provider.tsx
 'use client';
 
@@ -186,9 +185,12 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'balance.filters.endDate': "End Date",
     'balance.filters.pickDate': "Pick a date",
     'balance.filters.resetButton': "Reset Filters",
-    'balance.summary.totalInvested': "Total Invested",
-    'balance.summary.totalRecovered': "Total Recovered",
-    'balance.summary.netResult': "Net Result",
+    'balance.summary.title': 'Filtered Period Summary',
+    'balance.summary.totalInvested': "Total Invested (Filtered Period)",
+    'balance.summary.totalRecovered': "Total Recovered (Filtered Period)",
+    'balance.summary.netResult': "Net Result (Filtered Period)",
+    'balance.summary.basedOnOrders': 'Based on orders in selected period',
+    'balance.summary.profitOrLoss': 'Profit or loss from orders',
     'balance.chart.title': "Profit/Loss Over Time", 
     'balance.chart.view.daily': "Daily",
     'balance.chart.view.monthly': "Monthly",
@@ -198,8 +200,20 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'balance.loadingError': "Failed to load balance data from orders.",
     'balance.toast.loadErrorTitle': 'Error Loading Orders',
     'balance.toast.loadErrorDescription': 'Could not load order P/L data.',
-    'balance.orderProfit.title': 'Order Profit/Loss Analysis',
+    'balance.orderProfit.title': 'Order Profit/Loss Analysis (Filtered)',
     'balance.orderProfit.chart.title': 'Net Profit Over Time (from Orders)',
+    'balance.performanceSummary.title': 'Performance Snapshots',
+    'balance.daily.title': 'Daily Performance',
+    'balance.daily.description': 'Profit/Loss from orders compared to yesterday.',
+    'balance.daily.todayNetProfit': "Today's Net Profit",
+    'balance.daily.yesterdayNetProfit': "Yesterday's Net Profit",
+    'balance.daily.changeVsYesterday': "Change vs Yesterday",
+    'balance.monthly.title': 'Monthly Performance',
+    'balance.monthly.description': 'Profit/Loss from orders this month vs last month.',
+    'balance.monthly.currentMonthNetProfit': "This Month's Net Profit (MTD)",
+    'balance.monthly.previousMonthNetProfit': "Last Month's Net Profit",
+    'balance.monthly.changeVsLastMonth': "Change vs Last Month",
+
 
     'alertModal.title.edit': 'Edit Alert for {symbol}',
     'alertModal.title.create': 'Set Alert for {symbol}',
@@ -447,8 +461,39 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'balance.page.title': "Resumen de Balance",
     'balance.page.loading': 'Cargando información de balance...',
     'balance.menuItem': "Balance",
-    'balance.orderProfit.title': 'Análisis de Ganancia/Pérdida por Órdenes',
+    'balance.filters.dateRange': "Rango de Fechas",
+    'balance.filters.startDate': "Fecha de Inicio",
+    'balance.filters.endDate': "Fecha de Fin",
+    'balance.filters.pickDate': "Elige una fecha",
+    'balance.filters.resetButton': "Limpiar Filtros",
+    'balance.summary.title': 'Resumen del Período Filtrado',
+    'balance.summary.totalInvested': "Total Invertido (Período Filtrado)",
+    'balance.summary.totalRecovered': "Total Recuperado (Período Filtrado)",
+    'balance.summary.netResult': "Resultado Neto (Período Filtrado)",
+    'balance.summary.basedOnOrders': 'Basado en órdenes en el período seleccionado',
+    'balance.summary.profitOrLoss': 'Ganancia o pérdida de las órdenes',
+    'balance.chart.title': "Ganancia/Pérdida en el Tiempo", 
+    'balance.chart.view.daily': "Diario",
+    'balance.chart.view.monthly': "Mensual",
+    'balance.chart.noData': "No hay datos de órdenes disponibles para el período seleccionado.", 
+    'balance.chart.profit': "Ganancia", 
+    'balance.chart.loading': "Cargando datos del gráfico...",
+    'balance.loadingError': "Error al cargar datos de balance de órdenes.",
+    'balance.toast.loadErrorTitle': 'Error Cargando Órdenes',
+    'balance.toast.loadErrorDescription': 'No se pudieron cargar los datos de P/L de las órdenes.',
+    'balance.orderProfit.title': 'Análisis de Ganancia/Pérdida por Órdenes (Filtrado)',
     'balance.orderProfit.chart.title': 'Ganancia Neta en el Tiempo (de Órdenes)',
+    'balance.performanceSummary.title': 'Resúmenes de Rendimiento',
+    'balance.daily.title': 'Rendimiento Diario',
+    'balance.daily.description': 'Ganancia/Pérdida de órdenes comparado con ayer.',
+    'balance.daily.todayNetProfit': "Ganancia Neta de Hoy",
+    'balance.daily.yesterdayNetProfit': "Ganancia Neta de Ayer",
+    'balance.daily.changeVsYesterday': "Cambio vs Ayer",
+    'balance.monthly.title': 'Rendimiento Mensual',
+    'balance.monthly.description': 'Ganancia/Pérdida de órdenes este mes vs mes pasado.',
+    'balance.monthly.currentMonthNetProfit': "Ganancia Neta Este Mes (MTD)",
+    'balance.monthly.previousMonthNetProfit': "Ganancia Neta Mes Pasado",
+    'balance.monthly.changeVsLastMonth': "Cambio vs Mes Pasado",
 
     'alertModal.title.edit': 'Editar Alerta para {symbol}',
     'alertModal.title.create': 'Crear Alerta para {symbol}',
@@ -694,8 +739,39 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'balance.page.title': "Aperçu du Solde",
     'balance.page.loading': 'Chargement des informations du solde...',
     'balance.menuItem': "Solde",
-    'balance.orderProfit.title': 'Analyse des Profits/Pertes sur Ordres',
+    'balance.filters.dateRange': "Plage de Dates",
+    'balance.filters.startDate': "Date de Début",
+    'balance.filters.endDate': "Date de Fin",
+    'balance.filters.pickDate': "Choisir une date",
+    'balance.filters.resetButton': "Réinitialiser Filtres",
+    'balance.summary.title': 'Résumé de la Période Filtrée',
+    'balance.summary.totalInvested': "Total Investi (Période Filtrée)",
+    'balance.summary.totalRecovered': "Total Récupéré (Période Filtrée)",
+    'balance.summary.netResult': "Résultat Net (Période Filtrée)",
+    'balance.summary.basedOnOrders': 'Basé sur les ordres de la période sélectionnée',
+    'balance.summary.profitOrLoss': 'Profit ou perte des ordres',
+    'balance.chart.title': "Profit/Perte au Fil du Temps", 
+    'balance.chart.view.daily': "Quotidien",
+    'balance.chart.view.monthly': "Mensuel",
+    'balance.chart.noData': "Aucune donnée d'ordre disponible pour la période sélectionnée.", 
+    'balance.chart.profit': "Profit", 
+    'balance.chart.loading': "Chargement des données du graphique...",
+    'balance.loadingError': "Erreur de chargement des données de solde des ordres.",
+    'balance.toast.loadErrorTitle': 'Erreur de Chargement des Ordres',
+    'balance.toast.loadErrorDescription': 'Impossible de charger les données P/L des ordres.',
+    'balance.orderProfit.title': 'Analyse des Profits/Pertes sur Ordres (Filtré)',
     'balance.orderProfit.chart.title': 'Bénéfice Net au Fil du Temps (des Ordres)',
+    'balance.performanceSummary.title': 'Aperçus des Performances',
+    'balance.daily.title': 'Performance Quotidienne',
+    'balance.daily.description': 'Profit/Perte des ordres par rapport à hier.',
+    'balance.daily.todayNetProfit': "Profit Net d'Aujourd'hui",
+    'balance.daily.yesterdayNetProfit': "Profit Net d'Hier",
+    'balance.daily.changeVsYesterday': "Variation vs Hier",
+    'balance.monthly.title': 'Performance Mensuelle',
+    'balance.monthly.description': 'Profit/Perte des ordres ce mois-ci vs le mois dernier.',
+    'balance.monthly.currentMonthNetProfit': "Profit Net Ce Mois-ci (MTD)",
+    'balance.monthly.previousMonthNetProfit': "Profit Net Mois Dernier",
+    'balance.monthly.changeVsLastMonth': "Variation vs Mois Dernier",
 
     'alertModal.title.edit': 'Modifier l\'Alerte pour {symbol}',
     'alertModal.title.create': 'Définir une Alerte pour {symbol}',
@@ -942,8 +1018,40 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'balance.page.title': "बैलेंस अवलोकन",
     'balance.page.loading': 'बैलेंस जानकारी लोड हो रही है...',
     'balance.menuItem': "बैलेंस",
-    'balance.orderProfit.title': 'ऑर्डर लाभ/हानि विश्लेषण',
+    'balance.filters.dateRange': "दिनांक सीमा",
+    'balance.filters.startDate': "प्रारंभ तिथि",
+    'balance.filters.endDate': "अंतिम तिथि",
+    'balance.filters.pickDate': "एक तिथि चुनें",
+    'balance.filters.resetButton': "फ़िल्टर रीसेट करें",
+    'balance.summary.title': 'फ़िल्टर की गई अवधि का सारांश',
+    'balance.summary.totalInvested': "कुल निवेशित (फ़िल्टर की गई अवधि)",
+    'balance.summary.totalRecovered': "कुल पुनर्प्राप्त (फ़िल्टर की गई अवधि)",
+    'balance.summary.netResult': "शुद्ध परिणाम (फ़िल्टर की गई अवधि)",
+    'balance.summary.basedOnOrders': 'चयनित अवधि में ऑर्डर के आधार पर',
+    'balance.summary.profitOrLoss': 'ऑर्डर से लाभ या हानि',
+    'balance.chart.title': "समय के साथ लाभ/हानि", 
+    'balance.chart.view.daily': "दैनिक",
+    'balance.chart.view.monthly': "मासिक",
+    'balance.chart.noData': "चयनित अवधि के लिए कोई ऑर्डर डेटा उपलब्ध नहीं है।", 
+    'balance.chart.profit': "लाभ", 
+    'balance.chart.loading': "चार्ट डेटा लोड हो रहा है...",
+    'balance.loadingError': "ऑर्डर से बैलेंस डेटा लोड करने में विफल।",
+    'balance.toast.loadErrorTitle': 'ऑर्डर लोड करने में त्रुटि',
+    'balance.toast.loadErrorDescription': 'ऑर्डर P/L डेटा लोड नहीं किया जा सका।',
+    'balance.orderProfit.title': 'ऑर्डर लाभ/हानि विश्लेषण (फ़िल्टर्ड)',
     'balance.orderProfit.chart.title': 'समय के साथ शुद्ध लाभ (ऑर्डर से)',
+    'balance.performanceSummary.title': 'प्रदर्शन स्नैपशॉट',
+    'balance.daily.title': 'दैनिक प्रदर्शन',
+    'balance.daily.description': 'कल की तुलना में ऑर्डर से लाभ/हानि।',
+    'balance.daily.todayNetProfit': "आज का शुद्ध लाभ",
+    'balance.daily.yesterdayNetProfit': "कल का शुद्ध लाभ",
+    'balance.daily.changeVsYesterday': "कल की तुलना में परिवर्तन",
+    'balance.monthly.title': 'मासिक प्रदर्शन',
+    'balance.monthly.description': 'इस महीने बनाम पिछले महीने ऑर्डर से लाभ/हानि।',
+    'balance.monthly.currentMonthNetProfit': "इस महीने का शुद्ध लाभ (MTD)",
+    'balance.monthly.previousMonthNetProfit': "पिछले महीने का शुद्ध लाभ",
+    'balance.monthly.changeVsLastMonth': "पिछले महीने की तुलना में परिवर्तन",
+
 
     'alertModal.title.edit': '{symbol} के लिए चेतावनी संपादित करें',
     'alertModal.title.create': '{symbol} के लिए चेतावनी सेट करें',
@@ -1189,8 +1297,40 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'balance.page.title': "余额概览",
     'balance.page.loading': '正在加载余额信息...',
     'balance.menuItem': "余额",
-    'balance.orderProfit.title': '订单盈亏分析',
+    'balance.filters.dateRange': "日期范围",
+    'balance.filters.startDate': "开始日期",
+    'balance.filters.endDate': "结束日期",
+    'balance.filters.pickDate': "选择日期",
+    'balance.filters.resetButton': "重置筛选器",
+    'balance.summary.title': '筛选期间摘要',
+    'balance.summary.totalInvested': "总投资 (筛选期间)",
+    'balance.summary.totalRecovered': "总回收 (筛选期间)",
+    'balance.summary.netResult': "净结果 (筛选期间)",
+    'balance.summary.basedOnOrders': '基于选定期间的订单',
+    'balance.summary.profitOrLoss': '订单的盈利或亏损',
+    'balance.chart.title': "随时间变化的利润/亏损", 
+    'balance.chart.view.daily': "每日",
+    'balance.chart.view.monthly': "每月",
+    'balance.chart.noData': "选定期间没有可用的订单数据。", 
+    'balance.chart.profit': "利润", 
+    'balance.chart.loading': "正在加载图表数据...",
+    'balance.loadingError': "加载订单余额数据失败。",
+    'balance.toast.loadErrorTitle': '加载订单时出错',
+    'balance.toast.loadErrorDescription': '无法加载订单盈亏数据。',
+    'balance.orderProfit.title': '订单盈亏分析（已筛选）',
     'balance.orderProfit.chart.title': '净利润随时间变化（来自订单）',
+    'balance.performanceSummary.title': '业绩快照',
+    'balance.daily.title': '每日业绩',
+    'balance.daily.description': '与昨天相比的订单盈亏。',
+    'balance.daily.todayNetProfit': "今日净利润",
+    'balance.daily.yesterdayNetProfit': "昨日净利润",
+    'balance.daily.changeVsYesterday': "与昨日相比变化",
+    'balance.monthly.title': '每月业绩',
+    'balance.monthly.description': '本月与上月相比的订单盈亏。',
+    'balance.monthly.currentMonthNetProfit': "本月净利润 (MTD)",
+    'balance.monthly.previousMonthNetProfit': "上月净利润",
+    'balance.monthly.changeVsLastMonth': "与上月相比变化",
+
 
     'alertModal.title.edit': '编辑{symbol}的提醒',
     'alertModal.title.create': '为{symbol}设置提醒',
@@ -1290,40 +1430,38 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const storedLanguage = typeof window !== 'undefined' ? localStorage.getItem('simultradex_language') as LanguageCode | null : null;
+    // This effect runs only on the client after hydration
+    const storedLanguage = localStorage.getItem('simultradex_language') as LanguageCode | null;
     if (storedLanguage && translationsData[storedLanguage]) {
       setCurrentLanguage(storedLanguage);
       setTranslations(translationsData[storedLanguage]);
+      document.documentElement.lang = storedLanguage;
     } else {
-      if (typeof window !== 'undefined' && storedLanguage !== DEFAULT_LANGUAGE) {
-         localStorage.setItem('simultradex_language', DEFAULT_LANGUAGE);
+      // If no stored language or invalid, set default and update lang attribute
+      document.documentElement.lang = DEFAULT_LANGUAGE;
+      if(storedLanguage !== DEFAULT_LANGUAGE){ // Avoid redundant localStorage set if already default
+        localStorage.setItem('simultradex_language', DEFAULT_LANGUAGE);
       }
     }
     setHydrated(true); 
-  }, []);
+  }, []); // Empty dependency array ensures this runs once on mount client-side
+
 
   const setLanguage = useCallback((langCode: LanguageCode) => {
     if (translationsData[langCode]) {
       setCurrentLanguage(langCode);
       setTranslations(translationsData[langCode]);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('simultradex_language', langCode);
-      }
+      localStorage.setItem('simultradex_language', langCode);
+      document.documentElement.lang = langCode; // Update lang attribute immediately
     } else {
       console.warn(`Language code ${langCode} not found in translations. Falling back to default.`);
       setCurrentLanguage(DEFAULT_LANGUAGE);
       setTranslations(translationsData[DEFAULT_LANGUAGE]);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('simultradex_language', DEFAULT_LANGUAGE);
-      }
+      localStorage.setItem('simultradex_language', DEFAULT_LANGUAGE);
+      document.documentElement.lang = DEFAULT_LANGUAGE; // Update lang attribute immediately
     }
   }, []);
 
-  useEffect(() => {
-    if (hydrated && typeof window !== 'undefined') {
-      document.documentElement.lang = language;
-    }
-  }, [language, hydrated]);
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, translations, hydrated }}>

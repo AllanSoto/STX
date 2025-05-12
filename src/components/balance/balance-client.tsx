@@ -7,12 +7,15 @@ import { useLanguage } from '@/hooks/use-language';
 import { getOrdersForUser } from '@/lib/firebase/orders';
 import type { SavedOrder } from '@/lib/types';
 import { BalanceFilters } from './balance-filters';
-import { BalanceSummaryCards } from './balance-summary-cards';
-import { BalanceChart } from './balance-chart'; // For P/L from orders
+import { FilteredPeriodSummaryCards } from './filtered-period-summary-cards';
+import { BalanceChart } from './balance-chart';
+import { DailyPerformanceSummary } from './daily-performance-summary';
+import { MonthlyPerformanceSummary } from './monthly-performance-summary';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format } from 'date-fns';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { format, startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, subMonths, isWithinInterval } from 'date-fns';
 
 export interface OrderProfitChartDataPoint {
   name: string; // Date or Month-Year for order profits
@@ -33,7 +36,6 @@ export function BalanceClient() {
     return msg;
   }, [translations]);
 
-  // State for Order History P/L
   const [allOrders, setAllOrders] = useState<SavedOrder[]>([]);
   const [isOrdersLoading, setIsOrdersLoading] = useState(true);
   const [ordersError, setOrdersError] = useState<string | null>(null);
@@ -41,7 +43,6 @@ export function BalanceClient() {
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [orderProfitChartView, setOrderProfitChartView] = useState<'daily' | 'monthly'>('daily');
 
-  // Fetch orders
   useEffect(() => {
     if (user?.id) {
       setIsOrdersLoading(true);
@@ -110,6 +111,42 @@ export function BalanceClient() {
       .sort((a, b) => new Date(a.name).getTime() - new Date(b.name).getTime());
   }, [filteredOrders, orderProfitChartView]);
 
+  const dailyPerformance = useMemo(() => {
+    const today = new Date();
+    const yesterday = subDays(today, 1);
+
+    const todayNetProfit = allOrders
+      .filter(order => isWithinInterval(order.timestamp, { start: startOfDay(today), end: endOfDay(today) }))
+      .reduce((sum, order) => sum + order.netProfitInQuote, 0);
+
+    const yesterdayNetProfit = allOrders
+      .filter(order => isWithinInterval(order.timestamp, { start: startOfDay(yesterday), end: endOfDay(yesterday) }))
+      .reduce((sum, order) => sum + order.netProfitInQuote, 0);
+    
+    return { todayNetProfit, yesterdayNetProfit };
+  }, [allOrders]);
+
+  const monthlyPerformance = useMemo(() => {
+    const today = new Date();
+    const currentMonthStart = startOfMonth(today);
+    const currentMonthEnd = endOfMonth(today); // or just today if we want "month to date"
+
+    const lastMonthDate = subMonths(today, 1);
+    const lastMonthStart = startOfMonth(lastMonthDate);
+    const lastMonthEnd = endOfMonth(lastMonthDate);
+
+    const currentMonthNetProfit = allOrders
+      .filter(order => isWithinInterval(order.timestamp, { start: currentMonthStart, end: currentMonthEnd /* or today for MTD */ }))
+      .reduce((sum, order) => sum + order.netProfitInQuote, 0);
+
+    const previousMonthNetProfit = allOrders
+      .filter(order => isWithinInterval(order.timestamp, { start: lastMonthStart, end: lastMonthEnd }))
+      .reduce((sum, order) => sum + order.netProfitInQuote, 0);
+
+    return { currentMonthNetProfit, previousMonthNetProfit };
+  }, [allOrders]);
+
+
   const handleResetFilters = () => {
     setStartDate(undefined);
     setEndDate(undefined);
@@ -152,8 +189,24 @@ export function BalanceClient() {
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-8 text-foreground">{t('balance.page.title', 'Balance Overview')}</h1>
       
+      <section className="mb-12">
+        <h2 className="text-2xl font-semibold mb-6 text-foreground">{t('balance.performanceSummary.title', 'Performance Snapshots')}</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <DailyPerformanceSummary 
+            todayNetProfit={dailyPerformance.todayNetProfit}
+            yesterdayNetProfit={dailyPerformance.yesterdayNetProfit}
+            t={t}
+          />
+          <MonthlyPerformanceSummary
+            currentMonthNetProfit={monthlyPerformance.currentMonthNetProfit}
+            previousMonthNetProfit={monthlyPerformance.previousMonthNetProfit}
+            t={t}
+          />
+        </div>
+      </section>
+
       <section>
-        <h2 className="text-2xl font-semibold mb-6 text-foreground">{t('balance.orderProfit.title', 'Order Profit/Loss Analysis')}</h2>
+        <h2 className="text-2xl font-semibold mb-6 text-foreground">{t('balance.orderProfit.title', 'Order Profit/Loss Analysis (Filtered)')}</h2>
         <BalanceFilters
           startDate={startDate}
           setStartDate={setStartDate}
@@ -163,7 +216,7 @@ export function BalanceClient() {
           t={t}
         />
 
-        <BalanceSummaryCards
+        <FilteredPeriodSummaryCards
           totalInvested={totalInvested}
           totalRecovered={totalRecovered}
           netResult={netResult}
@@ -171,18 +224,24 @@ export function BalanceClient() {
         />
 
         <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-4 text-foreground">{t('balance.orderProfit.chart.title', 'Net Profit Over Time (from Orders)')}</h3>
-          <Tabs value={orderProfitChartView} onValueChange={(value) => setOrderProfitChartView(value as 'daily' | 'monthly')} className="mb-4">
-            <TabsList>
-              <TabsTrigger value="daily">{t('balance.chart.view.daily', 'Daily')}</TabsTrigger>
-              <TabsTrigger value="monthly">{t('balance.chart.view.monthly', 'Monthly')}</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          {filteredOrders.length > 0 ? (
-              <BalanceChart data={orderProfitChartData} viewType={orderProfitChartView} t={t} currentLanguage={language} />
-          ) : (
-              <p className="text-muted-foreground text-center py-10">{t('balance.chart.noData', 'No order data available for the selected period.')}</p>
-          )}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('balance.orderProfit.chart.title', 'Net Profit Over Time (from Orders)')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Tabs value={orderProfitChartView} onValueChange={(value) => setOrderProfitChartView(value as 'daily' | 'monthly')} className="mb-4">
+                <TabsList>
+                  <TabsTrigger value="daily">{t('balance.chart.view.daily', 'Daily')}</TabsTrigger>
+                  <TabsTrigger value="monthly">{t('balance.chart.view.monthly', 'Monthly')}</TabsTrigger>
+                </TabsList>
+              </Tabs>
+              {filteredOrders.length > 0 ? (
+                  <BalanceChart data={orderProfitChartData} viewType={orderProfitChartView} t={t} currentLanguage={language} />
+              ) : (
+                  <p className="text-muted-foreground text-center py-10">{t('balance.chart.noData', 'No order data available for the selected period.')}</p>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </section>
     </div>
