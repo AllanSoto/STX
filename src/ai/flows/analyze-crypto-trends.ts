@@ -108,6 +108,8 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
 
     try {
       const result = await analyzeCryptoTrendPrompt(input);
+      // console.log(`AI Prompt Result for ${input.cryptoSymbol}:`, JSON.stringify(result)); // Optional: for deeper debugging if server logs are accessible
+
       if (!result || !result.output) {
         console.error(`analyzeCryptoTrendPrompt for ${input.cryptoSymbol} returned no output or undefined output. Result:`, result);
         return {
@@ -123,7 +125,8 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
         return {
           trend: 'sideways',
           confidence: 0,
-          reason: `AI output for ${input.cryptoSymbol} was malformed. Check server logs. Details: ${parsedOutput.error.message}`,
+          // Ensure reason is a simple string, even if error message is complex
+          reason: `AI output for ${input.cryptoSymbol} was malformed. Details: ${parsedOutput.error.errors.map(e => e.message).join(', ')}. Check server logs.`,
         };
       }
       return parsedOutput.data;
@@ -136,11 +139,8 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
       } else if (typeof error === 'string') {
         reasonMessage = `AI analysis for ${input.cryptoSymbol} failed: ${error}.`;
       } else {
-        try {
-          reasonMessage = `AI analysis for ${input.cryptoSymbol} failed with unknown error: ${JSON.stringify(error)}.`;
-        } catch (stringifyError) {
-          reasonMessage = `AI analysis for ${input.cryptoSymbol} failed with an unstringifiable error.`;
-        }
+         // For unknown errors, keep the message simple to avoid serialization issues with complex error objects.
+        reasonMessage = `AI analysis for ${input.cryptoSymbol} failed with an unknown error type. Check server logs for details.`;
       }
       
       return {
