@@ -1,4 +1,3 @@
-
 // src/components/dashboard/order-opportunity-simulator.tsx
 'use client';
 
@@ -169,28 +168,16 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
   }, [selectedPair, cryptoPrices, form, t, purchasePriceManuallyEdited]);
 
 
-useEffect(() => {
+  useEffect(() => {
     const amountToSpendNum = parseFloat(amountToSpendInQuoteStr); 
     const purchasePriceNum = parseFloat(purchasePriceOfBaseInQuoteStr.replace(/,/g, '')); 
 
     if (selectedPair && currentBaseCurrency && currentQuoteCurrency && !isNaN(amountToSpendNum) && amountToSpendNum > 0 && !isNaN(purchasePriceNum) && purchasePriceNum > 0) {
         const calculatedAmountOfBase = amountToSpendNum / purchasePriceNum;
         
-        let formattedDisplayAmount;
-        if (STABLECOIN_SYMBOLS.includes(currentBaseCurrency as any)) {
-            // For stablecoin base currencies, display with 2 decimal places
-            formattedDisplayAmount = calculatedAmountOfBase.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        } else {
-            // For non-stablecoin base currencies like XRP, BTC, ETH
-            if (calculatedAmountOfBase >= 1) {
-                // Display with 1 decimal place if value is >= 1
-                formattedDisplayAmount = calculatedAmountOfBase.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-            } else {
-                // For values less than 1, preserve more precision (up to 8 decimal places)
-                formattedDisplayAmount = calculatedAmountOfBase.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 8 });
-            }
-        }
-        setDisplayedExchangedCryptoValue(`${formattedDisplayAmount} ${currentBaseCurrency}`);
+        setDisplayedExchangedCryptoValue(
+            `${calculatedAmountOfBase.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: STABLECOIN_SYMBOLS.includes(currentBaseCurrency as any) ? 2 : 8 })} ${currentBaseCurrency}`
+        );
 
     } else if (selectedPair && amountToSpendInQuoteStr && purchasePriceOfBaseInQuoteStr) {
         if(isNaN(purchasePriceNum) || purchasePriceNum <=0) {
@@ -201,7 +188,7 @@ useEffect(() => {
     } else {
         setDisplayedExchangedCryptoValue(''); 
     }
-}, [selectedPair, amountToSpendInQuoteStr, purchasePriceOfBaseInQuoteStr, currentBaseCurrency, currentQuoteCurrency, t]);
+  }, [selectedPair, amountToSpendInQuoteStr, purchasePriceOfBaseInQuoteStr, currentBaseCurrency, currentQuoteCurrency, t]);
 
 
   useEffect(() => {
@@ -463,7 +450,7 @@ useEffect(() => {
                 name="amountToSpendInQuote"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel', `Amount to Spend ({currency})`, {currency: currentQuoteCurrency || '...'})}</FormLabel>
+                    <FormLabel>{t('dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel', `Amount to Spend ({currency})`, {currency: currentQuoteCurrency || DEFAULT_QUOTE_CURRENCY})}</FormLabel>
                     <FormControl>
                       <Input type="number" placeholder="e.g., 100" {...field} step="any" />
                     </FormControl>
@@ -477,7 +464,7 @@ useEffect(() => {
                 render={({ field }) => (
                 <FormItem>
                     <FormLabel>
-                        {t('dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel', 'Purchase Price of {baseCurrency} (in {quoteCurrency})', { baseCurrency: currentBaseCurrency || 'Base', quoteCurrency: currentQuoteCurrency || 'Quote' })}
+                        {t('dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel', 'Purchase Price of {baseCurrency} (in {quoteCurrency})', { baseCurrency: currentBaseCurrency || 'Base', quoteCurrency: currentQuoteCurrency || DEFAULT_QUOTE_CURRENCY })}
                     </FormLabel>
                     <FormControl>
                     <Input
@@ -513,7 +500,7 @@ useEffect(() => {
 
         {simulatedRows.length > 0 ? (
           <>
-            <ScrollArea className="max-h-[500px] w-full">
+            <ScrollArea className="w-full sm:max-h-[500px]">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -549,7 +536,7 @@ useEffect(() => {
                             variant="outline"
                             size="sm"
                             onClick={() => handleSaveOrder(index)}
-                            disabled={isSavingSimulation || savingOrderId === row.operation } // Auth removed: user always exists for this button's logic now (always enabled if not processing)
+                            disabled={isSavingSimulation || savingOrderId === row.operation } 
                             title={t('dashboard.orderOpportunitySimulator.saveOrderButton', 'Save Order')}
                           >
                             {savingOrderId === row.operation ? <Loader2 className="h-4 w-4 animate-spin" /> : <FilePlus2 className="h-4 w-4" />}
@@ -563,7 +550,7 @@ useEffect(() => {
             </ScrollArea>
              <Button
                 onClick={handleSaveFullSimulation}
-                disabled={isSavingSimulation } // Auth removed: user always exists for this button's logic now
+                disabled={isSavingSimulation } 
                 className="mt-4 w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground"
                 title={t('dashboard.orderOpportunitySimulator.saveButton', 'Save Full Simulation')}
               >
@@ -586,6 +573,3 @@ useEffect(() => {
     </Card>
   );
 }
-
-
-    
