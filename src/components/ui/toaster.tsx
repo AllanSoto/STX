@@ -1,7 +1,7 @@
-"use client"
+"use client"; // Ensure it's a client component
 
-import * as React from "react" // Import React
-import { useToast } from "@/hooks/use-toast"
+import * as React from "react"; 
+import { useToast } from "@/hooks/use-toast";
 import {
   Toast,
   ToastClose,
@@ -9,24 +9,29 @@ import {
   ToastProvider,
   ToastTitle,
   ToastViewport,
-} from "@/components/ui/toast"
+} from "@/components/ui/toast";
+import { useLanguage } from '@/hooks/use-language';
+
 
 export function Toaster() {
-  const { toasts } = useToast()
-  const [isClient, setIsClient] = React.useState(false)
+  const { toasts } = useToast();
+  const [isClient, setIsClient] = React.useState(false);
+  const { translations, hydrated: languageHydrated } = useLanguage();
+
 
   React.useEffect(() => {
-    setIsClient(true)
-  }, [])
+    setIsClient(true);
+  }, []);
 
-  if (!isClient) {
-    // Render null on the server and during the initial client render before useEffect runs.
-    // This prevents the ToastProvider and its aria-label from being part of the SSR/hydration comparison.
-    return null
+  if (!isClient || !languageHydrated) { 
+    return null;
   }
 
+  const t = (key: string, fallback: string) => translations[key] || fallback;
+
+
   return (
-    <ToastProvider label="Notifications (F8)"> {/* Explicitly set a static label */}
+    <ToastProvider label={t('toaster.notificationsLabel', 'Notifications (F8)')}>
       {toasts.map(function ({ id, title, description, action, ...props }) {
         return (
           <Toast key={id} {...props}>
@@ -39,9 +44,9 @@ export function Toaster() {
             {action}
             <ToastClose />
           </Toast>
-        )
+        );
       })}
       <ToastViewport />
     </ToastProvider>
-  )
+  );
 }

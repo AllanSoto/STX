@@ -1,4 +1,3 @@
-
 // src/providers/language-provider.tsx
 'use client';
 
@@ -134,10 +133,12 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.table.header.commissionDisplay': 'Commission ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.netProfitDisplay': 'Net Profit ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.actions': 'Actions',
+    'dashboard.orderOpportunitySimulator.buyOperation': 'Buy {targetCrypto} with {quoteCurrency}',
     'dashboard.orderOpportunitySimulator.exchangeOperation': 'Exchange {cur1} for {cur2}',
     'dashboard.orderOpportunitySimulator.sellOperationPerc': 'Sell {targetCrypto} (+{perc}%)',
     'dashboard.orderOpportunitySimulator.priceUnavailable': 'Price N/A',
     'dashboard.orderOpportunitySimulator.priceUnavailableShort': 'N/A',
+    'dashboard.orderOpportunitySimulator.priceEditPlaceholder': 'e.g., 52000',
     'dashboard.orderOpportunitySimulator.invalidMarketPrice': 'Invalid Market Price',
     'dashboard.orderOpportunitySimulator.invalidPurchasePrice': 'Invalid Purchase Price',
     'dashboard.orderOpportunitySimulator.calculationError': 'Calculation Error',
@@ -225,7 +226,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'balance.filters.dateRange': "Date Range",
     'balance.filters.startDate': "Start Date",
     'balance.filters.endDate': "End Date",
-    'balance.filters.pickDate': "Pick a date",
+    'history.filters.pickDate': "Pick a date",
     'balance.filters.resetButton': "Reset Filters",
     'balance.summary.title': 'Filtered Period Summary',
     'balance.summary.totalInvested': "Total Invested (Filtered Period)",
@@ -341,6 +342,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.alert.targetPricePositive': 'Target price must be a positive number.',
     'zod.alert.directionRequired': 'Please select a direction for the alert.',
     'footer.createdBy': 'Created with AI by Allan Soto',
+    'toaster.notificationsLabel': 'Notifications (F8)',
   },
   es: {
     'app.name': 'SimulTradex',
@@ -456,10 +458,12 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.table.header.commissionDisplay': 'Comisión ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.netProfitDisplay': 'Ganancia Neta ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.actions': 'Acciones',
+    'dashboard.orderOpportunitySimulator.buyOperation': 'Comprar {targetCrypto} con {quoteCurrency}',
     'dashboard.orderOpportunitySimulator.exchangeOperation': 'Intercambiar {cur1} por {cur2}',
     'dashboard.orderOpportunitySimulator.sellOperationPerc': 'Vender {targetCrypto} (+{perc}%)',
     'dashboard.orderOpportunitySimulator.priceUnavailable': 'Precio N/D',
     'dashboard.orderOpportunitySimulator.priceUnavailableShort': 'N/D',
+    'dashboard.orderOpportunitySimulator.priceEditPlaceholder': 'ej., 52000',
     'dashboard.orderOpportunitySimulator.invalidMarketPrice': 'Precio de Mercado Inválido',
     'dashboard.orderOpportunitySimulator.invalidPurchasePrice': 'Precio de Compra Inválido',
     'dashboard.orderOpportunitySimulator.calculationError': 'Error de Cálculo',
@@ -546,7 +550,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'balance.filters.dateRange': "Rango de Fechas",
     'balance.filters.startDate': "Fecha de Inicio",
     'balance.filters.endDate': "Fecha de Fin",
-    'balance.filters.pickDate': "Elige una fecha",
+    'history.filters.pickDate': "Elige una fecha",
     'balance.filters.resetButton': "Limpiar Filtros",
     'balance.summary.title': 'Resumen del Período Filtrado',
     'balance.summary.totalInvested': "Total Invertido (Período Filtrado)",
@@ -661,6 +665,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.alert.targetPricePositive': 'El precio objetivo debe ser un número positivo.',
     'zod.alert.directionRequired': 'Por favor, selecciona una dirección para la alerta.',
     'footer.createdBy': 'Creado con IA por Allan Soto',
+    'toaster.notificationsLabel': 'Notificaciones (F8)',
   },
   fr: { 
     'app.name': 'SimulTradex',
@@ -778,10 +783,12 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.table.header.commissionDisplay': 'Commission ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.netProfitDisplay': 'Profit Net ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.actions': 'Actions',
+    'dashboard.orderOpportunitySimulator.buyOperation': 'Acheter {targetCrypto} avec {quoteCurrency}',
     'dashboard.orderOpportunitySimulator.exchangeOperation': 'Échanger {cur1} contre {cur2}',
     'dashboard.orderOpportunitySimulator.sellOperationPerc': 'Vendre {targetCrypto} (+{perc}%)',
     'dashboard.orderOpportunitySimulator.priceUnavailable': 'Prix N/A',
     'dashboard.orderOpportunitySimulator.priceUnavailableShort': 'N/A',
+    'dashboard.orderOpportunitySimulator.priceEditPlaceholder': 'ex., 52000',
     'dashboard.orderOpportunitySimulator.invalidMarketPrice': 'Prix du Marché Invalide',
     'dashboard.orderOpportunitySimulator.invalidPurchasePrice': 'Prix d\'Achat Invalide',
     'dashboard.orderOpportunitySimulator.calculationError': 'Erreur de Calcul',
@@ -868,7 +875,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'balance.filters.dateRange': "Plage de Dates",
     'balance.filters.startDate': "Date de Début",
     'balance.filters.endDate': "Date de Fin",
-    'balance.filters.pickDate': "Choisir une date",
+    'history.filters.pickDate': "Choisir une date",
     'balance.filters.resetButton': "Réinitialiser Filtres",
     'balance.summary.title': 'Résumé de la Période Filtrée',
     'balance.summary.totalInvested': "Total Investi (Période Filtrée)",
@@ -983,6 +990,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.alert.targetPricePositive': 'Le prix cible doit être un nombre positif.',
     'zod.alert.directionRequired': 'Veuillez sélectionner une direction pour l\'alerte.',
     'footer.createdBy': 'Créé avec IA par Allan Soto',
+    'toaster.notificationsLabel': 'Notifications (F8)',
   },
   hi: { 
     'app.name': 'सिमुलट्रेडेक्स',
@@ -1100,10 +1108,12 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.table.header.commissionDisplay': 'कमीशन ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.netProfitDisplay': 'शुद्ध लाभ ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.actions': 'कार्रवाई',
+    'dashboard.orderOpportunitySimulator.buyOperation': '{targetCrypto} को {quoteCurrency} से खरीदें',
     'dashboard.orderOpportunitySimulator.exchangeOperation': '{cur1} को {cur2} से एक्सचेंज करें',
     'dashboard.orderOpportunitySimulator.sellOperationPerc': '{targetCrypto} बेचें (+{perc}%)',
     'dashboard.orderOpportunitySimulator.priceUnavailable': 'मूल्य उपलब्ध नहीं',
     'dashboard.orderOpportunitySimulator.priceUnavailableShort': 'उपलब्ध नहीं',
+    'dashboard.orderOpportunitySimulator.priceEditPlaceholder': 'जैसे, 52000',
     'dashboard.orderOpportunitySimulator.invalidMarketPrice': 'अमान्य बाजार मूल्य',
     'dashboard.orderOpportunitySimulator.invalidPurchasePrice': 'अमान्य खरीद मूल्य',
     'dashboard.orderOpportunitySimulator.calculationError': 'गणना त्रुटि',
@@ -1308,6 +1318,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.alert.targetPricePositive': 'लक्ष्य मूल्य एक धनात्मक संख्या होनी चाहिए।',
     'zod.alert.directionRequired': 'कृपया चेतावनी के लिए एक दिशा चुनें।',
     'footer.createdBy': 'IA द्वारा एलन सोटो द्वारा बनाया गया',
+    'toaster.notificationsLabel': 'सूचनाएं (F8)',
   },
   zh: { 
     'app.name': 'SimulTradex',
@@ -1424,10 +1435,12 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.table.header.commissionDisplay': '手续费 ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.netProfitDisplay': '净利润 ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.actions': '操作',
+    'dashboard.orderOpportunitySimulator.buyOperation': '用{quoteCurrency}购买{targetCrypto}',
     'dashboard.orderOpportunitySimulator.exchangeOperation': '用{cur1}兑换{cur2}',
     'dashboard.orderOpportunitySimulator.sellOperationPerc': '卖出{targetCrypto} (+{perc}%)',
     'dashboard.orderOpportunitySimulator.priceUnavailable': '价格不可用',
     'dashboard.orderOpportunitySimulator.priceUnavailableShort': '不可用',
+    'dashboard.orderOpportunitySimulator.priceEditPlaceholder': '例如, 52000',
     'dashboard.orderOpportunitySimulator.invalidMarketPrice': '无效的市场价格',
     'dashboard.orderOpportunitySimulator.invalidPurchasePrice': '无效的购买价格',
     'dashboard.orderOpportunitySimulator.calculationError': '计算错误',
@@ -1513,7 +1526,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'balance.filters.dateRange': "日期范围",
     'balance.filters.startDate': "开始日期",
     'balance.filters.endDate': "结束日期",
-    'balance.filters.pickDate': "选择日期",
+    'history.filters.pickDate': "选择日期",
     'balance.filters.resetButton': "重置筛选器",
     'balance.summary.title': '筛选期间摘要',
     'balance.summary.totalInvested': "总投资 (筛选期间)",
@@ -1569,8 +1582,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'alertModal.toast.errorDescriptionGeneric': '无法保存提醒。',
     'alertModal.toast.errorDeleteTitle': '删除提醒时出错',
     'alertModal.toast.errorDescriptionGenericDelete': '无法删除提醒。',
-    'alertModal.toast.saveDisabledDescription': '没有用户帐户，提醒不会保存到服务器。这是一个本地定义。',
-    'alertModal.toast.deleteDisabledDescription': '没有用户帐户，提醒不会从服务器删除。',
+    'alertModal.toast.saveDisabledDescription': '沒有用戶帳戶，提醒不會儲存到伺服器。這是一個本地定義。',
+    'alertModal.toast.deleteDisabledDescription': '沒有用戶帳戶，提醒不會從伺服器刪除。',
     'alertModal.button.updateLocal': '更新本地提醒',
     'alertModal.button.setLocal': '设置本地提醒',
 
@@ -1607,7 +1620,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'activeAlerts.toast.toggleErrorTitle': '更新提醒时出错',
     'activeAlerts.toast.toggleErrorDescription': '无法更新提醒状态。',
 
-
     'zod.email.invalid': '无效的电子邮件地址。',
     'zod.password.required': '密码是必需的。',
     'zod.password.minLength': '密码必须至少包含8个字符。',
@@ -1631,6 +1643,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.alert.targetPricePositive': '目标价格必须是正数。',
     'zod.alert.directionRequired': '请选择提醒的方向。',
     'footer.createdBy': '由 Allan Soto 使用 AI 创建',
+    'toaster.notificationsLabel': '通知 (F8)',
   }
 };
 
@@ -1648,25 +1661,18 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    // This effect runs only on the client after hydration
     const storedLanguage = localStorage.getItem('simultradex_language') as LanguageCode | null;
+    let initialLang = DEFAULT_LANGUAGE;
     if (storedLanguage && translationsData[storedLanguage]) {
-      setCurrentLanguage(storedLanguage);
-      setTranslations(translationsData[storedLanguage]);
-      if (typeof document !== 'undefined') {
-        document.documentElement.lang = storedLanguage;
-      }
-    } else {
-      // If no language is stored or it's invalid, set to default
-      // and update localStorage if it was different or not set
-      if (storedLanguage !== DEFAULT_LANGUAGE) {
-         localStorage.setItem('simultradex_language', DEFAULT_LANGUAGE);
-      }
-      if (typeof document !== 'undefined') {
-        document.documentElement.lang = DEFAULT_LANGUAGE;
-      }
-      // No need to setTranslations or setCurrentLanguage if it's already default
+      initialLang = storedLanguage;
     }
+    
+    setCurrentLanguage(initialLang);
+    setTranslations(translationsData[initialLang]);
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = initialLang;
+    }
+    
     setHydrated(true); 
   }, []); 
 
@@ -1681,7 +1687,6 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
       }
     } else {
       console.warn(`Language code ${langCode} not found in translations. Falling back to default.`);
-      // Fallback to default if langCode is somehow invalid
       setCurrentLanguage(DEFAULT_LANGUAGE);
       setTranslations(translationsData[DEFAULT_LANGUAGE]);
       localStorage.setItem('simultradex_language', DEFAULT_LANGUAGE);
@@ -1705,4 +1710,3 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     </LanguageContext.Provider>
   );
 };
-
