@@ -8,13 +8,12 @@
  * - AnalyzeCryptoTrendOutput - The return type for the analyzeCryptoTrend function.
  */
 
-// Not using Genkit for now to ensure stability and prevent "unexpected server response"
-// import {ai, isAiOperational} from '@/ai/genkit'; 
-import {z} from 'zod'; 
+import {ai} from '@/ai/genkit';
+import {z} from 'zod';
 
 const AnalyzeCryptoTrendInputSchema = z.object({
   cryptoSymbol: z.string().describe('The ticker symbol of the cryptocurrency (e.g., BTC, ETH).'),
-  recentPriceData: z.string().describe('A string containing recent price data for the cryptocurrency.'),
+  recentPriceData: z.string().describe('A string containing recent price data for the cryptocurrency, comma-separated, most recent price last.'),
 });
 export type AnalyzeCryptoTrendInput = z.infer<typeof AnalyzeCryptoTrendInputSchema>;
 
@@ -25,20 +24,63 @@ const AnalyzeCryptoTrendOutputSchema = z.object({
 });
 export type AnalyzeCryptoTrendOutput = z.infer<typeof AnalyzeCryptoTrendOutputSchema>;
 
-
-// Simplified Server Action to prevent "unexpected response" errors
 export async function analyzeCryptoTrend(input: AnalyzeCryptoTrendInput): Promise<AnalyzeCryptoTrendOutput> {
-  console.warn(`analyzeCryptoTrend called for ${input.cryptoSymbol}. AI analysis is temporarily providing a default 'sideways' trend to prevent server errors.`);
-  
-  // Always return a valid, hardcoded response to ensure the server action completes successfully.
-  return {
-    trend: 'sideways',
-    confidence: 0.1, // Low confidence for default response
-    reason: 'AI trend analysis is currently providing a default response due to ongoing investigations into server errors. Real-time AI analysis is temporarily disabled.',
-  };
+  // Check if AI is operational (e.g., API key is set)
+  // This check is illustrative; actual isAiOperational might be in genkit.ts or elsewhere
+  // For now, we assume it will proceed if GOOGLE_API_KEY is present.
+  // if (!isAiOperational()) { // Assuming isAiOperational is available or this check is handled elsewhere
+  //   console.warn('AI is not operational. Returning default trend analysis.');
+  //   return {
+  //     trend: 'sideways',
+  //     confidence: 0,
+  //     reason: 'AI features are currently unavailable.',
+  //   };
+  // }
+  return analyzeCryptoTrendFlow(input);
 }
 
-// All previous Genkit ai.definePrompt and ai.defineFlow code has been removed
-// to ensure this Server Action is as simple as possible and doesn't rely on
-// potentially problematic external calls or complex Genkit initializations
-// that might lead to the "unexpected server response" error.
+const analyzeCryptoTrendPrompt = ai.definePrompt({
+  name: 'analyzeCryptoTrendPrompt',
+  input: {schema: AnalyzeCryptoTrendInputSchema},
+  output: {schema: AnalyzeCryptoTrendOutputSchema},
+  prompt: `You are an expert cryptocurrency market analyst.
+Your task is to analyze recent price movements for a given cryptocurrency and determine its short-term trend.
+Use the provided recent price data to make your assessment. The data is a comma-separated string of prices, with the most recent price last.
+
+Cryptocurrency Symbol: {{{cryptoSymbol}}}
+Recent Price Data: {{{recentPriceData}}}
+
+Based on this data, determine if the trend is 'upward', 'downward', or 'sideways'.
+Also provide a confidence score (a number between 0 and 1) for your analysis, and a concise reason for your conclusion.
+Ensure your output strictly adheres to the requested JSON schema.`,
+  // Optional: Adjust model or safety settings if needed, though genkit.ts has defaults
+  // model: 'googleai/gemini-1.5-flash-latest', // Or specific model if needed
+  // config: {
+  //   safetySettings: [ // Example safety settings if required
+  //     { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+  //   ],
+  // },
+});
+
+const analyzeCryptoTrendFlow = ai.defineFlow(
+  {
+    name: 'analyzeCryptoTrendFlow',
+    inputSchema: AnalyzeCryptoTrendInputSchema,
+    outputSchema: AnalyzeCryptoTrendOutputSchema,
+  },
+  async input => {
+    const {output} = await analyzeCryptoTrendPrompt(input);
+    if (!output) {
+        console.error("AI prompt did not return an output for analyzeCryptoTrendFlow.", input);
+        // This is a critical point; if output is null/undefined, the Server Action will fail.
+        // It indicates a problem with the prompt execution or the model's response.
+        // To prevent the "unexpected server response", we must return a valid AnalyzeCryptoTrendOutput.
+        return {
+            trend: 'sideways',
+            confidence: 0,
+            reason: 'AI analysis failed to produce a result. Defaulting to sideways trend.',
+        };
+    }
+    return output;
+  }
+);

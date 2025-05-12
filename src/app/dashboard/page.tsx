@@ -25,8 +25,8 @@ const BINANCE_WS_URL = 'wss://stream.binance.com:9443/ws/!miniTicker@arr';
 const BINANCE_API_REST_BASE_URL = 'https://api.binance.com/api/v3';
 
 const BINANCE_API_REFRESH_INTERVAL = 5000; // 5 seconds for Binance REST fallback
-const AI_ANALYSIS_INITIAL_DELAY = 5000; // 5 seconds (reduced from 7)
-const AI_ANALYSIS_INTERVAL = 60000 * 1; // 1 minute for AI analysis (reduced from 5)
+const AI_ANALYSIS_INITIAL_DELAY = 5000; 
+const AI_ANALYSIS_INTERVAL = 60000 * 1; 
 const ALERT_CHECK_INTERVAL = 10000; // 10 seconds to check alerts (client-side simulation)
 
 
@@ -40,33 +40,30 @@ function getMockRecentPriceData(symbol: CryptoSymbol, currentPrice: number): str
     const prices: number[] = [];
     let lastPrice = currentPrice;
 
-    // Generate 19 historical points. Together with currentPrice, this will be 20 data points.
-    // The goal is to create data that might show some short-term patterns.
-    let trendMomentum = (Math.random() - 0.5) * 2; // Initial random trend momentum between -1 and 1
+    let trendMomentum = (Math.random() - 0.5) * 2; 
 
     for (let i = 0; i < 19; i++) {
-        // Randomly adjust trend momentum slightly or flip it
-        if (Math.random() < 0.15) { // 15% chance to significantly change momentum
+        if (Math.random() < 0.15) { 
             trendMomentum = (Math.random() - 0.5) * 2;
-        } else if (Math.random() < 0.3) { // 30% chance for minor adjustment
+        } else if (Math.random() < 0.3) { 
             trendMomentum += (Math.random() - 0.5) * 0.5;
-            trendMomentum = Math.max(-1, Math.min(1, trendMomentum)); // Clamp momentum
+            trendMomentum = Math.max(-1, Math.min(1, trendMomentum)); 
         }
         
-        const baseFluctuation = 0.007; // Base fluctuation percentage
-        const trendInfluence = trendMomentum * baseFluctuation * 0.5; // Trend part
-        const randomNoise = (Math.random() - 0.5) * baseFluctuation * 0.5; // Random noise part
+        const baseFluctuation = 0.007; 
+        const trendInfluence = trendMomentum * baseFluctuation * 0.5; 
+        const randomNoise = (Math.random() - 0.5) * baseFluctuation * 0.5; 
 
         const priceChangeFactor = trendInfluence + randomNoise;
         
-        let fluctuatedPrice = lastPrice * (1 - priceChangeFactor); // Apply change (invert for historical)
-        fluctuatedPrice = Math.max(0.000001, fluctuatedPrice); // Ensure price is positive
+        let fluctuatedPrice = lastPrice * (1 - priceChangeFactor); 
+        fluctuatedPrice = Math.max(0.000001, fluctuatedPrice); 
         prices.push(fluctuatedPrice);
         lastPrice = fluctuatedPrice;
     }
     
-    prices.reverse(); // Oldest prices first
-    prices.push(currentPrice); // Add current price at the end
+    prices.reverse(); 
+    prices.push(currentPrice); 
 
     return prices.map(p => p.toFixed(Math.max(2, (currentPrice < 1 ? 5 : 2)))).join(',');
 }
@@ -171,7 +168,7 @@ export default function DashboardPage() {
   };
   
   const handleAlertSaved = () => {
-    fetchActiveAlerts(); // Re-fetch alerts after one is saved/updated/deleted
+    fetchActiveAlerts(); 
   };
 
 
@@ -212,7 +209,6 @@ export default function DashboardPage() {
       if (isPricesLoading) setIsPricesLoading(false);
       return;
     }
-    // console.log('Fetching Binance prices via REST API for symbols:', binanceSymbolsForREST);
     try {
       const symbolsParam = JSON.stringify(binanceSymbolsForREST);
       const response = await fetch(`${BINANCE_API_REST_BASE_URL}/ticker/price?symbols=${symbolsParam}`);
@@ -396,31 +392,6 @@ export default function DashboardPage() {
     let aiIntervalTimerId: NodeJS.Timeout | null = null;
 
     const performAiUpdate = async () => {
-      // --- START MODIFICATION: Temporarily disable AI trend updates to resolve "unexpected response" error ---
-      console.warn("AI trend updates are temporarily disabled to investigate an 'unexpected server response' error. This feature will return default data.");
-      if (isMounted) {
-        setCryptoData(prevData => {
-          return prevData.map(currentCrypto => {
-            if (SYMBOLS_TO_DISPLAY_ON_CARDS.includes(currentCrypto.symbol)) {
-              return {
-                ...currentCrypto,
-                trendAnalysis: {
-                  trend: 'sideways',
-                  confidence: 0,
-                  reason: t('dashboard.ai.temporarilyDisabled', 'AI trend analysis is temporarily disabled.'),
-                } as TrendAnalysis, // Cast to TrendAnalysis to ensure type compatibility
-              };
-            }
-            return currentCrypto;
-          });
-        });
-        setIsAiLoading(false); // Ensure loading state is reset
-      }
-      return; // Exit before making the actual AI call
-      // --- END MODIFICATION ---
-
-      // Original code below is now unreachable due to the return statement above.
-      // This code would be restored once the root cause of the "unexpected response" is fixed.
       const relevantCryptoHasPrice = cryptoDataRef.current
         .filter(cd => SYMBOLS_TO_DISPLAY_ON_CARDS.includes(cd.symbol))
         .some(cd => cd.value > 0);
@@ -429,20 +400,23 @@ export default function DashboardPage() {
         if(relevantCryptoHasPrice === false && isMounted) {
             console.log("AI Update skipped: No relevant crypto has a price > 0 for analysis.");
         }
-        if (isMounted) setIsAiLoading(false); // Ensure loading state is reset
+        if (isMounted) setIsAiLoading(false); 
         return;
       }
 
       setIsAiLoading(true);
       try {
+        // Ensure cryptoDataRef.current is used here for the most up-to-date data before AI call
         const currentDataForAI = JSON.parse(JSON.stringify(cryptoDataRef.current)) as CryptoCardData[];
         const updatedDataWithTrends = await updateAllAiTrendsExternal(currentDataForAI, t);
         
         if (isMounted) {
           setCryptoData(prevData => {
+            // Merge trends into the existing data to preserve price updates that might have happened during AI call
             return prevData.map(currentCrypto => {
               const trendUpdate = updatedDataWithTrends.find(upd => upd.symbol === currentCrypto.symbol);
               if (trendUpdate && trendUpdate.trendAnalysis) {
+                // Only update trendAnalysis, keep other fields (like value, previousValue) from prevData
                 return { ...currentCrypto, trendAnalysis: trendUpdate.trendAnalysis };
               }
               return currentCrypto;
@@ -467,12 +441,9 @@ export default function DashboardPage() {
     
     const initialTimeoutId = setTimeout(() => {
       if (isMounted) {
-        performAiUpdate(); // This will now execute the modified version
-        // Only set up interval if AI calls were intended to be periodic
-        // For now, with AI disabled, interval is effectively disabled too
+        performAiUpdate();
         if (aiIntervalTimerId) clearInterval(aiIntervalTimerId);
-        // To re-enable periodic attempts (even if they just return default data):
-        // aiIntervalTimerId = setInterval(performAiUpdate, AI_ANALYSIS_INTERVAL);
+        aiIntervalTimerId = setInterval(performAiUpdate, AI_ANALYSIS_INTERVAL);
       }
     }, AI_ANALYSIS_INITIAL_DELAY);
 
@@ -483,7 +454,7 @@ export default function DashboardPage() {
         clearInterval(aiIntervalTimerId);
       }
     };
-  }, [t, toast]); // Dependencies remain the same
+  }, [t, toast]); 
 
   // Client-side alert checking (simulation)
   useEffect(() => {
@@ -527,7 +498,7 @@ export default function DashboardPage() {
         }
       }
       if (alertsTriggered) {
-        fetchActiveAlerts(); // Refresh the list of active alerts
+        fetchActiveAlerts(); 
       }
     };
 
