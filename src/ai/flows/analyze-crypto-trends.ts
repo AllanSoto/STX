@@ -25,18 +25,19 @@ const AnalyzeCryptoTrendOutputSchema = z.object({
 export type AnalyzeCryptoTrendOutput = z.infer<typeof AnalyzeCryptoTrendOutputSchema>;
 
 export async function analyzeCryptoTrend(input: AnalyzeCryptoTrendInput): Promise<AnalyzeCryptoTrendOutput> {
-  // Check if AI is operational (e.g., API key is set)
-  // This check is illustrative; actual isAiOperational might be in genkit.ts or elsewhere
-  // For now, we assume it will proceed if GOOGLE_API_KEY is present.
-  // if (!isAiOperational()) { // Assuming isAiOperational is available or this check is handled elsewhere
-  //   console.warn('AI is not operational. Returning default trend analysis.');
-  //   return {
-  //     trend: 'sideways',
-  //     confidence: 0,
-  //     reason: 'AI features are currently unavailable.',
-  //   };
-  // }
-  return analyzeCryptoTrendFlow(input);
+  try {
+    return await analyzeCryptoTrendFlow(input);
+  } catch (error) {
+    // This catch block is a secondary safety net if analyzeCryptoTrendFlow itself throws
+    // an unexpected error (though it's designed not to).
+    console.error("Unexpected error in analyzeCryptoTrend server action wrapper. Input:", input, "Error:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Critical server-side AI error';
+    return {
+      trend: 'sideways',
+      confidence: 0,
+      reason: `AI system error: ${errorMessage}. Defaulting to sideways trend.`,
+    };
+  }
 }
 
 const analyzeCryptoTrendPrompt = ai.definePrompt({
@@ -53,13 +54,6 @@ Recent Price Data: {{{recentPriceData}}}
 Based on this data, determine if the trend is 'upward', 'downward', or 'sideways'.
 Also provide a confidence score (a number between 0 and 1) for your analysis, and a concise reason for your conclusion.
 Ensure your output strictly adheres to the requested JSON schema.`,
-  // Optional: Adjust model or safety settings if needed, though genkit.ts has defaults
-  // model: 'googleai/gemini-1.5-flash-latest', // Or specific model if needed
-  // config: {
-  //   safetySettings: [ // Example safety settings if required
-  //     { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-  //   ],
-  // },
 });
 
 const analyzeCryptoTrendFlow = ai.defineFlow(
@@ -68,19 +62,26 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
     inputSchema: AnalyzeCryptoTrendInputSchema,
     outputSchema: AnalyzeCryptoTrendOutputSchema,
   },
-  async input => {
-    const {output} = await analyzeCryptoTrendPrompt(input);
-    if (!output) {
-        console.error("AI prompt did not return an output for analyzeCryptoTrendFlow.", input);
-        // This is a critical point; if output is null/undefined, the Server Action will fail.
-        // It indicates a problem with the prompt execution or the model's response.
-        // To prevent the "unexpected server response", we must return a valid AnalyzeCryptoTrendOutput.
+  async (input: AnalyzeCryptoTrendInput): Promise<AnalyzeCryptoTrendOutput> => {
+    try {
+      const { output } = await analyzeCryptoTrendPrompt(input);
+      if (!output) {
+        console.warn("AI prompt returned a falsy output for analyzeCryptoTrendFlow. Input:", input);
         return {
-            trend: 'sideways',
-            confidence: 0,
-            reason: 'AI analysis failed to produce a result. Defaulting to sideways trend.',
+          trend: 'sideways',
+          confidence: 0,
+          reason: 'AI analysis returned no data. Defaulting to sideways trend.',
         };
+      }
+      return output;
+    } catch (error) {
+      console.error("Error during analyzeCryptoTrendPrompt execution in analyzeCryptoTrendFlow. Input:", input, "Error:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown AI error';
+      return {
+        trend: 'sideways',
+        confidence: 0,
+        reason: `AI analysis failed: ${errorMessage}. Defaulting to sideways trend.`,
+      };
     }
-    return output;
   }
 );
