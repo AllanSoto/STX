@@ -3,7 +3,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { createContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { LANGUAGES } from '@/lib/constants';
 
 export type LanguageCode = typeof LANGUAGES[number]['code'];
@@ -32,6 +32,15 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.loadingPrices': 'Loading live prices...',
     'dashboard.portfolioBalance': 'Portfolio Balance',
     'dashboard.portfolioBalance.publicSourceMessage': "Displaying market data from public source.",
+    'dashboard.portfolioBalance.noConnection': "Binance API not connected. Portfolio balance unavailable.",
+    'dashboard.portfolioBalance.loading': "Loading portfolio balance...",
+    'dashboard.portfolioBalance.error': "Error fetching portfolio balance.",
+    'dashboard.portfolioBalance.total': "Total Portfolio Value (USDT)",
+    'dashboard.portfolioBalance.apiConnected': "Binance API Connected",
+    'dashboard.portfolioBalance.apiNotConnected': "Binance API Not Connected. Showing public market data.",
+    'dashboard.portfolioBalance.apiRestricted': "Binance API access restricted from this location. Showing public market data.",
+    'dashboard.portfolioBalance.connectApiPrompt': "Connect your Binance API in Account Settings to see your portfolio.",
+
     'dashboard.connectionStatus.title': 'Connection Issue',
     'dashboard.connectionStatus.noFeed': 'Currently not receiving live price updates. Attempting to connect...',
     'dashboard.connectionStatus.fallbackTitle': 'Using Fallback Connection',
@@ -56,6 +65,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.error.invalidCredentials': 'Invalid email or password.',
     'login.error.unknown': 'An unknown error occurred.',
     'login.error.passwordTooWeak': 'Password does not meet security requirements. Must be 8+ chars, include uppercase, lowercase, number, and symbol.',
+    'login.rememberMe': 'Remember me',
     'login.required': 'Please log in to view this information.',
     'signup.title': 'Sign Up',
     'signup.description': 'Create your account',
@@ -86,6 +96,20 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.page.title': "Account Settings",
     'account.page.userInfoTitle': "User Information",
     'account.page.emailLabel': "Email:",
+    'account.apiSettings.title': "Binance API Connection (Optional)",
+    'account.apiSettings.description': "Connect your Binance account to view live balances and potentially enable other features. Your keys are stored locally in your browser.",
+    'account.apiSettings.apiKeyLabel': "API Key",
+    'account.apiSettings.apiSecretLabel': "API Secret",
+    'account.apiSettings.saveButton': "Save & Connect API",
+    'account.apiSettings.disconnectButton': "Disconnect API",
+    'account.apiSettings.clearButton': "Clear Fields",
+    'account.apiSettings.status.connected': "✅ Binance API Connected Successfully.",
+    'account.apiSettings.status.failed': "❌ Binance API Connection Failed. Please check your keys.",
+    'account.apiSettings.status.disconnected': "Binance API is disconnected.",
+    'account.apiSettings.status.restrictedLocation': "❌ Binance API connection is unavailable from your current location due to their usage policies. Review Binance terms or contact their support.",
+    'account.apiSettings.status.pending': "Validating API keys...",
+    'account.apiSettings.retryButton': 'Retry Binance Connection',
+
 
     'dashboard.cryptoCard.tooltip.reason': "Reason:",
     'dashboard.cryptoCard.tooltip.confidence': "Confidence:",
@@ -99,8 +123,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Trading Pair',
     'dashboard.orderOpportunitySimulator.inputAmountLabel': 'Amount ({currency})',
     'dashboard.orderOpportunitySimulator.purchasePriceUsdtLabel': 'Purchase Price of {targetCrypto} (USDT)',
-    'dashboard.orderOpportunitySimulator.marketPairPriceLabel': 'Market Price ({pair})',
-    'dashboard.orderOpportunitySimulator.inputDivPurchasePriceLabel': 'Input Amt / Purch. Price',
+    'dashboard.orderOpportunitySimulator.valorCriptoLabel': 'Crypto Value',
     'dashboard.orderOpportunitySimulator.marketPriceDisplayLabel': 'Market Price ({cur2}/{cur1})',
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Select Trading Pair',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'Operation',
@@ -116,6 +139,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.priceUnavailableShort': 'N/A',
     'dashboard.orderOpportunitySimulator.invalidMarketPrice': 'Invalid Market Price',
     'dashboard.orderOpportunitySimulator.invalidPurchasePrice': 'Invalid Purchase Price',
+    'dashboard.orderOpportunitySimulator.calculationError': 'Calculation Error',
     'dashboard.orderOpportunitySimulator.calculating': 'Calculating...',
     'dashboard.orderOpportunitySimulator.enterValuesPrompt': 'Please select a pair and enter amount to see simulation.',
     'dashboard.orderOpportunitySimulator.enterValuesPromptFull': 'Please select pair, enter amount, and purchase price to see simulation.',
@@ -132,24 +156,31 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.orderSavedSuccessDescription': 'The specific order has been successfully saved.',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorTitle': 'Order Save Error',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorDescription': 'Could not save the specific order. Please try again.',
-    'dashboard.orderOpportunitySimulator.saveButtonDisabled': 'Save Simulation (Disabled)',
-    'dashboard.orderOpportunitySimulator.saveOrderButtonDisabled': 'Save Order (Disabled)',
+    'dashboard.orderOpportunitySimulator.saveButtonDisabled': 'Save Simulation (Login Required)',
+    'dashboard.orderOpportunitySimulator.saveOrderButtonDisabled': 'Save Order (Login Required)',
     'dashboard.orderOpportunitySimulator.toast.saveDisabledTitle': 'Save Disabled',
     'dashboard.orderOpportunitySimulator.toast.saveDisabledDescription': 'Saving simulations is disabled as user authentication has been removed.',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': 'Order Save Disabled',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': 'Saving orders is disabled as user authentication has been removed.',
+    'dashboard.orderOpportunitySimulator.sellPriceCryptoLabel': 'Sell Price {targetCrypto}',
 
     'dashboard.api.binance.fetchError': 'Failed to fetch prices from Binance: {status}',
     'dashboard.api.binance.errorTitle': 'Price Fetch Error (Binance)',
     'dashboard.api.binance.unknownError': 'Could not fetch live prices from Binance.',
+    'dashboard.api.coincap.errorTitle': 'Price Fetch Error (CoinCap)',
+    'dashboard.api.coincap.unknownError': 'Could not fetch live prices from CoinCap.',
+
 
     'dashboard.ai.errorTitle': 'AI Analysis Error',
     'dashboard.ai.errorDescription': 'Could not update AI trends.',
     'dashboard.ai.clientErrorReason': 'Client error fetching trend for {symbol}: {details}',
     'dashboard.ai.temporarilyDisabled': 'AI trend analysis is temporarily disabled.',
     'dashboard.websocket.errorTitle': 'WebSocket Error',
+    'dashboard.websocket.errorDescription': 'Connection to live price feed failed. Falling back to periodic updates.',
     'dashboard.websocket.errorDescriptionBinance': 'Connection to Binance live price feed failed. Falling back to periodic updates.',
     'dashboard.websocket.errorDescriptionBinanceFallback': 'Binance WebSocket failed. Using REST fallback.',
+    'dashboard.websocket.errorDescriptionCoinCap': 'Connection to CoinCap live price feed failed. Falling back to periodic updates.',
+    'dashboard.websocket.errorDescriptionCoinCapFallback': 'CoinCap WebSocket failed. Using REST fallback.',
     'dashboard.websocket.errorMessage': 'Error message: {message}, Type: {type}',
     'dashboard.websocket.eventType': 'Event type: {type}',
 
@@ -321,11 +352,17 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'header.userMenu.title': 'Menú de Usuario',
     'dashboard.title': 'Tablero',
     'dashboard.marketOverview': 'Resumen del Mercado',
-    'dashboard.orderSimulator': 'Simulador de Órdenes',
-    'dashboard.opportunitySimulator': 'Simulador de Oportunidades',
     'dashboard.loadingPrices': 'Cargando precios en vivo...',
     'dashboard.portfolioBalance': 'Balance de Portafolio',
     'dashboard.portfolioBalance.publicSourceMessage': "Mostrando datos de mercado de fuente pública.",
+    'dashboard.portfolioBalance.noConnection': "API de Binance no conectada. Balance de portafolio no disponible.",
+    'dashboard.portfolioBalance.loading': "Cargando balance de portafolio...",
+    'dashboard.portfolioBalance.error': "Error al obtener el balance del portafolio.",
+    'dashboard.portfolioBalance.total': "Valor Total del Portafolio (USDT)",
+    'dashboard.portfolioBalance.apiConnected': "API de Binance Conectada",
+    'dashboard.portfolioBalance.apiNotConnected': "API de Binance No Conectada. Mostrando datos públicos del mercado.",
+    'dashboard.portfolioBalance.apiRestricted': "Acceso a API de Binance restringido desde esta ubicación. Mostrando datos públicos del mercado.",
+    'dashboard.portfolioBalance.connectApiPrompt': "Conecta tu API de Binance en Configuración de Cuenta para ver tu portafolio.",
     'dashboard.connectionStatus.title': 'Problema de Conexión',
     'dashboard.connectionStatus.noFeed': 'Actualmente no se reciben actualizaciones de precios en vivo. Intentando conectar...',
     'dashboard.connectionStatus.fallbackTitle': 'Usando Conexión de Respaldo',
@@ -347,6 +384,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.submitButton': 'Iniciar Sesión',
     'login.signupPrompt': '¿No tienes una cuenta?',
     'login.signupLink': 'Regístrate',
+    'login.rememberMe': 'Recordarme',
     'login.error.invalidCredentials': 'Correo electrónico o contraseña no válidos.',
     'login.error.unknown': 'Ocurrió un error desconocido.',
     'login.error.passwordTooWeak': 'La contraseña no cumple los requisitos de seguridad. Debe tener más de 8 caracteres, incluir mayúsculas, minúsculas, un número y un símbolo.',
@@ -380,6 +418,19 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.page.title': "Configuración de Cuenta",
     'account.page.userInfoTitle': "Información del Usuario",
     'account.page.emailLabel': "Correo Electrónico:",
+    'account.apiSettings.title': "Conexión API Binance (Opcional)",
+    'account.apiSettings.description': "Conecta tu cuenta de Binance para ver saldos en vivo y potencialmente habilitar otras funciones. Tus claves se almacenan localmente en tu navegador.",
+    'account.apiSettings.apiKeyLabel': "Clave API",
+    'account.apiSettings.apiSecretLabel': "Clave Secreta API",
+    'account.apiSettings.saveButton': "Guardar y Conectar API",
+    'account.apiSettings.disconnectButton': "Desconectar API",
+    'account.apiSettings.clearButton': "Limpiar Campos",
+    'account.apiSettings.status.connected': "✅ API de Binance Conectada Exitosamente.",
+    'account.apiSettings.status.failed': "❌ Falló la Conexión API de Binance. Por favor, revisa tus claves.",
+    'account.apiSettings.status.disconnected': "La API de Binance está desconectada.",
+    'account.apiSettings.status.restrictedLocation': "❌ La conexión API de Binance no está disponible desde tu ubicación actual debido a sus políticas de uso. Revisa los términos de Binance o contacta a su soporte.",
+    'account.apiSettings.status.pending': "Validando claves API...",
+    'account.apiSettings.retryButton': 'Reintentar Conexión con Binance',
 
     'dashboard.cryptoCard.tooltip.reason': "Razón:",
     'dashboard.cryptoCard.tooltip.confidence': "Confianza:",
@@ -393,8 +444,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Par de Trading',
     'dashboard.orderOpportunitySimulator.inputAmountLabel': 'Cantidad ({currency})',
     'dashboard.orderOpportunitySimulator.purchasePriceUsdtLabel': 'Precio de Compra de {targetCrypto} (USDT)',
-    'dashboard.orderOpportunitySimulator.marketPairPriceLabel': 'Precio de Mercado ({pair})',
-    'dashboard.orderOpportunitySimulator.inputDivPurchasePriceLabel': 'Monto Entrada / Precio Compra',
+    'dashboard.orderOpportunitySimulator.valorCriptoLabel': 'Valor Cripto',
     'dashboard.orderOpportunitySimulator.marketPriceDisplayLabel': 'Precio de Mercado ({cur2}/{cur1})',
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Selecciona Par de Trading',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'Operación',
@@ -410,6 +460,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.priceUnavailableShort': 'N/D',
     'dashboard.orderOpportunitySimulator.invalidMarketPrice': 'Precio de Mercado Inválido',
     'dashboard.orderOpportunitySimulator.invalidPurchasePrice': 'Precio de Compra Inválido',
+    'dashboard.orderOpportunitySimulator.calculationError': 'Error de Cálculo',
     'dashboard.orderOpportunitySimulator.calculating': 'Calculando...',
     'dashboard.orderOpportunitySimulator.enterValuesPrompt': 'Por favor, selecciona un par e ingresa el monto para ver la simulación.',
     'dashboard.orderOpportunitySimulator.enterValuesPromptFull': 'Por favor, selecciona un par, ingresa el monto y el precio de compra para ver la simulación.',
@@ -426,24 +477,31 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.orderSavedSuccessDescription': 'La orden específica ha sido guardada exitosamente.',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorTitle': 'Error al Guardar Orden',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorDescription': 'No se pudo guardar la orden específica. Por favor, inténtalo de nuevo.',
-    'dashboard.orderOpportunitySimulator.saveButtonDisabled': 'Guardar Simulación (Deshabilitado)',
-    'dashboard.orderOpportunitySimulator.saveOrderButtonDisabled': 'Guardar Orden (Deshabilitado)',
+    'dashboard.orderOpportunitySimulator.saveButtonDisabled': 'Guardar Simulación (Requiere Iniciar Sesión)',
+    'dashboard.orderOpportunitySimulator.saveOrderButtonDisabled': 'Guardar Orden (Requiere Iniciar Sesión)',
     'dashboard.orderOpportunitySimulator.toast.saveDisabledTitle': 'Guardar Deshabilitado',
     'dashboard.orderOpportunitySimulator.toast.saveDisabledDescription': 'Guardar simulaciones está deshabilitado ya que se eliminó la autenticación de usuarios.',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': 'Guardar Orden Deshabilitado',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': 'Guardar órdenes está deshabilitado ya que se eliminó la autenticación de usuarios.',
+    'dashboard.orderOpportunitySimulator.sellPriceCryptoLabel': 'Precio de Venta {targetCrypto}',
 
     'dashboard.api.binance.fetchError': 'Error al obtener precios de Binance: {status}',
     'dashboard.api.binance.errorTitle': 'Error al Obtener Precios (Binance)',
     'dashboard.api.binance.unknownError': 'No se pudieron obtener los precios en vivo de Binance.',
+    'dashboard.api.coincap.errorTitle': 'Error al Obtener Precios (CoinCap)',
+    'dashboard.api.coincap.unknownError': 'No se pudieron obtener los precios en vivo de CoinCap.',
+
 
     'dashboard.ai.errorTitle': 'Error en Análisis de IA',
     'dashboard.ai.errorDescription': 'No se pudieron actualizar las tendencias de IA.',
     'dashboard.ai.clientErrorReason': 'Error de cliente al obtener tendencia para {symbol}: {details}',
     'dashboard.ai.temporarilyDisabled': 'El análisis de tendencias de IA está temporalmente deshabilitado.',
     'dashboard.websocket.errorTitle': 'Error de WebSocket',
+    'dashboard.websocket.errorDescription': 'Falló la conexión al feed de precios en vivo. Cambiando a actualizaciones periódicas.',
     'dashboard.websocket.errorDescriptionBinance': 'Falló la conexión al feed de precios en vivo de Binance. Cambiando a actualizaciones periódicas.',
     'dashboard.websocket.errorDescriptionBinanceFallback': 'Falló WebSocket de Binance. Usando API REST de respaldo.',
+    'dashboard.websocket.errorDescriptionCoinCap': 'Falló la conexión al feed de precios en vivo de CoinCap. Cambiando a actualizaciones periódicas.',
+    'dashboard.websocket.errorDescriptionCoinCapFallback': 'Falló WebSocket de CoinCap. Usando API REST de respaldo.',
     'dashboard.websocket.errorMessage': 'Mensaje de error: {message}, Tipo: {type}',
     'dashboard.websocket.eventType': 'Tipo de evento: {type}',
 
@@ -617,6 +675,15 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.loadingPrices': 'Chargement des prix en direct...',
     'dashboard.portfolioBalance': 'Solde du Portefeuille',
     'dashboard.portfolioBalance.publicSourceMessage': "Affichage des données de marché à partir d'une source publique.",
+    'dashboard.portfolioBalance.noConnection': "API Binance non connectée. Solde du portefeuille indisponible.",
+    'dashboard.portfolioBalance.loading': "Chargement du solde du portefeuille...",
+    'dashboard.portfolioBalance.error': "Erreur lors de la récupération du solde du portefeuille.",
+    'dashboard.portfolioBalance.total': "Valeur Totale du Portefeuille (USDT)",
+    'dashboard.portfolioBalance.apiConnected': "API Binance Connectée",
+    'dashboard.portfolioBalance.apiNotConnected': "API Binance Non Connectée. Affichage des données publiques du marché.",
+    'dashboard.portfolioBalance.apiRestricted': "Accès à l'API Binance restreint depuis cet emplacement. Affichage des données publiques du marché.",
+    'dashboard.portfolioBalance.connectApiPrompt': "Connectez votre API Binance dans les Paramètres du Compte pour voir votre portefeuille.",
+
     'dashboard.connectionStatus.title': 'Problème de Connexion',
     'dashboard.connectionStatus.noFeed': 'Actuellement, aucune mise à jour des prix en direct n\'est reçue. Tentative de connexion...',
     'dashboard.connectionStatus.fallbackTitle': 'Utilisation de la Connexion de Secours',
@@ -637,6 +704,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.submitButton': 'Se Connecter',
     'login.signupPrompt': 'Vous n\'avez pas de compte ?',
     'login.signupLink': 'S\'inscrire',
+    'login.rememberMe': 'Se souvenir de moi',
     'login.error.invalidCredentials': 'Email ou mot de passe incorrect.',
     'login.error.unknown': 'Une erreur inconnue est survenue.',
     'login.error.passwordTooWeak': 'Le mot de passe ne respecte pas les exigences de sécurité. Il doit comporter au moins 8 caractères, inclure une majuscule, une minuscule, un chiffre et un symbole.',
@@ -671,6 +739,20 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.page.title': "Paramètres du Compte",
     'account.page.userInfoTitle': "Informations Utilisateur",
     'account.page.emailLabel': "E-mail :",
+    'account.apiSettings.title': "Connexion API Binance (Optionnel)",
+    'account.apiSettings.description': "Connectez votre compte Binance pour voir les soldes en direct et potentiellement activer d'autres fonctionnalités. Vos clés sont stockées localement dans votre navigateur.",
+    'account.apiSettings.apiKeyLabel': "Clé API",
+    'account.apiSettings.apiSecretLabel': "Secret API",
+    'account.apiSettings.saveButton': "Enregistrer & Connecter API",
+    'account.apiSettings.disconnectButton': "Déconnecter API",
+    'account.apiSettings.clearButton': "Effacer les Champs",
+    'account.apiSettings.status.connected': "✅ API Binance Connectée avec Succès.",
+    'account.apiSettings.status.failed': "❌ Échec de la Connexion API Binance. Veuillez vérifier vos clés.",
+    'account.apiSettings.status.disconnected': "L'API Binance est déconnectée.",
+    'account.apiSettings.status.restrictedLocation': "❌ La connexion API Binance n'est pas disponible depuis votre emplacement actuel en raison de leurs politiques d'utilisation. Consultez les conditions de Binance ou contactez leur support.",
+    'account.apiSettings.status.pending': "Validation des clés API...",
+    'account.apiSettings.retryButton': 'Réessayer la Connexion Binance',
+
 
     'dashboard.cryptoCard.tooltip.reason': "Raison :",
     'dashboard.cryptoCard.tooltip.confidence': "Confiance :",
@@ -684,8 +766,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Paire de Trading',
     'dashboard.orderOpportunitySimulator.inputAmountLabel': 'Montant ({currency})',
     'dashboard.orderOpportunitySimulator.purchasePriceUsdtLabel': 'Prix d\'Achat de {targetCrypto} (USDT)',
-    'dashboard.orderOpportunitySimulator.marketPairPriceLabel': 'Prix du Marché ({pair})',
-    'dashboard.orderOpportunitySimulator.inputDivPurchasePriceLabel': 'Montant Entrée / Prix Achat',
+    'dashboard.orderOpportunitySimulator.valorCriptoLabel': 'Valeur Crypto',
     'dashboard.orderOpportunitySimulator.marketPriceDisplayLabel': 'Prix du Marché ({cur2}/{cur1})',
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Sélectionner Paire de Trading',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'Opération',
@@ -701,6 +782,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.priceUnavailableShort': 'N/A',
     'dashboard.orderOpportunitySimulator.invalidMarketPrice': 'Prix du Marché Invalide',
     'dashboard.orderOpportunitySimulator.invalidPurchasePrice': 'Prix d\'Achat Invalide',
+    'dashboard.orderOpportunitySimulator.calculationError': 'Erreur de Calcul',
     'dashboard.orderOpportunitySimulator.calculating': 'Calcul en cours...',
     'dashboard.orderOpportunitySimulator.enterValuesPrompt': 'Veuillez sélectionner une paire et entrer le montant pour voir la simulation.',
     'dashboard.orderOpportunitySimulator.enterValuesPromptFull': 'Veuillez sélectionner une paire, entrer le montant et le prix d\'achat pour voir la simulation.',
@@ -717,24 +799,31 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.orderSavedSuccessDescription': 'L\'ordre spécifique a été sauvegardé avec succès.',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorTitle': 'Erreur de Sauvegarde d\'Ordre',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorDescription': 'Impossible de sauvegarder l\'ordre spécifique. Veuillez réessayer.',
-    'dashboard.orderOpportunitySimulator.saveButtonDisabled': 'Sauvegarder Simulation (Désactivé)',
-    'dashboard.orderOpportunitySimulator.saveOrderButtonDisabled': 'Sauvegarder l\'Ordre (Désactivé)',
+    'dashboard.orderOpportunitySimulator.saveButtonDisabled': 'Sauvegarder Simulation (Connexion Requise)',
+    'dashboard.orderOpportunitySimulator.saveOrderButtonDisabled': 'Sauvegarder l\'Ordre (Connexion Requise)',
     'dashboard.orderOpportunitySimulator.toast.saveDisabledTitle': 'Sauvegarde Désactivée',
     'dashboard.orderOpportunitySimulator.toast.saveDisabledDescription': 'La sauvegarde des simulations est désactivée car l\'authentification utilisateur a été supprimée.',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': 'Sauvegarde d\'Ordre Désactivée',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': 'La sauvegarde des ordres est désactivée car l\'authentification utilisateur a été supprimée.',
+    'dashboard.orderOpportunitySimulator.sellPriceCryptoLabel': 'Prix de Vente {targetCrypto}',
 
     'dashboard.api.binance.fetchError': 'Échec de la récupération des prix de Binance : {status}',
     'dashboard.api.binance.errorTitle': 'Erreur de Récupération des Prix (Binance)',
     'dashboard.api.binance.unknownError': 'Impossible de récupérer les prix en direct de Binance.',
+    'dashboard.api.coincap.errorTitle': 'Erreur de Récupération des Prix (CoinCap)',
+    'dashboard.api.coincap.unknownError': 'Impossible de récupérer les prix en direct de CoinCap.',
+
 
     'dashboard.ai.errorTitle': 'Erreur d\'Analyse IA',
     'dashboard.ai.errorDescription': 'Impossible de mettre à jour les tendances IA.',
     'dashboard.ai.clientErrorReason': 'Erreur client lors de la récupération de la tendance pour {symbol} : {details}',
     'dashboard.ai.temporarilyDisabled': 'L\'analyse des tendances IA est temporairement désactivée.',
     'dashboard.websocket.errorTitle': 'Erreur WebSocket',
+    'dashboard.websocket.errorDescription': 'Échec de la connexion au flux de prix en direct. Passage aux mises à jour périodiques.',
     'dashboard.websocket.errorDescriptionBinance': 'Échec de la connexion au flux de prix en direct de Binance. Passage aux mises à jour périodiques.',
     'dashboard.websocket.errorDescriptionBinanceFallback': 'Échec du WebSocket Binance. Utilisation de l\'API REST de secours.',
+    'dashboard.websocket.errorDescriptionCoinCap': 'Échec de la connexion au flux de prix en direct de CoinCap. Passage aux mises à jour périodiques.',
+    'dashboard.websocket.errorDescriptionCoinCapFallback': 'Échec du WebSocket CoinCap. Utilisation de l\'API REST de secours.',
     'dashboard.websocket.errorMessage': 'Message d\'erreur : {message}, Type : {type}',
     'dashboard.websocket.eventType': 'Type d\'événement : {type}',
 
@@ -908,6 +997,14 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.loadingPrices': 'लाइव कीमतें लोड हो रही हैं...',
     'dashboard.portfolioBalance': 'पोर्टफोलियो बैलेंस',
     'dashboard.portfolioBalance.publicSourceMessage': "सार्वजनिक स्रोत से बाजार डेटा प्रदर्शित हो रहा है।",
+    'dashboard.portfolioBalance.noConnection': "बायनेंस एपीआई कनेक्ट नहीं है। पोर्टफोलियो बैलेंस अनुपलब्ध है।",
+    'dashboard.portfolioBalance.loading': "पोर्टफोलियो बैलेंस लोड हो रहा है...",
+    'dashboard.portfolioBalance.error': "पोर्टफोलियो बैलेंस प्राप्त करने में त्रुटि।",
+    'dashboard.portfolioBalance.total': "कुल पोर्टफोलियो मूल्य (USDT)",
+    'dashboard.portfolioBalance.apiConnected': "बायनेंस एपीआई कनेक्टेड",
+    'dashboard.portfolioBalance.apiNotConnected': "बायनेंस एपीआई कनेक्ट नहीं है। सार्वजनिक बाजार डेटा दिखाया जा रहा है।",
+    'dashboard.portfolioBalance.apiRestricted': "इस स्थान से बायनेंस एपीआई एक्सेस प्रतिबंधित है। सार्वजनिक बाजार डेटा दिखाया जा रहा है।",
+    'dashboard.portfolioBalance.connectApiPrompt': "अपना पोर्टफोलियो देखने के लिए खाता सेटिंग्स में अपनी बायनेंस एपीआई कनेक्ट करें।",
     'dashboard.connectionStatus.title': 'कनेक्शन समस्या',
     'dashboard.connectionStatus.noFeed': 'वर्तमान में लाइव मूल्य अपडेट प्राप्त नहीं हो रहे हैं। कनेक्ट करने का प्रयास किया जा रहा है...',
     'dashboard.connectionStatus.fallbackTitle': 'फॉल बैक कनेक्शन का उपयोग किया जा रहा है',
@@ -929,6 +1026,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.submitButton': 'लॉग इन करें',
     'login.signupPrompt': 'खाता नहीं है?',
     'login.signupLink': 'साइन अप करें',
+    'login.rememberMe': 'मुझे याद रखें',
     'login.error.invalidCredentials': 'अमान्य ईमेल या पासवर्ड।',
     'login.error.unknown': 'एक अज्ञात त्रुटि हुई।',
     'login.error.passwordTooWeak': 'पासवर्ड सुरक्षा आवश्यकताओं को पूरा नहीं करता है। इसमें 8+ वर्ण होने चाहिए, जिसमें अपरकेस, लोअरकेस, संख्या और प्रतीक शामिल हों।',
@@ -963,6 +1061,20 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.page.title': "खाता सेटिंग्स",
     'account.page.userInfoTitle': "उपयोगकर्ता जानकारी",
     'account.page.emailLabel': "ईमेल:",
+    'account.apiSettings.title': "बायनेंस एपीआई कनेक्शन (वैकल्पिक)",
+    'account.apiSettings.description': "लाइव बैलेंस देखने और अन्य सुविधाओं को सक्षम करने के लिए अपने बायनेंस खाते को कनेक्ट करें। आपकी कुंजियाँ आपके ब्राउज़र में स्थानीय रूप से संग्रहीत हैं।",
+    'account.apiSettings.apiKeyLabel': "एपीआई कुंजी",
+    'account.apiSettings.apiSecretLabel': "एपीआई गुप्त कुंजी",
+    'account.apiSettings.saveButton': "सहेजें और एपीआई कनेक्ट करें",
+    'account.apiSettings.disconnectButton': "एपीआई डिस्कनेक्ट करें",
+    'account.apiSettings.clearButton': "खेतों को साफ करें",
+    'account.apiSettings.status.connected': "✅ बायनेंस एपीआई सफलतापूर्वक कनेक्ट हो गई।",
+    'account.apiSettings.status.failed': "❌ बायनेंस एपीआई कनेक्शन विफल। कृपया अपनी कुंजियाँ जांचें।",
+    'account.apiSettings.status.disconnected': "बायनेंस एपीआई डिस्कनेक्ट है।",
+    'account.apiSettings.status.restrictedLocation': "❌ आपकी वर्तमान स्थान से बायनेंस एपीआई कनेक्शन उनकी उपयोग नीतियों के कारण अनुपलब्ध है। बायनेंस की शर्तें देखें या उनके समर्थन से संपर्क करें।",
+    'account.apiSettings.status.pending': "एपीआई कुंजियों का सत्यापन किया जा रहा है...",
+    'account.apiSettings.retryButton': 'बायनेंस कनेक्शन पुनः प्रयास करें',
+
 
     'dashboard.cryptoCard.tooltip.reason': "कारण:",
     'dashboard.cryptoCard.tooltip.confidence': "आत्मविश्वास:",
@@ -976,8 +1088,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'ट्रेडिंग जोड़ी',
     'dashboard.orderOpportunitySimulator.inputAmountLabel': 'राशि ({currency})',
     'dashboard.orderOpportunitySimulator.purchasePriceUsdtLabel': '{targetCrypto} की खरीद मूल्य (USDT)',
-    'dashboard.orderOpportunitySimulator.marketPairPriceLabel': 'बाजार मूल्य ({pair})',
-    'dashboard.orderOpportunitySimulator.inputDivPurchasePriceLabel': 'इनपुट राशि / खरीद मूल्य',
+    'dashboard.orderOpportunitySimulator.valorCriptoLabel': 'क्रिप्टो मूल्य',
     'dashboard.orderOpportunitySimulator.marketPriceDisplayLabel': 'बाजार मूल्य ({cur2}/{cur1})',
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'ट्रेडिंग जोड़ी चुनें',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'ऑपरेशन',
@@ -993,6 +1104,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.priceUnavailableShort': 'उपलब्ध नहीं',
     'dashboard.orderOpportunitySimulator.invalidMarketPrice': 'अमान्य बाजार मूल्य',
     'dashboard.orderOpportunitySimulator.invalidPurchasePrice': 'अमान्य खरीद मूल्य',
+    'dashboard.orderOpportunitySimulator.calculationError': 'गणना त्रुटि',
     'dashboard.orderOpportunitySimulator.calculating': 'गणना की जा रही है...',
     'dashboard.orderOpportunitySimulator.enterValuesPrompt': 'कृपया एक जोड़ी चुनें और अनुकरण देखने के लिए राशि दर्ज करें।',
     'dashboard.orderOpportunitySimulator.enterValuesPromptFull': 'कृपया जोड़ी चुनें, राशि दर्ज करें, और अनुकरण देखने के लिए खरीद मूल्य दर्ज करें।',
@@ -1009,25 +1121,32 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.orderSavedSuccessDescription': 'विशिष्ट ऑर्डर सफलतापूर्वक सहेजा गया है।',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorTitle': 'ऑर्डर सहेजने में त्रुटि',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorDescription': 'विशिष्ट ऑर्डर सहेजा नहीं जा सका। कृपया पुनः प्रयास करें।',
-    'dashboard.orderOpportunitySimulator.saveButtonDisabled': 'अनुकरण सहेजें (अक्षम)',
-    'dashboard.orderOpportunitySimulator.saveOrderButtonDisabled': 'ऑर्डर सहेजें (अक्षम)',
+    'dashboard.orderOpportunitySimulator.saveButtonDisabled': 'अनुकरण सहेजें (लॉगिन आवश्यक)',
+    'dashboard.orderOpportunitySimulator.saveOrderButtonDisabled': 'ऑर्डर सहेजें (लॉगिन आवश्यक)',
     'dashboard.orderOpportunitySimulator.toast.saveDisabledTitle': 'सहेजना अक्षम',
     'dashboard.orderOpportunitySimulator.toast.saveDisabledDescription': 'अनुकरण सहेजना अक्षम है क्योंकि उपयोगकर्ता प्रमाणीकरण हटा दिया गया है।',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': 'ऑर्डर सहेजना अक्षम',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': 'ऑर्डर सहेजना अक्षम है क्योंकि उपयोगकर्ता प्रमाणीकरण हटा दिया गया है।',
+    'dashboard.orderOpportunitySimulator.sellPriceCryptoLabel': '{targetCrypto} का बिक्री मूल्य',
 
 
     'dashboard.api.binance.fetchError': 'बायनेंस से कीमतें प्राप्त करने में विफल: {status}',
     'dashboard.api.binance.errorTitle': 'कीमत प्राप्त करने में त्रुटि (बायनेंस)',
     'dashboard.api.binance.unknownError': 'बायनेंस से लाइव कीमतें प्राप्त नहीं की जा सकीं।',
+    'dashboard.api.coincap.errorTitle': 'कीमत प्राप्त करने में त्रुटि (कॉइनकैप)',
+    'dashboard.api.coincap.unknownError': 'कॉइनकैप से लाइव कीमतें प्राप्त नहीं की जा सकीं।',
+
 
     'dashboard.ai.errorTitle': 'AI विश्लेषण त्रुटि',
     'dashboard.ai.errorDescription': 'AI रुझान अपडेट नहीं किए जा सके।',
     'dashboard.ai.clientErrorReason': '{symbol} के लिए रुझान प्राप्त करने में क्लाइंट त्रुटि: {details}',
     'dashboard.ai.temporarilyDisabled': 'AI ट्रेंड विश्लेषण अस्थायी रूप से अक्षम है।',
     'dashboard.websocket.errorTitle': 'वेबसॉकेट त्रुटि',
+    'dashboard.websocket.errorDescription': 'लाइव मूल्य फ़ीड से कनेक्शन विफल। आवधिक अपडेट पर वापस जा रहे हैं।',
     'dashboard.websocket.errorDescriptionBinance': 'बायनेंस लाइव मूल्य फ़ीड से कनेक्शन विफल। आवधिक अपडेट पर वापस जा रहे हैं।',
     'dashboard.websocket.errorDescriptionBinanceFallback': 'बायनेंस वेबसॉकेट विफल। REST फ़ॉलबैक का उपयोग किया जा रहा है।',
+    'dashboard.websocket.errorDescriptionCoinCap': 'कॉइनकैप लाइव मूल्य फ़ीड से कनेक्शन विफल। आवधिक अपडेट पर वापस जा रहे हैं।',
+    'dashboard.websocket.errorDescriptionCoinCapFallback': 'कॉइनकैप वेबसॉकेट विफल। REST फ़ॉलबैक का उपयोग किया जा रहा है।',
     'dashboard.websocket.errorMessage': 'त्रुटि संदेश: {message}, प्रकार: {type}',
     'dashboard.websocket.eventType': 'घटना प्रकार: {type}',
 
@@ -1203,6 +1322,14 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.loadingPrices': '正在加载实时价格...',
     'dashboard.portfolioBalance': '投资组合余额',
     'dashboard.portfolioBalance.publicSourceMessage': "正在显示来自公共来源的市场数据。",
+    'dashboard.portfolioBalance.noConnection': "币安API未连接。投资组合余额不可用。",
+    'dashboard.portfolioBalance.loading': "正在加载投资组合余额...",
+    'dashboard.portfolioBalance.error': "获取投资组合余额时出错。",
+    'dashboard.portfolioBalance.total': "投资组合总价值 (USDT)",
+    'dashboard.portfolioBalance.apiConnected': "币安API已连接",
+    'dashboard.portfolioBalance.apiNotConnected': "币安API未连接。正在显示公开市场数据。",
+    'dashboard.portfolioBalance.apiRestricted': "从此位置访问币安API受限。正在显示公开市场数据。",
+    'dashboard.portfolioBalance.connectApiPrompt': "在账户设置中连接您的币安API以查看您的投资组合。",
     'dashboard.connectionStatus.title': '连接问题',
     'dashboard.connectionStatus.noFeed': '目前未收到实时价格更新。正在尝试连接...',
     'dashboard.connectionStatus.fallbackTitle': '正在使用备用连接',
@@ -1223,6 +1350,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.submitButton': '登录',
     'login.signupPrompt': '还没有账户？',
     'login.signupLink': '注册',
+    'login.rememberMe': '记住我',
     'login.error.invalidCredentials': '无效的电子邮件或密码。',
     'login.error.unknown': '发生未知错误。',
     'login.error.passwordTooWeak': '密码不符合安全要求。必须包含8个以上字符，包括大写字母、小写字母、数字和符号。',
@@ -1257,6 +1385,20 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.page.title': "账户设置",
     'account.page.userInfoTitle': "用户信息",
     'account.page.emailLabel': "电子邮件：",
+    'account.apiSettings.title': "币安API连接 (可选)",
+    'account.apiSettings.description': "连接您的币安账户以查看实时余额并可能启用其他功能。您的密钥存储在您的浏览器本地。",
+    'account.apiSettings.apiKeyLabel': "API密钥",
+    'account.apiSettings.apiSecretLabel': "API私钥",
+    'account.apiSettings.saveButton': "保存并连接API",
+    'account.apiSettings.disconnectButton': "断开API连接",
+    'account.apiSettings.clearButton': "清除字段",
+    'account.apiSettings.status.connected': "✅ 币安API连接成功。",
+    'account.apiSettings.status.failed': "❌ 币安API连接失败。请检查您的密钥。",
+    'account.apiSettings.status.disconnected': "币安API已断开连接。",
+    'account.apiSettings.status.restrictedLocation': "❌ 由于币安的使用政策，您当前位置无法使用币安API连接。请查看币安条款或联系其支持。",
+    'account.apiSettings.status.pending': "正在验证API密钥...",
+    'account.apiSettings.retryButton': '重试币安连接',
+
 
     'dashboard.cryptoCard.tooltip.reason': "原因：",
     'dashboard.cryptoCard.tooltip.confidence': "置信度：",
@@ -1270,8 +1412,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.operationPairLabel': '交易对',
     'dashboard.orderOpportunitySimulator.inputAmountLabel': '数量 ({currency})',
     'dashboard.orderOpportunitySimulator.purchasePriceUsdtLabel': '{targetCrypto}的购买价格 (USDT)',
-    'dashboard.orderOpportunitySimulator.marketPairPriceLabel': '市场价格 ({pair})',
-    'dashboard.orderOpportunitySimulator.inputDivPurchasePriceLabel': '输入数量 / 购买价格',
+    'dashboard.orderOpportunitySimulator.valorCriptoLabel': '加密货币价值',
     'dashboard.orderOpportunitySimulator.marketPriceDisplayLabel': '市场价格 ({cur2}/{cur1})',
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': '选择交易对',
     'dashboard.orderOpportunitySimulator.table.header.operation': '操作',
@@ -1287,6 +1428,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.priceUnavailableShort': '不可用',
     'dashboard.orderOpportunitySimulator.invalidMarketPrice': '无效的市场价格',
     'dashboard.orderOpportunitySimulator.invalidPurchasePrice': '无效的购买价格',
+    'dashboard.orderOpportunitySimulator.calculationError': '计算错误',
     'dashboard.orderOpportunitySimulator.calculating': '计算中...',
     'dashboard.orderOpportunitySimulator.enterValuesPrompt': '请选择一个交易对并输入数量以查看模拟。',
     'dashboard.orderOpportunitySimulator.enterValuesPromptFull': '请选择交易对，输入数量和购买价格以查看模拟。',
@@ -1303,24 +1445,30 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.orderSavedSuccessDescription': '特定订单已成功保存。',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorTitle': '订单保存错误',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorDescription': '无法保存特定订单。请重试。',
-    'dashboard.orderOpportunitySimulator.saveButtonDisabled': '保存模拟 (已禁用)',
-    'dashboard.orderOpportunitySimulator.saveOrderButtonDisabled': '保存订单 (已禁用)',
+    'dashboard.orderOpportunitySimulator.saveButtonDisabled': '保存模拟 (需要登录)',
+    'dashboard.orderOpportunitySimulator.saveOrderButtonDisabled': '保存订单 (需要登录)',
     'dashboard.orderOpportunitySimulator.toast.saveDisabledTitle': '保存已禁用',
     'dashboard.orderOpportunitySimulator.toast.saveDisabledDescription': '由于用户认证已移除，保存模拟功能已禁用。',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': '订单保存已禁用',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': '由于用户认证已移除，保存订单功能已禁用。',
+    'dashboard.orderOpportunitySimulator.sellPriceCryptoLabel': '{targetCrypto}的卖出价格',
 
     'dashboard.api.binance.fetchError': '从币安获取价格失败：{status}',
     'dashboard.api.binance.errorTitle': '价格获取错误 (币安)',
     'dashboard.api.binance.unknownError': '无法从币安获取实时价格。',
+    'dashboard.api.coincap.errorTitle': '价格获取错误 (CoinCap)',
+    'dashboard.api.coincap.unknownError': '无法从CoinCap获取实时价格。',
 
     'dashboard.ai.errorTitle': 'AI分析错误',
     'dashboard.ai.errorDescription': '无法更新AI趋势。',
     'dashboard.ai.clientErrorReason': '客户端获取{symbol}趋势时出错：{details}',
     'dashboard.ai.temporarilyDisabled': 'AI趋势分析暂时禁用。',
     'dashboard.websocket.errorTitle': 'WebSocket错误',
+    'dashboard.websocket.errorDescription': '连接实时价格源失败。将回退到定期更新。',
     'dashboard.websocket.errorDescriptionBinance': '连接币安实时价格源失败。将回退到定期更新。',
     'dashboard.websocket.errorDescriptionBinanceFallback': '币安WebSocket失败。正在使用REST备用方案。',
+    'dashboard.websocket.errorDescriptionCoinCap': '连接CoinCap实时价格源失败。将回退到定期更新。',
+    'dashboard.websocket.errorDescriptionCoinCapFallback': 'CoinCap WebSocket失败。正在使用REST备用方案。',
     'dashboard.websocket.errorMessage': '错误信息：{message}，类型：{type}',
     'dashboard.websocket.eventType': '事件类型：{type}',
 
@@ -1499,16 +1647,24 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    // This effect runs only on the client after hydration
     const storedLanguage = localStorage.getItem('simultradex_language') as LanguageCode | null;
     if (storedLanguage && translationsData[storedLanguage]) {
       setCurrentLanguage(storedLanguage);
       setTranslations(translationsData[storedLanguage]);
-      document.documentElement.lang = storedLanguage;
-    } else {
-      document.documentElement.lang = DEFAULT_LANGUAGE;
-      if(storedLanguage !== DEFAULT_LANGUAGE){ 
-        localStorage.setItem('simultradex_language', DEFAULT_LANGUAGE);
+      if (typeof document !== 'undefined') {
+        document.documentElement.lang = storedLanguage;
       }
+    } else {
+      // If no language is stored or it's invalid, set to default
+      // and update localStorage if it was different or not set
+      if (storedLanguage !== DEFAULT_LANGUAGE) {
+         localStorage.setItem('simultradex_language', DEFAULT_LANGUAGE);
+      }
+      if (typeof document !== 'undefined') {
+        document.documentElement.lang = DEFAULT_LANGUAGE;
+      }
+      // No need to setTranslations or setCurrentLanguage if it's already default
     }
     setHydrated(true); 
   }, []); 
@@ -1519,19 +1675,31 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
       setCurrentLanguage(langCode);
       setTranslations(translationsData[langCode]);
       localStorage.setItem('simultradex_language', langCode);
-      document.documentElement.lang = langCode; 
+      if (typeof document !== 'undefined') {
+         document.documentElement.lang = langCode; 
+      }
     } else {
       console.warn(`Language code ${langCode} not found in translations. Falling back to default.`);
+      // Fallback to default if langCode is somehow invalid
       setCurrentLanguage(DEFAULT_LANGUAGE);
       setTranslations(translationsData[DEFAULT_LANGUAGE]);
       localStorage.setItem('simultradex_language', DEFAULT_LANGUAGE);
-      document.documentElement.lang = DEFAULT_LANGUAGE; 
+       if (typeof document !== 'undefined') {
+        document.documentElement.lang = DEFAULT_LANGUAGE; 
+      }
     }
   }, []);
 
 
+  const contextValue = useMemo(() => ({
+    language,
+    setLanguage,
+    translations,
+    hydrated
+  }), [language, setLanguage, translations, hydrated]);
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, translations, hydrated }}>
+    <LanguageContext.Provider value={contextValue}>
       {children}
     </LanguageContext.Provider>
   );
