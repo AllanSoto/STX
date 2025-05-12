@@ -24,71 +24,39 @@ const AnalyzeCryptoTrendOutputSchema = z.object({
 });
 export type AnalyzeCryptoTrendOutput = z.infer<typeof AnalyzeCryptoTrendOutputSchema>;
 
-export async function analyzeCryptoTrend(input: AnalyzeCryptoTrendInput): Promise<AnalyzeCryptoTrendOutput> {
-  try {
-    const result = await analyzeCryptoTrendFlow(input);
-    // Defensive check to ensure the result is a valid AnalyzeCryptoTrendOutput object
-    if (
-      typeof result === 'object' &&
-      result !== null &&
-      'trend' in result &&
-      typeof result.trend === 'string' &&
-      ['upward', 'downward', 'sideways'].includes(result.trend) &&
-      'confidence' in result &&
-      typeof result.confidence === 'number' &&
-      'reason' in result &&
-      typeof result.reason === 'string'
-    ) {
-      return result as AnalyzeCryptoTrendOutput;
-    } else {
-      console.error(
-        `analyzeCryptoTrendFlow returned an unexpected shape for ${input.cryptoSymbol}:`,
-        result
-      );
-      return {
-        trend: 'sideways',
-        confidence: 0,
-        reason: `Internal error: AI flow for ${input.cryptoSymbol} returned an unexpected data shape. Check server logs.`,
-      };
-    }
-  } catch (error: any) {
-    console.error(`Critical error in analyzeCryptoTrend wrapper for ${input.cryptoSymbol}:`, error);
-    const failureReason = error instanceof Error ? error.name : 'UnknownError';
-    return {
-      trend: 'sideways',
-      confidence: 0,
-      reason: `Analysis for ${input.cryptoSymbol} failed due to ${failureReason}. Check server logs for details.`,
-    };
-  }
+let analyzeCryptoTrendPrompt: any;
+
+if (isAiOperational()) {
+  analyzeCryptoTrendPrompt = ai.definePrompt({
+    name: 'analyzeCryptoTrendPrompt',
+    input: {schema: AnalyzeCryptoTrendInputSchema},
+    output: {schema: AnalyzeCryptoTrendOutputSchema},
+    model: 'googleai/gemini-1.5-flash-latest',
+    prompt: `You are an AI assistant specializing in cryptocurrency trend analysis.
+
+    Analyze the recent price movements of {{cryptoSymbol}} based on the following data and determine if the trend is upward, downward, or sideways.
+
+    Recent Price Data: {{recentPriceData}}
+
+    Consider factors such as price increases, decreases, volatility, and overall market conditions.
+
+    Provide a confidence score (0-1) indicating the reliability of your trend analysis.
+    Explain your reasoning for the determined trend.
+
+    Ensure that the output is formatted according to the AnalyzeCryptoTrendOutputSchema.
+    `,
+    config: {
+      safetySettings: [
+        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+        { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+        { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+      ],
+    },
+  });
+} else {
+  analyzeCryptoTrendPrompt = null; // Set to null if AI is not operational
 }
-
-const analyzeCryptoTrendPrompt = ai.definePrompt({
-  name: 'analyzeCryptoTrendPrompt',
-  input: {schema: AnalyzeCryptoTrendInputSchema},
-  output: {schema: AnalyzeCryptoTrendOutputSchema},
-  model: 'googleai/gemini-1.5-flash-latest',
-  prompt: `You are an AI assistant specializing in cryptocurrency trend analysis.
-
-  Analyze the recent price movements of {{cryptoSymbol}} based on the following data and determine if the trend is upward, downward, or sideways.
-
-  Recent Price Data: {{recentPriceData}}
-
-  Consider factors such as price increases, decreases, volatility, and overall market conditions.
-
-  Provide a confidence score (0-1) indicating the reliability of your trend analysis.
-  Explain your reasoning for the determined trend.
-
-  Ensure that the output is formatted according to the AnalyzeCryptoTrendOutputSchema.
-  `,
-   config: {
-    safetySettings: [
-      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-    ],
-  },
-});
 
 const analyzeCryptoTrendFlow = ai.defineFlow(
   {
@@ -97,18 +65,18 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
     outputSchema: AnalyzeCryptoTrendOutputSchema,
   },
   async (input): Promise<AnalyzeCryptoTrendOutput> => {
-    if (!isAiOperational()) {
-      console.warn(`AI is not operational. Returning default for ${input.cryptoSymbol}. This may be due to a missing GOOGLE_API_KEY or plugin initialization failure.`);
+    if (!isAiOperational() || !analyzeCryptoTrendPrompt) {
+      console.warn(`AI is not operational or prompt not defined for ${input.cryptoSymbol}. Returning default.`);
       return {
         trend: 'sideways',
         confidence: 0,
-        reason: `AI service is not operational for ${input.cryptoSymbol}. Check server logs for GOOGLE_API_KEY and plugin status.`,
+        reason: `AI service is not operational or prompt not configured for ${input.cryptoSymbol}. Check server logs for GOOGLE_API_KEY and plugin status.`,
       };
     }
 
     try {
       const result = await analyzeCryptoTrendPrompt(input);
-      // console.log(`AI Prompt Result for ${input.cryptoSymbol}:`, JSON.stringify(result)); // Optional: for deeper debugging if server logs are accessible
+      // console.log(`AI Prompt Result for ${input.cryptoSymbol}:`, JSON.stringify(result)); 
 
       if (!result || !result.output) {
         console.error(`analyzeCryptoTrendPrompt for ${input.cryptoSymbol} returned no output or undefined output. Result:`, result);
@@ -125,21 +93,18 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
         return {
           trend: 'sideways',
           confidence: 0,
-          // Ensure reason is a simple string, even if error message is complex
           reason: `AI output for ${input.cryptoSymbol} was malformed. Details: ${parsedOutput.error.errors.map(e => e.message).join(', ')}. Check server logs.`,
         };
       }
       return parsedOutput.data;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(`Error during AI flow execution for ${input.cryptoSymbol}:`, error);
-      // Ensure the reason is a simple, serializable string.
       let reasonMessage = `AI analysis for ${input.cryptoSymbol} encountered an unexpected issue.`;
       if (error instanceof Error) {
         reasonMessage = `AI analysis for ${input.cryptoSymbol} failed: ${error.name} - ${error.message}.`;
       } else if (typeof error === 'string') {
         reasonMessage = `AI analysis for ${input.cryptoSymbol} failed: ${error}.`;
       } else {
-         // For unknown errors, keep the message simple to avoid serialization issues with complex error objects.
         reasonMessage = `AI analysis for ${input.cryptoSymbol} failed with an unknown error type. Check server logs for details.`;
       }
       
@@ -151,3 +116,41 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
     }
   }
 );
+
+
+export async function analyzeCryptoTrend(input: AnalyzeCryptoTrendInput): Promise<AnalyzeCryptoTrendOutput> {
+  try {
+    const result = await analyzeCryptoTrendFlow(input);
+    
+    const parsedResult = AnalyzeCryptoTrendOutputSchema.safeParse(result);
+    if (parsedResult.success) {
+      return parsedResult.data;
+    } else {
+      console.error(
+        `analyzeCryptoTrendFlow returned an unexpected shape even after internal checks for ${input.cryptoSymbol}:`,
+        result,
+        "Parse errors:", parsedResult.error.flatten()
+      );
+      return {
+        trend: 'sideways',
+        confidence: 0,
+        reason: `Internal error: AI flow for ${input.cryptoSymbol} produced malformed data. Check server logs.`,
+      };
+    }
+  } catch (error: unknown) {
+    console.error(`Critical error in analyzeCryptoTrend server action for ${input.cryptoSymbol}:`, error);
+    
+    let failureReason = 'UnknownError';
+    if (error instanceof Error) {
+      failureReason = `${error.name}: ${error.message}`;
+    } else if (typeof error === 'string') {
+      failureReason = error;
+    }
+    
+    return {
+      trend: 'sideways',
+      confidence: 0,
+      reason: `Server action for ${input.cryptoSymbol} failed critically due to ${failureReason}. Check server logs for details.`,
+    };
+  }
+}
