@@ -16,11 +16,9 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-// Metadata is server-side, cannot use context here for dynamic titles/descriptions based on language.
-// For dynamic metadata, you'd typically use the `generateMetadata` function in page components.
 export const metadata: Metadata = {
-  title: 'SimulTradex', // Default title
-  description: 'Simulate crypto trading and analyze trends.', // Default description
+  title: 'SimulTradex', 
+  description: 'Simulate crypto trading and analyze trends.', 
 };
 
 export default function RootLayout({
@@ -33,9 +31,8 @@ export default function RootLayout({
   // client-side after hydration.
   // Server-side rendering of lang attribute depends on initial state, which is 'en'.
   // Client-side hydration will match this initial server render.
-  // Subsequent language changes are handled client-side by LanguageProvider.
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>{/* Keep lang="en" hardcoded here and add suppressHydrationWarning */}
+    <html lang="en" className="dark" suppressHydrationWarning={true}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <LanguageProvider>
           <AuthProvider>
