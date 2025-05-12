@@ -1,3 +1,4 @@
+
 // src/components/dashboard/order-opportunity-simulator.tsx
 'use client';
 
@@ -36,7 +37,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Loader2, Save, FilePlus2 } from 'lucide-react';
 
 
-const OPPORTUNITY_PERCENTAGES = [0.005, 0.01, 0.015, 0.02, 0.025, 0.03]; 
+const OPPORTUNITY_PERCENTAGES = [0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.055, 0.06, 0.065, 0.07]; 
 
 const getSimulatorSchema = (t: (key: string, fallback?: string, vars?: Record<string, string | number>) => string) => z.object({
   pair: z.string().min(1, { message: t('zod.orderOpportunity.selectPair', 'Please select a trading pair.') }),
@@ -177,14 +178,15 @@ useEffect(() => {
         
         let formattedDisplayAmount;
         if (STABLECOIN_SYMBOLS.includes(currentBaseCurrency as any)) {
+            // For stablecoin base currencies, display with 2 decimal places
             formattedDisplayAmount = calculatedAmountOfBase.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         } else {
             // For non-stablecoin base currencies like XRP, BTC, ETH
             if (calculatedAmountOfBase >= 1) {
-                // To match the example "4.3" from 4.3478...
+                // Display with 1 decimal place if value is >= 1
                 formattedDisplayAmount = calculatedAmountOfBase.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
             } else {
-                // For values less than 1, preserve more precision
+                // For values less than 1, preserve more precision (up to 8 decimal places)
                 formattedDisplayAmount = calculatedAmountOfBase.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 8 });
             }
         }
@@ -584,3 +586,6 @@ useEffect(() => {
     </Card>
   );
 }
+
+
+    
