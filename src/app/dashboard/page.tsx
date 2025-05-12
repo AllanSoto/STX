@@ -396,6 +396,31 @@ export default function DashboardPage() {
     let aiIntervalTimerId: NodeJS.Timeout | null = null;
 
     const performAiUpdate = async () => {
+      // --- START MODIFICATION: Temporarily disable AI trend updates to resolve "unexpected response" error ---
+      console.warn("AI trend updates are temporarily disabled to investigate an 'unexpected server response' error. This feature will return default data.");
+      if (isMounted) {
+        setCryptoData(prevData => {
+          return prevData.map(currentCrypto => {
+            if (SYMBOLS_TO_DISPLAY_ON_CARDS.includes(currentCrypto.symbol)) {
+              return {
+                ...currentCrypto,
+                trendAnalysis: {
+                  trend: 'sideways',
+                  confidence: 0,
+                  reason: t('dashboard.ai.temporarilyDisabled', 'AI trend analysis is temporarily disabled.'),
+                } as TrendAnalysis, // Cast to TrendAnalysis to ensure type compatibility
+              };
+            }
+            return currentCrypto;
+          });
+        });
+        setIsAiLoading(false); // Ensure loading state is reset
+      }
+      return; // Exit before making the actual AI call
+      // --- END MODIFICATION ---
+
+      // Original code below is now unreachable due to the return statement above.
+      // This code would be restored once the root cause of the "unexpected response" is fixed.
       const relevantCryptoHasPrice = cryptoDataRef.current
         .filter(cd => SYMBOLS_TO_DISPLAY_ON_CARDS.includes(cd.symbol))
         .some(cd => cd.value > 0);
@@ -404,6 +429,7 @@ export default function DashboardPage() {
         if(relevantCryptoHasPrice === false && isMounted) {
             console.log("AI Update skipped: No relevant crypto has a price > 0 for analysis.");
         }
+        if (isMounted) setIsAiLoading(false); // Ensure loading state is reset
         return;
       }
 
@@ -441,9 +467,12 @@ export default function DashboardPage() {
     
     const initialTimeoutId = setTimeout(() => {
       if (isMounted) {
-        performAiUpdate();
+        performAiUpdate(); // This will now execute the modified version
+        // Only set up interval if AI calls were intended to be periodic
+        // For now, with AI disabled, interval is effectively disabled too
         if (aiIntervalTimerId) clearInterval(aiIntervalTimerId);
-        aiIntervalTimerId = setInterval(performAiUpdate, AI_ANALYSIS_INTERVAL);
+        // To re-enable periodic attempts (even if they just return default data):
+        // aiIntervalTimerId = setInterval(performAiUpdate, AI_ANALYSIS_INTERVAL);
       }
     }, AI_ANALYSIS_INITIAL_DELAY);
 
@@ -454,7 +483,7 @@ export default function DashboardPage() {
         clearInterval(aiIntervalTimerId);
       }
     };
-  }, [t, toast]); 
+  }, [t, toast]); // Dependencies remain the same
 
   // Client-side alert checking (simulation)
   useEffect(() => {
@@ -599,4 +628,3 @@ export default function DashboardPage() {
     </MainLayout>
   );
 }
-
