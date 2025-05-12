@@ -1,4 +1,3 @@
-
 // src/components/dashboard/order-opportunity-simulator.tsx
 'use client';
 
@@ -25,13 +24,13 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DETAILED_TRADING_PAIRS, COMMISSION_RATE, QUOTE_CURRENCY as DEFAULT_QUOTE_CURRENCY, CRYPTO_SYMBOLS, STABLECOIN_SYMBOLS, COIN_DATA } from '@/lib/constants';
-import type { CryptoSymbol, DetailedTradingPair } from '@/lib/constants';
+import type { CryptoSymbol } from '@/lib/constants';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
 // import { useAuth } from '@/hooks/use-auth'; // Auth removed
-// import { saveSimulationToFirebase } from '@/lib/firebase/simulations'; // Firebase saving disabled
-// import { saveOrderToFirebase } from '@/lib/firebase/orders'; // Firebase saving disabled
+import { saveSimulationToFirebase } from '@/lib/firebase/simulations'; 
+import { saveOrderToFirebase } from '@/lib/firebase/orders'; 
 import type { SimulationLogEntry, SavedOrder } from '@/lib/types';
 import { ScrollArea } from '../ui/scroll-area';
 import { Loader2, Save, FilePlus2 } from 'lucide-react';
@@ -39,14 +38,14 @@ import { Loader2, Save, FilePlus2 } from 'lucide-react';
 
 const OPPORTUNITY_PERCENTAGES = [0.005, 0.01, 0.015, 0.02, 0.025, 0.03]; 
 
-const getSimulatorSchema = (t: (key: string, fallback?: string) => string) => z.object({
+const getSimulatorSchema = (t: (key: string, fallback?: string, vars?: Record<string, string | number>) => string) => z.object({
   pair: z.string().min(1, { message: t('zod.orderOpportunity.selectPair', 'Please select a trading pair.') }),
   inputAmount: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, { message: t('zod.orderOpportunity.positiveInputAmount', 'Amount must be a positive number.') }),
   purchasePriceCrypto: z.string().refine(val => {
-    if (!val) return false; // Allow empty initially if price is auto-filled
+    if (!val) return true; // Allow empty initially if price is auto-filled or not yet available
     const num = parseFloat(val.replace(/,/g, ''));
     return !isNaN(num) && num > 0;
-  }, { message: t('zod.orderOpportunity.purchasePriceUsdtPositive', 'Purchase price must be a positive number.') }), // Message adapted for generic crypto price
+  }, { message: t('zod.orderOpportunity.purchasePriceUsdtPositive', 'Purchase price must be a positive number.') }),
 });
 
 type SimulatorFormValues = z.infer<ReturnType<typeof getSimulatorSchema>>;
@@ -67,18 +66,16 @@ interface SimulatedRow {
   cur1?: CryptoSymbol | typeof DEFAULT_QUOTE_CURRENCY;
   cur2?: CryptoSymbol | typeof DEFAULT_QUOTE_CURRENCY | '';
   
-  // For buy row
-  rawInputAmountCur1?: number; // Amount of the first currency in pair (e.g. USDT or BTC)
-  rawPurchasePriceCrypto?: number; // User entered purchase price of TARGET_CRYPTO in QUOTE_CURRENCY (e.g. price of BTC in USDT)
-  rawAmountOfTargetCryptoBought?: number; // Amount of target crypto (e.g. BTC) obtained
-  rawCommissionBuyInQuote?: number; // Commission for buy leg in QUOTE_CURRENCY (e.g. USDT)
-  initialInvestmentInQuote?: number; // Total value of inputAmountCur1 in QUOTE_CURRENCY (e.g. USDT)
+  rawInputAmountCur1?: number; 
+  rawPurchasePriceCrypto?: number; 
+  rawAmountOfTargetCryptoBought?: number; 
+  rawCommissionBuyInQuote?: number; 
+  initialInvestmentInQuote?: number;
 
-  // For sell rows (some are inherited from buyRow for context)
-  rawAmountOfTargetCryptoSold?: number; // Amount of target crypto (e.g. BTC) being sold (same as rawAmountOfTargetCryptoBought)
-  rawSellPriceTargetCryptoInQuote?: number; // Target sell price of target crypto (e.g. BTC) in QUOTE_CURRENCY (e.g. USDT)
-  rawQuoteReceivedFromSale?: number; // Amount of QUOTE_CURRENCY (e.g. USDT) received from sale
-  rawCommissionSellInQuote?: number; // Commission for sell leg in QUOTE_CURRENCY (e.g. USDT)
+  rawAmountOfTargetCryptoSold?: number; 
+  rawSellPriceTargetCryptoInQuote?: number; 
+  rawQuoteReceivedFromSale?: number; 
+  rawCommissionSellInQuote?: number; 
 }
 
 
@@ -108,24 +105,24 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
     resolver: zodResolver(simulatorSchema),
     defaultValues: {
       pair: '',
-      inputAmount: '100', // Default input amount
-      purchasePriceCrypto: '', // Default purchase price (of target crypto)
+      inputAmount: '100', 
+      purchasePriceCrypto: '', 
     },
   });
 
   const [simulatedRows, setSimulatedRows] = useState<SimulatedRow[]>([]);
-  const [currentCur1, setCurrentCur1] = useState<CryptoSymbol | typeof DEFAULT_QUOTE_CURRENCY>(DEFAULT_QUOTE_CURRENCY); // First currency in selected pair
-  const [currentCur2, setCurrentCur2] = useState<CryptoSymbol | typeof DEFAULT_QUOTE_CURRENCY | ''>(''); // Second currency in selected pair
-  const [currentTargetCrypto, setCurrentTargetCrypto] = useState<CryptoSymbol | null>(null); // The non-USDT crypto in the pair
+  const [currentCur1, setCurrentCur1] = useState<CryptoSymbol | typeof DEFAULT_QUOTE_CURRENCY>(DEFAULT_QUOTE_CURRENCY); 
+  const [currentCur2, setCurrentCur2] = useState<CryptoSymbol | typeof DEFAULT_QUOTE_CURRENCY | ''>(''); 
+  const [currentTargetCrypto, setCurrentTargetCrypto] = useState<CryptoSymbol | null>(null); 
 
 
-  const selectedPair = form.watch('pair') as DetailedTradingPair | '';
-  const inputAmountStr = form.watch('inputAmount'); // This is the amount of currentCur1
-  const purchasePriceCryptoStr = form.watch('purchasePriceCrypto'); // This is the user-entered price of currentTargetCrypto in DEFAULT_QUOTE_CURRENCY
+  const selectedPair = form.watch('pair') as typeof DETAILED_TRADING_PAIRS[number] | '';
+  const inputAmountStr = form.watch('inputAmount'); 
+  const purchasePriceCryptoStr = form.watch('purchasePriceCrypto'); 
 
 
   useEffect(() => {
-    setPurchasePriceManuallyEdited(false); // Reset manual edit flag when pair changes
+    setPurchasePriceManuallyEdited(false); 
   }, [selectedPair]);
 
   useEffect(() => {
@@ -134,7 +131,6 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
       setCurrentCur1(c1);
       setCurrentCur2(c2);
 
-      // Determine the target crypto (non-stablecoin)
       let target: CryptoSymbol | null = null;
       if (!STABLECOIN_SYMBOLS.includes(c1 as any) && CRYPTO_SYMBOLS.includes(c1 as CryptoSymbol)) {
         target = c1 as CryptoSymbol;
@@ -165,40 +161,47 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
   }, [selectedPair, cryptoPrices, form, t, purchasePriceManuallyEdited]);
 
 
-  // Effect for "Valor Cripto" field
   useEffect(() => {
     const inputAmountNum = parseFloat(inputAmountStr); // Amount of currentCur1
     const purchasePriceCryptoNum = parseFloat(purchasePriceCryptoStr.replace(/,/g, '')); // Price of currentTargetCrypto in DEFAULT_QUOTE_CURRENCY
 
-    if (selectedPair && currentTargetCrypto && !isNaN(inputAmountNum) && inputAmountNum > 0) {
+    if (selectedPair && !isNaN(inputAmountNum) && inputAmountNum > 0) {
         if (isNaN(purchasePriceCryptoNum) || purchasePriceCryptoNum <= 0) {
             setDisplayedCryptoValue(t('dashboard.orderOpportunitySimulator.invalidPurchasePrice', 'Invalid Purchase Price'));
             return;
         }
+        
+        // User request: "Valor cripto y es igual a : Price of Crypto/Cantidad"
+        // "Price of Crypto" -> purchasePriceCryptoNum (Price of TargetCrypto in USDT)
+        // "Cantidad" -> inputAmountNum (Amount of currentCur1)
+        const calculatedValue = purchasePriceCryptoNum / inputAmountNum;
 
-        let cryptoValue: number; // This will be the amount of currentTargetCrypto obtained or equivalent value
-
-        if (currentCur1 === DEFAULT_QUOTE_CURRENCY) { // e.g., USDT/BTC
-            // Input is USDT, target is BTC. cryptoValue = amount of BTC from USDT input
-            cryptoValue = inputAmountNum / purchasePriceCryptoNum;
-            setDisplayedCryptoValue(
-              `${cryptoValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 8 })} ${currentTargetCrypto}`
-            );
-        } else if (currentCur1 === currentTargetCrypto) { // e.g., BTC/USDT
-            // Input is BTC, target is BTC. cryptoValue = amount of USDT from BTC input
-            cryptoValue = inputAmountNum * purchasePriceCryptoNum;
-             setDisplayedCryptoValue(
-              `${cryptoValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${DEFAULT_QUOTE_CURRENCY}`
-            );
+        if (isNaN(calculatedValue) || !isFinite(calculatedValue)) {
+             setDisplayedCryptoValue(t('dashboard.orderOpportunitySimulator.calculationError', 'Calculation Error'));
         } else {
-            // Non-USDT pair, not directly supported by this simple "Valor Cripto" field currently
-            setDisplayedCryptoValue(t('dashboard.orderOpportunitySimulator.calculationError', 'Calculation Error'));
-            return;
+            let unitDisplayString = "";
+            if (currentTargetCrypto && currentCur1) {
+                if (currentCur1 === DEFAULT_QUOTE_CURRENCY) {
+                    // Formula: (Price of TargetCrypto in USDT) / (Amount of USDT) -> Unit: (USDT/TargetCrypto) / USDT = 1/TargetCrypto
+                    unitDisplayString = `1/${currentTargetCrypto}`;
+                } else if (currentCur1 === currentTargetCrypto) {
+                    // Formula: (Price of TargetCrypto in USDT) / (Amount of TargetCrypto) -> Unit: (USDT/TargetCrypto) / TargetCrypto = USDT/TargetCrypto²
+                    unitDisplayString = `${DEFAULT_QUOTE_CURRENCY}/${currentTargetCrypto}²`;
+                } else {
+                    // Generic case if currentCur1 is crypto but not currentTargetCrypto (e.g. ETH/BTC, input ETH, price for BTC)
+                    // This is less common for this specific field's interpretation.
+                    // Unit: (USDT/TargetCrypto) / currentCur1
+                    unitDisplayString = `(${DEFAULT_QUOTE_CURRENCY}/${currentTargetCrypto}) / ${currentCur1}`;
+                }
+            }
+            setDisplayedCryptoValue(
+              `${calculatedValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 8 })} ${unitDisplayString}`.trim()
+            );
         }
     } else {
-        setDisplayedCryptoValue(''); // Clear if inputs are not valid or pair not selected
+        setDisplayedCryptoValue(''); 
     }
-}, [selectedPair, inputAmountStr, purchasePriceCryptoStr, currentTargetCrypto, currentCur1, t]);
+}, [selectedPair, inputAmountStr, purchasePriceCryptoStr, currentTargetCrypto, currentCur1, t, DEFAULT_QUOTE_CURRENCY]);
 
 
   useEffect(() => {
@@ -207,16 +210,16 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
       return;
     }
 
-    const inputAmountNum = parseFloat(inputAmountStr); // Amount of currentCur1
-    const userEnteredPurchasePriceTargetCrypto = parseFloat(purchasePriceCryptoStr.replace(/,/g, '')); // Price of currentTargetCrypto in DEFAULT_QUOTE_CURRENCY
+    const investmentAmountNum = parseFloat(inputAmountStr); 
+    const userEnteredPurchasePriceTargetCrypto = parseFloat(purchasePriceCryptoStr.replace(/,/g, '')); 
 
-    if (isNaN(inputAmountNum) || inputAmountNum <= 0 || isNaN(userEnteredPurchasePriceTargetCrypto) || userEnteredPurchasePriceTargetCrypto <= 0) {
+    if (isNaN(investmentAmountNum) || investmentAmountNum <= 0 || isNaN(userEnteredPurchasePriceTargetCrypto) || userEnteredPurchasePriceTargetCrypto <= 0) {
       const rowsToShow: SimulatedRow[] = [];
        if (isNaN(userEnteredPurchasePriceTargetCrypto) || userEnteredPurchasePriceTargetCrypto <= 0) {
          rowsToShow.push({
             isBuyRow: true, cur1: currentCur1, cur2: currentCur2 || '',
             operation: t('dashboard.orderOpportunitySimulator.exchangeOperation', 'Exchange {cur1} for {cur2}', {cur1: String(currentCur1), cur2: String(currentCur2)}),
-            displayAmount1: `${inputAmountNum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${currentCur1}`,
+            displayAmount1: `${investmentAmountNum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${currentCur1}`,
             displayMarketPrice: t('dashboard.orderOpportunitySimulator.invalidPurchasePrice', 'Invalid Purchase Price'),
             displayAmount2: '', displayCommission: '', displayNetProfit: '-',
         });
@@ -229,21 +232,20 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
     const newRows: SimulatedRow[] = [];
 
     let amountOfTargetCryptoBought: number;
-    let initialInvestmentInQuoteForBuyLeg: number; // Total value of inputAmountNum (c1) in DEFAULT_QUOTE_CURRENCY
-    let rawMarketPriceC1InC2: number = 0; // Effective market price for c1 in terms of c2 for the buy operation
+    let initialInvestmentInUSDTForBuyLeg: number; 
+    let rawMarketPriceC1InC2: number = 0; 
 
-    if (c1 === DEFAULT_QUOTE_CURRENCY) { // e.g. USDT/BTC. inputAmountNum is USDT. targetCrypto is BTC.
-        initialInvestmentInQuoteForBuyLeg = inputAmountNum;
-        amountOfTargetCryptoBought = inputAmountNum / userEnteredPurchasePriceTargetCrypto; // USDT / (USDT/BTC) = BTC
-        rawMarketPriceC1InC2 = 1 / userEnteredPurchasePriceTargetCrypto; // Price of USDT in BTC = 1 / Price of BTC in USDT
-    } else if (c1 === currentTargetCrypto) { // e.g. BTC/USDT. inputAmountNum is BTC. targetCrypto is BTC.
-        initialInvestmentInQuoteForBuyLeg = inputAmountNum * userEnteredPurchasePriceTargetCrypto; // BTC * (USDT/BTC) = USDT
-        amountOfTargetCryptoBought = inputAmountNum;
-        rawMarketPriceC1InC2 = userEnteredPurchasePriceTargetCrypto; // Price of BTC in USDT
+    if (c1 === DEFAULT_QUOTE_CURRENCY) { 
+        initialInvestmentInUSDTForBuyLeg = investmentAmountNum;
+        amountOfTargetCryptoBought = investmentAmountNum / userEnteredPurchasePriceTargetCrypto; 
+        rawMarketPriceC1InC2 = 1 / userEnteredPurchasePriceTargetCrypto; 
+    } else if (c1 === currentTargetCrypto) { 
+        initialInvestmentInUSDTForBuyLeg = investmentAmountNum * userEnteredPurchasePriceTargetCrypto; 
+        amountOfTargetCryptoBought = investmentAmountNum;
+        rawMarketPriceC1InC2 = userEnteredPurchasePriceTargetCrypto; 
     } else {
-        // Fallback for non-standard pairs, though DETAILED_TRADING_PAIRS should prevent this
         amountOfTargetCryptoBought = 0;
-        initialInvestmentInQuoteForBuyLeg = 0;
+        initialInvestmentInUSDTForBuyLeg = 0;
         console.error("Could not determine target crypto or investment for buy leg. c1:", c1, "c2:", c2, "target:", currentTargetCrypto);
         setSimulatedRows([]); return;
     }
@@ -252,56 +254,55 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
         setSimulatedRows([{
             isBuyRow: true, cur1: c1, cur2: c2,
             operation: t('dashboard.orderOpportunitySimulator.exchangeOperation', 'Exchange {cur1} for {cur2}', {cur1: c1, cur2: c2}),
-            displayAmount1: `${inputAmountNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: STABLECOIN_SYMBOLS.includes(c1 as any) ? 2 : 8 })} ${c1}`,
+            displayAmount1: `${investmentAmountNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: STABLECOIN_SYMBOLS.includes(c1 as any) ? 2 : 8 })} ${c1}`,
             displayMarketPrice: t('dashboard.orderOpportunitySimulator.priceUnavailableShort', 'N/A'),
             displayAmount2: t('dashboard.orderOpportunitySimulator.priceUnavailableShort', 'N/A'), displayCommission: t('dashboard.orderOpportunitySimulator.priceUnavailableShort', 'N/A'), displayNetProfit: '-',
         }]);
         return;
     }
 
-    const exchangedAmountC2 = inputAmountNum * rawMarketPriceC1InC2; // Amount of c2 obtained from c1
-    const commissionBuyInQuote = initialInvestmentInQuoteForBuyLeg * COMMISSION_RATE;
+    const exchangedAmountC2 = investmentAmountNum * rawMarketPriceC1InC2; 
+    const commissionBuyInUSDT = initialInvestmentInUSDTForBuyLeg * COMMISSION_RATE;
 
     newRows.push({
       isBuyRow: true, cur1: c1, cur2: c2,
       operation: t('dashboard.orderOpportunitySimulator.exchangeOperation', 'Exchange {cur1} for {cur2}', {cur1: c1, cur2: c2}),
-      displayAmount1: `${inputAmountNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: STABLECOIN_SYMBOLS.includes(c1 as any) ? 2 : 8 })} ${c1}`,
+      displayAmount1: `${investmentAmountNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: STABLECOIN_SYMBOLS.includes(c1 as any) ? 2 : 8 })} ${c1}`,
       displayMarketPrice: `${rawMarketPriceC1InC2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: rawMarketPriceC1InC2 < 0.001 ? 8 : 5 })} ${c2}/${c1}`, 
       displayAmount2: `${exchangedAmountC2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: STABLECOIN_SYMBOLS.includes(c2 as any) ? 2 : 8 })} ${c2}`,
-      displayCommission: `${commissionBuyInQuote.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})} ${DEFAULT_QUOTE_CURRENCY}`,
+      displayCommission: `${commissionBuyInUSDT.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})} ${DEFAULT_QUOTE_CURRENCY}`,
       displayNetProfit: '-',
-      rawInputAmountCur1: inputAmountNum,
+      rawInputAmountCur1: investmentAmountNum,
       rawPurchasePriceCrypto: userEnteredPurchasePriceTargetCrypto,
       rawAmountOfTargetCryptoBought: amountOfTargetCryptoBought,
-      rawCommissionBuyInQuote: commissionBuyInQuote,
-      initialInvestmentInQuote: initialInvestmentInQuoteForBuyLeg,
+      rawCommissionBuyInQuote: commissionBuyInUSDT,
+      initialInvestmentInQuote: initialInvestmentInUSDTForBuyLeg,
     });
 
-    const basePriceForSellRowsInQuote = userEnteredPurchasePriceTargetCrypto; // Price of TargetCrypto in DEFAULT_QUOTE_CURRENCY
+    const basePriceForSellRowsInUSDT = userEnteredPurchasePriceTargetCrypto; 
 
     OPPORTUNITY_PERCENTAGES.forEach(perc => {
-      const targetSellPriceOfTargetCryptoInQuote = basePriceForSellRowsInQuote * (1 + perc);
-      const quoteReceivedFromSale = amountOfTargetCryptoBought * targetSellPriceOfTargetCryptoInQuote;
-      const commissionSellInQuote = quoteReceivedFromSale * COMMISSION_RATE;
-      const netProfitInQuote = (quoteReceivedFromSale - initialInvestmentInQuoteForBuyLeg) - (commissionBuyInQuote + commissionSellInQuote);
+      const targetSellPriceOfTargetCryptoInUSDT = basePriceForSellRowsInUSDT * (1 + perc);
+      const usdtReceivedFromSale = amountOfTargetCryptoBought * targetSellPriceOfTargetCryptoInUSDT;
+      const commissionSellInUSDT = usdtReceivedFromSale * COMMISSION_RATE;
+      const netProfitInUSDT = (usdtReceivedFromSale - initialInvestmentInUSDTForBuyLeg) - (commissionBuyInUSDT + commissionSellInUSDT);
 
       newRows.push({
         isBuyRow: false,
         operation: t('dashboard.orderOpportunitySimulator.sellOperationPerc', 'Sell {targetCrypto} (+{perc}%)', {targetCrypto: currentTargetCrypto!, perc: (perc * 100).toFixed(1)}),
         displayAmount1: `${amountOfTargetCryptoBought.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 8 })} ${currentTargetCrypto}`, 
-        displayMarketPrice: `${targetSellPriceOfTargetCryptoInQuote.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: targetSellPriceOfTargetCryptoInQuote < 1 ? 5 : 2 })} ${DEFAULT_QUOTE_CURRENCY}/${currentTargetCrypto}`, 
-        displayAmount2: `${quoteReceivedFromSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${DEFAULT_QUOTE_CURRENCY}`, 
-        displayCommission: `${commissionSellInQuote.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})} ${DEFAULT_QUOTE_CURRENCY}`,
-        displayNetProfit: `${netProfitInQuote.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} ${DEFAULT_QUOTE_CURRENCY}`,
-        netProfitValue: netProfitInQuote,
+        displayMarketPrice: `${targetSellPriceOfTargetCryptoInUSDT.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: targetSellPriceOfTargetCryptoInUSDT < 1 ? 5 : 2 })} ${DEFAULT_QUOTE_CURRENCY}/${currentTargetCrypto}`, 
+        displayAmount2: `${usdtReceivedFromSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${DEFAULT_QUOTE_CURRENCY}`, 
+        displayCommission: `${commissionSellInUSDT.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})} ${DEFAULT_QUOTE_CURRENCY}`,
+        displayNetProfit: `${netProfitInUSDT.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} ${DEFAULT_QUOTE_CURRENCY}`,
+        netProfitValue: netProfitInUSDT,
         rawAmountOfTargetCryptoSold: amountOfTargetCryptoBought,
-        rawSellPriceTargetCryptoInQuote: targetSellPriceOfTargetCryptoInQuote,
-        rawQuoteReceivedFromSale: quoteReceivedFromSale,
-        rawCommissionSellInQuote: commissionSellInQuote,
-        // Carry over from buy row for context
+        rawSellPriceTargetCryptoInQuote: targetSellPriceOfTargetCryptoInUSDT,
+        rawQuoteReceivedFromSale: usdtReceivedFromSale,
+        rawCommissionSellInQuote: commissionSellInUSDT,
         rawAmountOfTargetCryptoBought: amountOfTargetCryptoBought, 
-        initialInvestmentInQuote: initialInvestmentInQuoteForBuyLeg, 
-        rawCommissionBuyInQuote: commissionBuyInQuote, 
+        initialInvestmentInQuote: initialInvestmentInUSDTForBuyLeg, 
+        rawCommissionBuyInQuote: commissionBuyInUSDT, 
       });
     });
 
@@ -327,8 +328,8 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
       const buyRow = simulatedRows[0];
       const simulationData: Omit<SimulationLogEntry, 'id' | 'usuario_id' | 'fecha'> = {
         par_operacion: selectedPair,
-        monto_compra_usdt: buyRow.initialInvestmentInQuote || 0, // This is the initial investment in USDT
-        precio_compra: buyRow.rawPurchasePriceCrypto || 0, // Price of target crypto in USDT
+        monto_compra_usdt: buyRow.initialInvestmentInQuote || 0, 
+        precio_compra: buyRow.rawPurchasePriceCrypto || 0, 
         cantidad_cripto_comprada: buyRow.rawAmountOfTargetCryptoBought || 0,
         comision_compra: buyRow.rawCommissionBuyInQuote || 0,
         ventas_simuladas: simulatedRows.slice(1).map(sellRow => ({
@@ -338,17 +339,17 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
           ganancia_neta: sellRow.netProfitValue || 0,
         })),
       };
-      // await saveSimulationToFirebase(user.id, simulationData); // Firebase saving disabled
-      console.log("Simulated save of full simulation (Firebase disabled):", simulationData);
+      // For non-authenticated version, we can't use user.id
+      await saveSimulationToFirebase("general_user", simulationData); // Using a placeholder user ID
       toast({
-        title: t('dashboard.orderOpportunitySimulator.toast.saveDisabledTitle', 'Save Disabled'),
-        description: t('dashboard.orderOpportunitySimulator.toast.saveDisabledDescription', 'Saving simulations is disabled as user authentication has been removed.'),
+        title: t('dashboard.orderOpportunitySimulator.toast.savedSuccessTitle', 'Simulation Saved'),
+        description: t('dashboard.orderOpportunitySimulator.toast.savedSuccessDescription', 'Your simulation has been successfully saved.'),
       });
     } catch (error) {
-      console.error("Error preparing simulation for save:", error);
+      console.error("Error saving simulation:", error);
       toast({
         title: t('dashboard.orderOpportunitySimulator.toast.saveErrorTitle', 'Save Error'),
-        description: error instanceof Error ? error.message : t('dashboard.orderOpportunitySimulator.toast.saveErrorDescription', 'Could not prepare the simulation data. Please try again.'),
+        description: error instanceof Error ? error.message : t('dashboard.orderOpportunitySimulator.toast.saveErrorDescription', 'Could not save the simulation. Please try again.'),
         variant: "destructive",
       });
     } finally {
@@ -386,22 +387,21 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
         sellCommissionInQuote: sellRow.rawCommissionSellInQuote || 0,
         netProfitInQuote: sellRow.netProfitValue || 0,
         originalPair: selectedPair,
-        inputAmount: parseFloat(inputAmountStr) || 0, // Original input amount by user
-        inputCurrency: String(currentCur1), // Original input currency by user
+        inputAmount: parseFloat(inputAmountStr) || 0, 
+        inputCurrency: String(currentCur1), 
       };
 
-      // await saveOrderToFirebase(user.id, orderData); // Firebase saving disabled
-      console.log("Simulated save of order (Firebase disabled):", orderData);
+      await saveOrderToFirebase("general_user", orderData); // Using a placeholder user ID
       toast({
-        title: t('dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle', 'Order Save Disabled'),
-        description: t('dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription', 'Saving orders is disabled as user authentication has been removed.'),
+        title: t('dashboard.orderOpportunitySimulator.toast.orderSavedSuccessTitle', 'Order Saved'),
+        description: t('dashboard.orderOpportunitySimulator.toast.orderSavedSuccessDescription', 'The specific order has been successfully saved.'),
       });
 
     } catch (error) {
-      console.error("Error preparing order for save:", error);
+      console.error("Error saving order:", error);
       toast({
         title: t('dashboard.orderOpportunitySimulator.toast.orderSaveErrorTitle', 'Order Save Error'),
-        description: error instanceof Error ? error.message : t('dashboard.orderOpportunitySimulator.toast.orderSaveErrorDescription', 'Could not prepare the specific order data. Please try again.'),
+        description: error instanceof Error ? error.message : t('dashboard.orderOpportunitySimulator.toast.orderSaveErrorDescription', 'Could not save the specific order. Please try again.'),
         variant: "destructive",
       });
     } finally {
@@ -484,7 +484,7 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
                     <FormControl>
                     <Input
                         type="text" 
-                        placeholder="e.g., 60000"
+                        placeholder={t('dashboard.orderOpportunitySimulator.priceUnavailable', 'Price N/A')}
                         {...field}
                         onChange={(e) => {
                             field.onChange(e);
@@ -500,7 +500,7 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
                  <div className="md:col-start-2"> 
                     <FormLabel>
-                        {t('dashboard.orderOpportunitySimulator.valorCriptoLabel', 'Crypto Value')}
+                        {t('dashboard.orderOpportunitySimulator.valorCriptoLabel', 'Valor Cripto')}
                     </FormLabel>
                     <Input
                         type="text"
@@ -551,9 +551,7 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
                             variant="outline"
                             size="sm"
                             onClick={() => handleSaveOrder(index)}
-                            // disabled={!user || isSavingSimulation || savingOrderId === row.operation} // Auth removed
                             disabled={isSavingSimulation || savingOrderId === row.operation}
-                            // title={!user ? t('dashboard.orderOpportunitySimulator.saveOrderButtonDisabled', 'Save Order (Login Required)') : t('dashboard.orderOpportunitySimulator.saveOrderButton', 'Save Order')} // Auth removed
                             title={t('dashboard.orderOpportunitySimulator.saveOrderButton', 'Save Order')}
                           >
                             {savingOrderId === row.operation ? <Loader2 className="h-4 w-4 animate-spin" /> : <FilePlus2 className="h-4 w-4" />}
@@ -567,10 +565,8 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
             </ScrollArea>
              <Button
                 onClick={handleSaveFullSimulation}
-                // disabled={!user || isSavingSimulation} // Auth removed
                 disabled={isSavingSimulation}
                 className="mt-4 w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground"
-                // title={!user ? t('dashboard.orderOpportunitySimulator.saveButtonDisabled', 'Save Simulation (Login Required)') : t('dashboard.orderOpportunitySimulator.saveButton', 'Save Full Simulation')} // Auth removed
                 title={t('dashboard.orderOpportunitySimulator.saveButton', 'Save Full Simulation')}
               >
               {isSavingSimulation ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
