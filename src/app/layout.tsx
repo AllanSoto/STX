@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
@@ -26,13 +25,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // The lang attribute here is 'en'.
-  // The LanguageProvider's useEffect will update `document.documentElement.lang`
-  // client-side after hydration.
-  // Server-side rendering of lang attribute depends on initial state, which is 'en'.
-  // Client-side hydration will match this initial server render.
+  // The lang attribute is hardcoded to 'en' for the server render.
+  // The LanguageProvider's useEffect will update `document.documentElement.lang` client-side.
+  // `suppressHydrationWarning={true}` on the <html> tag tells React to ignore mismatches
+  // for attributes on this specific tag, like 'lang' or 'class' if modified by extensions.
   return (
     <html lang="en" className="dark" suppressHydrationWarning={true}>
+      <head>
+        {/* Next.js will inject its necessary head elements here */}
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <LanguageProvider>
           <AuthProvider>
@@ -44,4 +45,3 @@ export default function RootLayout({
     </html>
   );
 }
-
