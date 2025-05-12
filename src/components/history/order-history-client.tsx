@@ -2,7 +2,6 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/hooks/use-language';
 import { getOrdersForUser } from '@/lib/firebase/orders';
 import type { SavedOrder } from '@/lib/types';
@@ -14,7 +13,6 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 
 export function OrderHistoryClient() {
-  const { user } = useAuth();
   const { translations, language } = useLanguage();
   const { toast } = useToast();
   const t = useCallback((key: string, fallback?: string) => translations[key] || fallback || key, [translations]);
@@ -28,27 +26,26 @@ export function OrderHistoryClient() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    if (user?.id) {
-      setIsLoading(true);
-      getOrdersForUser(user.id)
-        .then(setAllOrders)
-        .catch(err => {
-          console.error(err);
-          setError(err.message || t('history.table.loadingError', 'Failed to load order history.'));
-          toast({
-            title: t('history.toast.loadErrorTitle', 'Error'),
-            description: err.message || t('history.toast.loadErrorDescription', 'Could not load order history.'),
-            variant: 'destructive',
-          });
-        })
-        .finally(() => setIsLoading(false));
-    }
-  }, [user?.id, t, toast]);
+    // Fetch orders without user context. Assumes getOrdersForUser is adapted.
+    setIsLoading(true);
+    getOrdersForUser() // Removed userId argument
+      .then(setAllOrders)
+      .catch(err => {
+        console.error(err);
+        setError(err.message || t('history.table.loadingError', 'Failed to load order history.'));
+        toast({
+          title: t('history.toast.loadErrorTitle', 'Error'),
+          description: err.message || t('history.toast.loadErrorDescription', 'Could not load order history.'),
+          variant: 'destructive',
+        });
+      })
+      .finally(() => setIsLoading(false));
+  }, [t, toast]);
 
   const filteredOrders = useMemo(() => {
     return allOrders
       .filter(order => {
-        const orderDate = order.timestamp; // Already a Date object
+        const orderDate = order.timestamp; 
         if (startDate && orderDate < startDate) return false;
         if (endDate) {
           const endOfDay = new Date(endDate);
@@ -169,7 +166,10 @@ export function OrderHistoryClient() {
           <p className="ml-3 text-muted-foreground">{t('history.table.loading', 'Loading order history...')}</p>
         </div>
       ) : error ? (
-        <p className="text-destructive text-center py-10">{error}</p>
+        <div className="text-center py-10">
+          <p className="text-destructive">{error}</p>
+          <p className="text-muted-foreground py-2">{t('history.table.noAuthInfo', 'Order history is now general, not tied to specific user accounts.')}</p>
+        </div>
       ) : (
         <OrderHistoryTable orders={filteredOrders} t={t} currentLanguage={language} />
       )}

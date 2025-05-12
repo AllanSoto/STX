@@ -7,19 +7,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TrendArrow } from '@/components/shared/TrendArrow';
 import { CryptoIcon } from '@/components/shared/CryptoIcon';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
-import { Bell } from 'lucide-react';
+// import { Button } from '@/components/ui/button'; // Button removed
+// import { Bell } from 'lucide-react'; // Bell icon removed
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/hooks/use-language';
 
 interface CryptoDisplayCardProps {
   data: CryptoCardData;
-  isLoading: boolean; // True if initial price for this card is still loading
-  isAiTrendLoading: boolean; // True if AI trend for this card is loading
-  onSetAlertClick: (symbol: CryptoCardData['symbol'], currentPrice: number) => void; // Callback to open alert modal
+  isLoading: boolean; 
+  isAiTrendLoading: boolean; 
+  // onSetAlertClick removed
 }
 
-export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading, onSetAlertClick }: CryptoDisplayCardProps) {
+export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoDisplayCardProps) {
   const { symbol, value, previousValue, trendAnalysis } = data;
   const [priceChangeClass, setPriceChangeClass] = useState('');
   const { translations } = useLanguage();
@@ -39,7 +39,7 @@ export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading, onSetAler
     }
   }, [value, previousValue]);
 
-  if (isLoading) { // Show skeleton if initial price is loading
+  if (isLoading) { 
     return (
       <Card className="shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -92,7 +92,7 @@ export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading, onSetAler
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-        ) : <div className="h-5 w-5"></div> /* Placeholder to maintain layout if no trend */ }
+        ) : <div className="h-5 w-5"></div> 
       </CardHeader>
       <CardContent className="flex-grow">
         <div className={`text-2xl font-bold ${priceChangeClass}`}>
@@ -109,21 +109,20 @@ export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading, onSetAler
             </p>
         )}
       </CardContent>
-      <div className="p-4 pt-0">
+      {/* Set Alert button removed from the card footer */}
+      {/* <div className="p-4 pt-0">
         <Button
             variant="outline"
             size="sm"
             className="w-full"
-            onClick={() => onSetAlertClick(symbol, value)}
+            // onClick={() => onSetAlertClick(symbol, value)} // onSetAlertClick removed
             disabled={value === 0}
             title={t('dashboard.cryptoCard.alertButton.title', 'Set Price Alert')}
           >
             <Bell className="mr-2 h-4 w-4" />
             {t('dashboard.cryptoCard.alertButton.label', 'Set Alert')}
         </Button>
-      </div>
+      </div> */}
     </Card>
   );
 }
-
-    

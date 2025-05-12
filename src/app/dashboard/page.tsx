@@ -9,13 +9,12 @@ import { OrderOpportunitySimulator } from '@/components/dashboard/order-opportun
 import type { CryptoCardData } from '@/components/dashboard/types';
 import { initialCryptoData } from '@/components/dashboard/types';
 import { analyzeCryptoTrend } from '@/ai/flows/analyze-crypto-trends';
-import type { CryptoSymbol, PriceAlert } from '@/lib/types';
+import type { CryptoSymbol } from '@/lib/types';
 import { CRYPTO_SYMBOLS, COIN_DATA, QUOTE_CURRENCY } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/use-auth';
-import { getActivePriceAlertsForUser, deactivatePriceAlert } from '@/lib/firebase/alerts';
-import { AlertModal } from '@/components/dashboard/alert-modal';
+// import { getActivePriceAlertsForUser, deactivatePriceAlert } from '@/lib/firebase/alerts'; // User-specific alerts removed
+// import { AlertModal } from '@/components/dashboard/alert-modal'; // Alert modal removed as alerts are user-specific
 import type { TrendAnalysis } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { fetchCoinGeckoHistoricalPrices } from '@/services/coingecko';
@@ -27,7 +26,7 @@ const BINANCE_API_REST_BASE_URL = 'https://api.binance.com/api/v3';
 const BINANCE_API_REFRESH_INTERVAL = 5000; 
 const AI_ANALYSIS_INITIAL_DELAY = 5000; 
 const AI_ANALYSIS_INTERVAL = 60000 * 1; 
-const ALERT_CHECK_INTERVAL = 10000; 
+// const ALERT_CHECK_INTERVAL = 10000; // Alert checking removed
 
 
 const binanceSymbolsForREST = CRYPTO_SYMBOLS.map(s => COIN_DATA[s]?.binanceSymbol).filter(Boolean) as string[];
@@ -41,7 +40,7 @@ async function updateAllAiTrendsExternal(currentCryptoData: CryptoCardData[], tG
   if (dataToAnalyze.length === 0) return currentCryptoData;
 
   const dataPromises = dataToAnalyze.map(async (crypto) => {
-    const recentPriceData = await fetchCoinGeckoHistoricalPrices(crypto.symbol, 30); // Fetch last 30 days for trend
+    const recentPriceData = await fetchCoinGeckoHistoricalPrices(crypto.symbol, 30); 
     if (!recentPriceData) {
       console.warn(`Could not fetch historical prices for ${crypto.symbol} for AI trend analysis.`);
       const errorTrendAnalysis: TrendAnalysis = {
@@ -81,26 +80,26 @@ export default function DashboardPage() {
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
   const { translations } = useLanguage();
   const { toast } = useToast();
-  const { user } = useAuth();
 
   const webSocketRef = useRef<WebSocket | null>(null);
   const binanceFallbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const cryptoDataRef = useRef<CryptoCardData[]>(initialCryptoData);
 
-  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
-  const [alertCryptoSymbol, setAlertCryptoSymbol] = useState<CryptoSymbol | null>(null);
-  const [alertCurrentPrice, setAlertCurrentPrice] = useState<number | null>(null);
-  const [activeAlerts, setActiveAlerts] = useState<PriceAlert[]>([]);
-  const activeAlertsRef = useRef<PriceAlert[]>([]);
+  // Alert related state removed
+  // const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+  // const [alertCryptoSymbol, setAlertCryptoSymbol] = useState<CryptoSymbol | null>(null);
+  // const [alertCurrentPrice, setAlertCurrentPrice] = useState<number | null>(null);
+  // const [activeAlerts, setActiveAlerts] = useState<PriceAlert[]>([]);
+  // const activeAlertsRef = useRef<PriceAlert[]>([]);
 
 
   useEffect(() => {
     cryptoDataRef.current = cryptoData;
   }, [cryptoData]);
   
-  useEffect(() => {
-    activeAlertsRef.current = activeAlerts;
-  }, [activeAlerts]);
+  // useEffect(() => {
+  //   activeAlertsRef.current = activeAlerts;
+  // }, [activeAlerts]); // activeAlerts removed
 
 
   const t = useCallback((key: string, fallback?: string, vars?: Record<string, string | number>) => {
@@ -113,37 +112,8 @@ export default function DashboardPage() {
     return msg;
   }, [translations]);
 
-  const fetchActiveAlerts = useCallback(async () => {
-    if (user?.id) {
-      try {
-        const alerts = await getActivePriceAlertsForUser(user.id);
-        setActiveAlerts(alerts);
-      } catch (error) {
-        console.error("Failed to fetch active alerts:", error);
-        toast({ title: t('dashboard.alerts.fetchErrorTitle', 'Alerts Error'), description: t('dashboard.alerts.fetchErrorDescription', 'Could not load your active price alerts.'), variant: 'destructive' });
-      }
-    }
-  }, [user?.id, t, toast]);
-
-  useEffect(() => {
-    fetchActiveAlerts();
-  }, [fetchActiveAlerts]);
-
-  const handleOpenAlertModal = (symbol: CryptoSymbol, currentPrice: number) => {
-    setAlertCryptoSymbol(symbol);
-    setAlertCurrentPrice(currentPrice);
-    setIsAlertModalOpen(true);
-  };
-
-  const handleCloseAlertModal = () => {
-    setIsAlertModalOpen(false);
-    setAlertCryptoSymbol(null);
-    setAlertCurrentPrice(null);
-  };
-  
-  const handleAlertSaved = () => {
-    fetchActiveAlerts(); 
-  };
+  // fetchActiveAlerts removed
+  // handleOpenAlertModal, handleCloseAlertModal, handleAlertSaved removed
 
   const fetchBinancePricesREST = useCallback(async (showToastOnError = true) => {
     if (binanceSymbolsForREST.length === 0) {
@@ -394,54 +364,7 @@ export default function DashboardPage() {
     };
   }, [t, toast]); 
 
-  useEffect(() => {
-    const checkAlerts = async () => {
-      if (!user || activeAlertsRef.current.length === 0 || cryptoDataRef.current.every(cd => cd.value === 0)) {
-        return;
-      }
-
-      const currentPricesMap = new Map(cryptoDataRef.current.map(cd => [cd.symbol, cd.value]));
-      let alertsTriggered = false;
-
-      for (const alert of activeAlertsRef.current) {
-        if (!alert.active) continue;
-
-        const currentPrice = currentPricesMap.get(alert.symbol);
-        if (currentPrice === undefined || currentPrice === 0) continue;
-
-        let triggered = false;
-        if (alert.direction === 'above' && currentPrice > alert.targetPrice) {
-          triggered = true;
-        } else if (alert.direction === 'below' && currentPrice < alert.targetPrice) {
-          triggered = true;
-        }
-
-        if (triggered) {
-          alertsTriggered = true;
-          toast({
-            title: t('dashboard.alerts.triggeredTitle', 'Price Alert Triggered!'),
-            description: t('dashboard.alerts.triggeredDescription', '{symbol} has reached your target price of ${targetPrice}. Current price: ${currentPrice}.', {
-              symbol: alert.symbol,
-              targetPrice: alert.targetPrice.toLocaleString(),
-              currentPrice: currentPrice.toLocaleString(),
-            }),
-            variant: 'default', 
-          });
-          try {
-            await deactivatePriceAlert(alert.id);
-          } catch (error) {
-            console.error("Failed to deactivate alert:", alert.id, error);
-          }
-        }
-      }
-      if (alertsTriggered) {
-        fetchActiveAlerts(); 
-      }
-    };
-
-    const alertIntervalId = setInterval(checkAlerts, ALERT_CHECK_INTERVAL);
-    return () => clearInterval(alertIntervalId);
-  }, [user, t, toast, fetchActiveAlerts]);
+  // checkAlerts useEffect removed
 
 
   const cryptoPricesForSimulator = useMemo(() => 
@@ -488,6 +411,7 @@ export default function DashboardPage() {
           </Card>
         )}
 
+        {/* Portfolio Balance from Binance API removed as auth is removed */}
         <Card className="mb-8 shadow-lg bg-secondary/30">
             <CardHeader>
                 <CardTitle>{t('dashboard.portfolioBalance', 'Portfolio Balance')}</CardTitle>
@@ -511,7 +435,7 @@ export default function DashboardPage() {
                   data={data} 
                   isLoading={isPricesLoading && data.value === 0} 
                   isAiTrendLoading={isAiLoading && !data.trendAnalysis && data.value !==0}
-                  onSetAlertClick={handleOpenAlertModal}
+                  // onSetAlertClick removed
                 />
               ))}
             </div>
@@ -522,16 +446,7 @@ export default function DashboardPage() {
           <OrderOpportunitySimulator cryptoPrices={cryptoPricesForSimulator} />
         </section>
       </div>
-       {alertCryptoSymbol && (
-        <AlertModal
-          isOpen={isAlertModalOpen}
-          onClose={handleCloseAlertModal}
-          cryptoSymbol={alertCryptoSymbol}
-          currentPrice={alertCurrentPrice}
-          onAlertSaved={handleAlertSaved}
-        />
-      )}
+       {/* AlertModal removed */}
     </MainLayout>
   );
 }
-

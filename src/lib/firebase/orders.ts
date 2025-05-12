@@ -1,10 +1,15 @@
+
 // src/lib/firebase/orders.ts
 import { collection, addDoc, serverTimestamp, query, where, orderBy, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from './config';
 import type { SavedOrder } from '@/lib/types';
 
+// Saving orders is user-specific, this function will no longer be called by components.
+// It's kept here for completeness but would be removed or adapted in a full non-auth refactor.
 export async function saveOrderToFirebase(userId: string, orderData: Omit<SavedOrder, 'id' | 'userId' | 'timestamp'>): Promise<string> {
   if (!userId) {
+    // This case should not be reached if components stop calling it without a user.
+    console.warn('saveOrderToFirebase called without userId. Order not saved.');
     throw new Error('User ID is required to save the order.');
   }
 
@@ -24,47 +29,17 @@ export async function saveOrderToFirebase(userId: string, orderData: Omit<SavedO
   }
 }
 
-export async function getOrdersForUser(userId: string): Promise<SavedOrder[]> {
-  if (!userId) {
-    throw new Error('User ID is required to fetch orders.');
-  }
-
-  try {
-    const ordersRef = collection(db, `HistorialDeOrdenes/${userId}/ordenes`);
-    const q = query(ordersRef, orderBy('timestamp', 'desc'));
-    const querySnapshot = await getDocs(q);
-    
-    const orders: SavedOrder[] = [];
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      // Ensure timestamp is converted to JS Date object
-      const timestamp = data.timestamp instanceof Timestamp ? data.timestamp.toDate() : new Date(); // Fallback for safety
-
-      orders.push({
-        id: doc.id,
-        userId: data.userId,
-        timestamp,
-        targetCrypto: data.targetCrypto,
-        quoteCurrency: data.quoteCurrency,
-        amountOfTargetCryptoBought: data.amountOfTargetCryptoBought,
-        buyPricePerUnit: data.buyPricePerUnit,
-        totalBuyValueInQuote: data.totalBuyValueInQuote,
-        buyCommissionInQuote: data.buyCommissionInQuote,
-        sellPricePerUnit: data.sellPricePerUnit,
-        totalSellValueInQuote: data.totalSellValueInQuote,
-        sellCommissionInQuote: data.sellCommissionInQuote,
-        netProfitInQuote: data.netProfitInQuote,
-        originalPair: data.originalPair,
-        inputAmount: data.inputAmount,
-        inputCurrency: data.inputCurrency,
-      } as SavedOrder); // Type assertion might be needed if fields are optional or TS struggles with conversion
-    });
-    return orders;
-  } catch (error) {
-    console.error('Error fetching orders from Firebase:', error);
-    if (error instanceof Error) {
-      throw new Error(`Failed to fetch orders: ${error.message}`);
-    }
-    throw new Error('An unknown error occurred while fetching orders.');
-  }
+// Modified to not require userId and return empty array as specific user data is removed.
+// In a real scenario without auth, this might fetch public/sample data or be removed.
+export async function getOrdersForUser(): Promise<SavedOrder[]> {
+  console.log("getOrdersForUser called without specific user context. Returning empty array.");
+  // This function previously fetched orders for a specific user.
+  // Since authentication is removed, there's no specific user to fetch for.
+  // Returning an empty array for now.
+  // To show shared data, this would need to point to a general collection path.
+  // Example of fetching from a shared path (if one existed):
+  // const ordersRef = collection(db, `PublicHistorialDeOrdenes/all/ordenes`);
+  // const q = query(ordersRef, orderBy('timestamp', 'desc'));
+  // const querySnapshot = await getDocs(q); ... etc.
+  return Promise.resolve([]); 
 }

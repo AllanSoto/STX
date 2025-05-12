@@ -1,3 +1,4 @@
+
 // src/providers/language-provider.tsx
 'use client';
 
@@ -131,6 +132,12 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.orderSavedSuccessDescription': 'The specific order has been successfully saved.',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorTitle': 'Order Save Error',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorDescription': 'Could not save the specific order. Please try again.',
+    'dashboard.orderOpportunitySimulator.saveButtonDisabled': 'Save Simulation (Disabled)',
+    'dashboard.orderOpportunitySimulator.saveOrderButtonDisabled': 'Save Order (Disabled)',
+    'dashboard.orderOpportunitySimulator.toast.saveDisabledTitle': 'Save Disabled',
+    'dashboard.orderOpportunitySimulator.toast.saveDisabledDescription': 'Saving simulations is disabled as user authentication has been removed.',
+    'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': 'Order Save Disabled',
+    'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': 'Saving orders is disabled as user authentication has been removed.',
 
     'dashboard.api.binance.fetchError': 'Failed to fetch prices from Binance: {status}',
     'dashboard.api.binance.errorTitle': 'Price Fetch Error (Binance)',
@@ -160,6 +167,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'history.table.loading': "Loading order history...",
     'history.table.loadingError': "Failed to load order history.",
     'history.table.noOrders': "No orders found.",
+    'history.table.noAuthInfo': "Order history is now general, not tied to specific user accounts.",
     'history.table.header.timestamp': 'Date/Time',
     'history.table.header.originalPair': 'Pair',
     'history.table.header.targetCrypto': 'Target Crypto',
@@ -179,6 +187,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
 
     'balance.page.title': "Balance Overview",
     'balance.page.loading': 'Loading balance information...',
+    'balance.page.noAuthInfo': 'Order history and balance are now general, not tied to specific user accounts.',
+    'balance.page.noOrdersFound': 'No order data found to display balance information.',
     'balance.menuItem': "Balance",
     'balance.filters.dateRange': "Date Range",
     'balance.filters.startDate': "Start Date",
@@ -239,6 +249,10 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'alertModal.toast.errorDescriptionGeneric': 'Could not save the alert.',
     'alertModal.toast.errorDeleteTitle': 'Error Deleting Alert',
     'alertModal.toast.errorDescriptionGenericDelete': 'Could not delete the alert.',
+    'alertModal.toast.saveDisabledDescription': 'Alerts are not saved to server without user accounts. This is a local definition.',
+    'alertModal.toast.deleteDisabledDescription': 'Alerts are not removed from server without user accounts.',
+    'alertModal.button.updateLocal': 'Update Local Alert',
+    'alertModal.button.setLocal': 'Set Local Alert',
 
     'activeAlerts.title': 'My Price Alerts',
     'activeAlerts.description': 'Manage your active and inactive price alerts.',
@@ -412,6 +426,12 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.orderSavedSuccessDescription': 'La orden específica ha sido guardada exitosamente.',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorTitle': 'Error al Guardar Orden',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorDescription': 'No se pudo guardar la orden específica. Por favor, inténtalo de nuevo.',
+    'dashboard.orderOpportunitySimulator.saveButtonDisabled': 'Guardar Simulación (Deshabilitado)',
+    'dashboard.orderOpportunitySimulator.saveOrderButtonDisabled': 'Guardar Orden (Deshabilitado)',
+    'dashboard.orderOpportunitySimulator.toast.saveDisabledTitle': 'Guardar Deshabilitado',
+    'dashboard.orderOpportunitySimulator.toast.saveDisabledDescription': 'Guardar simulaciones está deshabilitado ya que se eliminó la autenticación de usuarios.',
+    'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': 'Guardar Orden Deshabilitado',
+    'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': 'Guardar órdenes está deshabilitado ya que se eliminó la autenticación de usuarios.',
 
     'dashboard.api.binance.fetchError': 'Error al obtener precios de Binance: {status}',
     'dashboard.api.binance.errorTitle': 'Error al Obtener Precios (Binance)',
@@ -441,6 +461,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'history.table.loading': "Cargando historial de órdenes...",
     'history.table.loadingError': "Error al cargar el historial de órdenes.",
     'history.table.noOrders': "No se encontraron órdenes.",
+    'history.table.noAuthInfo': "El historial de órdenes ahora es general, no está vinculado a cuentas de usuario específicas.",
     'history.table.header.timestamp': 'Fecha/Hora',
     'history.table.header.originalPair': 'Par',
     'history.table.header.targetCrypto': 'Cripto Obtenida',
@@ -460,6 +481,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
 
     'balance.page.title': "Resumen de Balance",
     'balance.page.loading': 'Cargando información de balance...',
+    'balance.page.noAuthInfo': 'El historial de órdenes y el balance ahora son generales, no están vinculados a cuentas de usuario específicas.',
+    'balance.page.noOrdersFound': 'No se encontraron datos de órdenes para mostrar información de balance.',
     'balance.menuItem': "Balance",
     'balance.filters.dateRange': "Rango de Fechas",
     'balance.filters.startDate': "Fecha de Inicio",
@@ -519,6 +542,10 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'alertModal.toast.errorDescriptionGeneric': 'No se pudo guardar la alerta.',
     'alertModal.toast.errorDeleteTitle': 'Error al Eliminar Alerta',
     'alertModal.toast.errorDescriptionGenericDelete': 'No se pudo eliminar la alerta.',
+    'alertModal.toast.saveDisabledDescription': 'Las alertas no se guardan en el servidor sin cuentas de usuario. Esta es una definición local.',
+    'alertModal.toast.deleteDisabledDescription': 'Las alertas no se eliminan del servidor sin cuentas de usuario.',
+    'alertModal.button.updateLocal': 'Actualizar Alerta Local',
+    'alertModal.button.setLocal': 'Establecer Alerta Local',
 
     'activeAlerts.title': 'Mis Alertas de Precio',
     'activeAlerts.description': 'Gestiona tus alertas de precio activas e inactivas.',
@@ -690,6 +717,12 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.orderSavedSuccessDescription': 'L\'ordre spécifique a été sauvegardé avec succès.',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorTitle': 'Erreur de Sauvegarde d\'Ordre',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorDescription': 'Impossible de sauvegarder l\'ordre spécifique. Veuillez réessayer.',
+    'dashboard.orderOpportunitySimulator.saveButtonDisabled': 'Sauvegarder Simulation (Désactivé)',
+    'dashboard.orderOpportunitySimulator.saveOrderButtonDisabled': 'Sauvegarder l\'Ordre (Désactivé)',
+    'dashboard.orderOpportunitySimulator.toast.saveDisabledTitle': 'Sauvegarde Désactivée',
+    'dashboard.orderOpportunitySimulator.toast.saveDisabledDescription': 'La sauvegarde des simulations est désactivée car l\'authentification utilisateur a été supprimée.',
+    'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': 'Sauvegarde d\'Ordre Désactivée',
+    'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': 'La sauvegarde des ordres est désactivée car l\'authentification utilisateur a été supprimée.',
 
     'dashboard.api.binance.fetchError': 'Échec de la récupération des prix de Binance : {status}',
     'dashboard.api.binance.errorTitle': 'Erreur de Récupération des Prix (Binance)',
@@ -719,6 +752,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'history.table.loading': "Chargement de l'historique des ordres...",
     'history.table.loadingError': "Erreur lors du chargement de l'historique des ordres.",
     'history.table.noOrders': "Aucun ordre trouvé.",
+    'history.table.noAuthInfo': "L'historique des ordres est maintenant général et non lié à des comptes d'utilisateurs spécifiques.",
     'history.table.header.timestamp': 'Date/Heure',
     'history.table.header.originalPair': 'Paire',
     'history.table.header.targetCrypto': 'Crypto Cible',
@@ -738,6 +772,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
 
     'balance.page.title': "Aperçu du Solde",
     'balance.page.loading': 'Chargement des informations du solde...',
+    'balance.page.noAuthInfo': "L'historique des ordres et le solde sont maintenant généraux, non liés à des comptes d'utilisateurs spécifiques.",
+    'balance.page.noOrdersFound': "Aucune donnée d'ordre trouvée pour afficher les informations de solde.",
     'balance.menuItem': "Solde",
     'balance.filters.dateRange': "Plage de Dates",
     'balance.filters.startDate': "Date de Début",
@@ -797,6 +833,10 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'alertModal.toast.errorDescriptionGeneric': 'Impossible d\'enregistrer l\'alerte.',
     'alertModal.toast.errorDeleteTitle': 'Erreur de Suppression de l\'Alerte',
     'alertModal.toast.errorDescriptionGenericDelete': 'Impossible de supprimer l\'alerte.',
+    'alertModal.toast.saveDisabledDescription': 'Les alertes ne sont pas enregistrées sur le serveur sans compte utilisateur. Ceci est une définition locale.',
+    'alertModal.toast.deleteDisabledDescription': 'Les alertes ne sont pas supprimées du serveur sans compte utilisateur.',
+    'alertModal.button.updateLocal': 'Mettre à Jour Alerte Locale',
+    'alertModal.button.setLocal': 'Définir Alerte Locale',
 
     'activeAlerts.title': 'Mes Alertes de Prix',
     'activeAlerts.description': 'Gérez vos alertes de prix actives et inactives.',
@@ -969,6 +1009,13 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.orderSavedSuccessDescription': 'विशिष्ट ऑर्डर सफलतापूर्वक सहेजा गया है।',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorTitle': 'ऑर्डर सहेजने में त्रुटि',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorDescription': 'विशिष्ट ऑर्डर सहेजा नहीं जा सका। कृपया पुनः प्रयास करें।',
+    'dashboard.orderOpportunitySimulator.saveButtonDisabled': 'अनुकरण सहेजें (अक्षम)',
+    'dashboard.orderOpportunitySimulator.saveOrderButtonDisabled': 'ऑर्डर सहेजें (अक्षम)',
+    'dashboard.orderOpportunitySimulator.toast.saveDisabledTitle': 'सहेजना अक्षम',
+    'dashboard.orderOpportunitySimulator.toast.saveDisabledDescription': 'अनुकरण सहेजना अक्षम है क्योंकि उपयोगकर्ता प्रमाणीकरण हटा दिया गया है।',
+    'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': 'ऑर्डर सहेजना अक्षम',
+    'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': 'ऑर्डर सहेजना अक्षम है क्योंकि उपयोगकर्ता प्रमाणीकरण हटा दिया गया है।',
+
 
     'dashboard.api.binance.fetchError': 'बायनेंस से कीमतें प्राप्त करने में विफल: {status}',
     'dashboard.api.binance.errorTitle': 'कीमत प्राप्त करने में त्रुटि (बायनेंस)',
@@ -998,6 +1045,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'history.table.loading': "ऑर्डर इतिहास लोड हो रहा है...",
     'history.table.loadingError': "ऑर्डर इतिहास लोड करने में विफल।",
     'history.table.noOrders': "कोई ऑर्डर नहीं मिला।",
+    'history.table.noAuthInfo': "ऑर्डर इतिहास अब सामान्य है, विशिष्ट उपयोगकर्ता खातों से जुड़ा नहीं है।",
     'history.table.header.timestamp': 'दिनांक/समय',
     'history.table.header.originalPair': 'जोड़ी',
     'history.table.header.targetCrypto': 'लक्ष्य क्रिप्टो',
@@ -1017,6 +1065,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
 
     'balance.page.title': "बैलेंस अवलोकन",
     'balance.page.loading': 'बैलेंस जानकारी लोड हो रही है...',
+    'balance.page.noAuthInfo': "ऑर्डर इतिहास और बैलेंस अब सामान्य हैं, विशिष्ट उपयोगकर्ता खातों से बंधे नहीं हैं।",
+    'balance.page.noOrdersFound': "बैलेंस जानकारी प्रदर्शित करने के लिए कोई ऑर्डर डेटा नहीं मिला।",
     'balance.menuItem': "बैलेंस",
     'balance.filters.dateRange': "दिनांक सीमा",
     'balance.filters.startDate': "प्रारंभ तिथि",
@@ -1077,6 +1127,11 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'alertModal.toast.errorDescriptionGeneric': 'चेतावनी सहेजी नहीं जा सकी।',
     'alertModal.toast.errorDeleteTitle': 'चेतावनी हटाने में त्रुटि',
     'alertModal.toast.errorDescriptionGenericDelete': 'चेतावनी हटाई नहीं जा सकी।',
+    'alertModal.toast.saveDisabledDescription': 'उपयोगकर्ता खातों के बिना चेतावनियां सर्वर पर सहेजी नहीं जाती हैं। यह एक स्थानीय परिभाषा है।',
+    'alertModal.toast.deleteDisabledDescription': 'उपयोगकर्ता खातों के बिना चेतावनियां सर्वर से हटाई नहीं जाती हैं।',
+    'alertModal.button.updateLocal': 'स्थानीय चेतावनी अपडेट करें',
+    'alertModal.button.setLocal': 'स्थानीय चेतावनी सेट करें',
+
 
     'activeAlerts.title': 'मेरी मूल्य चेतावनियां',
     'activeAlerts.description': 'अपनी सक्रिय और निष्क्रिय मूल्य चेतावनियों का प्रबंधन करें।',
@@ -1248,6 +1303,12 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.orderSavedSuccessDescription': '特定订单已成功保存。',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorTitle': '订单保存错误',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorDescription': '无法保存特定订单。请重试。',
+    'dashboard.orderOpportunitySimulator.saveButtonDisabled': '保存模拟 (已禁用)',
+    'dashboard.orderOpportunitySimulator.saveOrderButtonDisabled': '保存订单 (已禁用)',
+    'dashboard.orderOpportunitySimulator.toast.saveDisabledTitle': '保存已禁用',
+    'dashboard.orderOpportunitySimulator.toast.saveDisabledDescription': '由于用户认证已移除，保存模拟功能已禁用。',
+    'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': '订单保存已禁用',
+    'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': '由于用户认证已移除，保存订单功能已禁用。',
 
     'dashboard.api.binance.fetchError': '从币安获取价格失败：{status}',
     'dashboard.api.binance.errorTitle': '价格获取错误 (币安)',
@@ -1277,6 +1338,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'history.table.loading': "正在加载订单历史...",
     'history.table.loadingError': "加载订单历史失败。",
     'history.table.noOrders': "未找到订单。",
+    'history.table.noAuthInfo': "订单历史现在是通用的，不与特定用户帐户绑定。",
     'history.table.header.timestamp': '日期/时间',
     'history.table.header.originalPair': '交易对',
     'history.table.header.targetCrypto': '目标加密货币',
@@ -1296,6 +1358,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
 
     'balance.page.title': "余额概览",
     'balance.page.loading': '正在加载余额信息...',
+    'balance.page.noAuthInfo': "订单历史和余额现在是通用的，不与特定用户帐户绑定。",
+    'balance.page.noOrdersFound': "未找到用于显示余额信息的订单数据。",
     'balance.menuItem': "余额",
     'balance.filters.dateRange': "日期范围",
     'balance.filters.startDate': "开始日期",
@@ -1356,6 +1420,11 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'alertModal.toast.errorDescriptionGeneric': '无法保存提醒。',
     'alertModal.toast.errorDeleteTitle': '删除提醒时出错',
     'alertModal.toast.errorDescriptionGenericDelete': '无法删除提醒。',
+    'alertModal.toast.saveDisabledDescription': '没有用户帐户，提醒不会保存到服务器。这是一个本地定义。',
+    'alertModal.toast.deleteDisabledDescription': '没有用户帐户，提醒不会从服务器删除。',
+    'alertModal.button.updateLocal': '更新本地提醒',
+    'alertModal.button.setLocal': '设置本地提醒',
+
 
     'activeAlerts.title': '我的价格提醒',
     'activeAlerts.description': '管理您的活动和非活动价格提醒。',
@@ -1430,21 +1499,19 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    // This effect runs only on the client after hydration
     const storedLanguage = localStorage.getItem('simultradex_language') as LanguageCode | null;
     if (storedLanguage && translationsData[storedLanguage]) {
       setCurrentLanguage(storedLanguage);
       setTranslations(translationsData[storedLanguage]);
       document.documentElement.lang = storedLanguage;
     } else {
-      // If no stored language or invalid, set default and update lang attribute
       document.documentElement.lang = DEFAULT_LANGUAGE;
-      if(storedLanguage !== DEFAULT_LANGUAGE){ // Avoid redundant localStorage set if already default
+      if(storedLanguage !== DEFAULT_LANGUAGE){ 
         localStorage.setItem('simultradex_language', DEFAULT_LANGUAGE);
       }
     }
     setHydrated(true); 
-  }, []); // Empty dependency array ensures this runs once on mount client-side
+  }, []); 
 
 
   const setLanguage = useCallback((langCode: LanguageCode) => {
@@ -1452,13 +1519,13 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
       setCurrentLanguage(langCode);
       setTranslations(translationsData[langCode]);
       localStorage.setItem('simultradex_language', langCode);
-      document.documentElement.lang = langCode; // Update lang attribute immediately
+      document.documentElement.lang = langCode; 
     } else {
       console.warn(`Language code ${langCode} not found in translations. Falling back to default.`);
       setCurrentLanguage(DEFAULT_LANGUAGE);
       setTranslations(translationsData[DEFAULT_LANGUAGE]);
       localStorage.setItem('simultradex_language', DEFAULT_LANGUAGE);
-      document.documentElement.lang = DEFAULT_LANGUAGE; // Update lang attribute immediately
+      document.documentElement.lang = DEFAULT_LANGUAGE; 
     }
   }, []);
 

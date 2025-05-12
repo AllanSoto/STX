@@ -2,10 +2,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
+import { usePathname } from 'next/navigation';
 import { AppHeader } from './app-header';
-import { Skeleton } from "@/components/ui/skeleton";
 import { 
   SidebarProvider, 
   Sidebar, 
@@ -18,7 +16,7 @@ import {
   SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { BarChartBig, Settings, History, Wallet, LogOut, Check, LayoutDashboard, Languages as LanguagesIcon, ChevronDown, Copyright } from 'lucide-react';
+import { BarChartBig, History, Wallet, LayoutDashboard, Languages as LanguagesIcon, ChevronDown, Copyright, Settings } from 'lucide-react';
 import { LANGUAGES, APP_NAME as DEFAULT_APP_NAME } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
 import type { LanguageCode } from '@/providers/language-provider';
@@ -26,8 +24,6 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
-  const { user, isLoading, logout } = useAuth();
-  const router = useRouter();
   const pathname = usePathname();
   const { language: currentLanguage, setLanguage, translations } = useLanguage();
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
@@ -37,36 +33,8 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
 
   const handleLanguageChange = (langCode: string) => {
     setLanguage(langCode as LanguageCode);
-    setIsLanguageMenuOpen(false); // Close menu after selection
+    setIsLanguageMenuOpen(false); 
   };
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.replace('/login');
-    }
-  }, [user, isLoading, router]);
-
-  if (isLoading || !user) {
-    return (
-      <div className="flex flex-col min-h-screen">
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container flex h-14 items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <BarChartBig className="h-6 w-6 text-primary" />
-              <span className="font-bold sm:inline-block">{t('app.name', DEFAULT_APP_NAME)}</span>
-            </Link>
-          </div>
-        </header>
-        <main className="flex-1 container mx-auto py-8 px-4">
-          <div className="space-y-4">
-            <Skeleton className="h-12 w-1/2" />
-            <Skeleton className="h-64 w-full" />
-            <Skeleton className="h-32 w-full" />
-          </div>
-        </main>
-      </div>
-    );
-  }
 
   return (
     <TooltipProvider>
@@ -93,15 +61,16 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
+             {/* The Account page might be less relevant without users, but keeping a generic settings link for now */}
             <SidebarMenuItem>
-              <SidebarMenuButton 
+              <SidebarMenuButton
                 asChild
-                isActive={pathname === '/account'} 
-                tooltip={{content: t('settings.accountSettings'), side: 'right', align: 'center' }}
+                isActive={pathname === '/account'}
+                tooltip={{ content: t('settings.accountSettings', 'Account Settings'), side: 'right', align: 'center' }}
               >
                 <Link href="/account">
                   <Settings className="h-5 w-5" />
-                  <span className="group-data-[collapsible=icon]:hidden">{t('settings.accountSettings')}</span>
+                  <span className="group-data-[collapsible=icon]:hidden">{t('settings.accountSettings', 'Account Settings')}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -175,17 +144,6 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
         </SidebarContent>
 
         <SidebarFooter className="p-2 border-t mt-auto"> 
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton 
-                onClick={logout}
-                tooltip={{content: t('settings.logout'), side: 'right', align: 'center' }}
-              >
-                <LogOut className="h-5 w-5" />
-                <span className="group-data-[collapsible=icon]:hidden">{t('settings.logout')}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
           <div className="mt-4 p-2 text-center text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
             <p>&copy; {currentYear} {t('app.name', DEFAULT_APP_NAME)}.</p>
             <p>{t('footer.createdBy', 'Creado con IA por Allan Soto')}</p>

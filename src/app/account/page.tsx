@@ -3,13 +3,9 @@
 
 import { MainLayout } from '@/components/layout/main-layout';
 import { PasswordChangeForm } from '@/components/account/password-change-form';
-import { ActiveAlertsList } from '@/components/account/active-alerts-list';
-import { useAuth } from '@/hooks/use-auth';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/hooks/use-language';
 
 export default function AccountPage() {
-  const { user } = useAuth();
   const { translations } = useLanguage();
   const t = (key: string, fallback?: string) => translations[key] || fallback || key;
 
@@ -18,24 +14,14 @@ export default function AccountPage() {
       <div className="container mx-auto py-8 px-4">
         <h1 className="text-3xl font-bold mb-8 text-foreground">{t('account.page.title', 'Account Settings')}</h1>
         
-        {user && (
-          <Card className="mb-8 shadow-lg">
-            <CardHeader>
-              <CardTitle>{t('account.page.userInfoTitle', 'User Information')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p><strong>{t('account.page.emailLabel', 'Email:')}</strong> {user.email}</p>
-            </CardContent>
-          </Card>
-        )}
-
         <div className="grid gap-8 md:grid-cols-1"> 
+          {/* PasswordChangeForm might be less relevant without distinct user accounts, 
+              but keeping it for now as a generic settings example. 
+              In a real app, this would likely be removed or re-purposed. */}
           <PasswordChangeForm />
         </div>
         
-        <div className="mt-12">
-            <ActiveAlertsList />
-        </div>
+        {/* ActiveAlertsList and ApiKeyForm removed as they are user-specific */}
       </div>
     </MainLayout>
   );

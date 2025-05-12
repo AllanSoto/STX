@@ -3,25 +3,17 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
 import { useLanguage } from '@/hooks/use-language';
 
 export default function RootPage() {
-  const { user, isLoading } = useAuth();
   const router = useRouter();
   const { translations } = useLanguage();
   const t = (key: string, fallback?: string) => translations[key] || fallback || key;
 
   useEffect(() => {
-    if (!isLoading) {
-      if (user) {
-        router.replace('/dashboard');
-      } else {
-        router.replace('/login');
-      }
-    }
-  }, [user, isLoading, router]);
+    router.replace('/dashboard');
+  }, [router]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-background">
@@ -30,5 +22,3 @@ export default function RootPage() {
     </div>
   );
 }
-
-    
