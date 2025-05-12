@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'SimulTradex', 
-  description: 'Simulate crypto trading and analyze trends.', 
+  title: 'SimulTradex',
+  description: 'Simulate crypto trading and analyze trends.',
 };
 
 export default function RootLayout({
