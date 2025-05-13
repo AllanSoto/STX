@@ -204,7 +204,7 @@ export function BalanceClient() {
     );
   }
   
-  if (ordersError) {
+  if (ordersError && !isOrdersLoading) { // Ensure loading is false before showing error
     return (
       <MainLayout>
         <div className="container mx-auto py-8 px-4 text-center flex flex-col items-center justify-center">
@@ -298,3 +298,4 @@ export function BalanceClient() {
     </div>
   );
 }
+
