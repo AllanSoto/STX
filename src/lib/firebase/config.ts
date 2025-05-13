@@ -16,11 +16,26 @@ const firebaseConfig = {
 // Initialize Firebase
 let app;
 if (!getApps().length) {
-  if (!firebaseConfig.apiKey) {
-    console.error("Firebase API Key is missing. Please check your .env.local file and Firebase project configuration.");
-    // Potentially throw an error or set a flag to disable Firebase features
+  if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+    console.error(
+      "CRITICAL FIREBASE CONFIGURATION ERROR: \n" +
+      "NEXT_PUBLIC_FIREBASE_API_KEY or NEXT_PUBLIC_FIREBASE_PROJECT_ID is missing or invalid.\n" +
+      "Firebase features will NOT work correctly.\n" +
+      "Please ensure these environment variables are correctly set in your '.env.local' file.\n" +
+      "Refer to the README.md for instructions on setting up Firebase credentials."
+    );
+    // Initialize with potentially incomplete config; Firebase SDK will throw specific errors for operations.
   }
-  app = initializeApp(firebaseConfig);
+  try {
+    app = initializeApp(firebaseConfig);
+  } catch (e) {
+    console.error("CRITICAL FIREBASE INITIALIZATION ERROR:", e);
+    console.error(
+      "This usually means your Firebase configuration in '.env.local' is incorrect or incomplete. " +
+      "Please verify your API key, Project ID, and other settings in the Firebase console and your .env.local file."
+    );
+    // App will likely be unusable if Firebase fails to initialize.
+  }
 } else {
   app = getApp();
 }
@@ -47,10 +62,8 @@ service cloud.firestore {
 
     // User profile data
     match /users/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && request.auth.uid == userId;
-      // deny delete; // Or allow delete if needed
+      allow read, write, update, delete: if request.auth != null && request.auth.uid == userId;
+      // allow create: if request.auth != null && request.auth.uid == userId; // create is covered by write
     }
 
     // User-specific orders stored under /userOrders/{userId}/orders/{orderId}
