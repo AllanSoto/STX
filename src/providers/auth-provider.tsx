@@ -55,13 +55,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { translations } = useLanguage();
   const { toast } = useToast();
 
-  const t = useCallback((key: string, fallback: string = key, vars?: Record<string, string | number>) => {
+  const t = useCallback((key: string, fallback: string = key) => {
     let msg = translations[key] || fallback;
-    if (vars) {
-      Object.keys(vars).forEach(varKey => {
-        msg = msg.replace(`{${varKey}}`, String(vars[varKey]));
-      });
-    }
+    // if (vars) { // vars parameter removed as it's not used in this context
+    //   Object.keys(vars).forEach(varKey => {
+    //     msg = msg.replace(`{${varKey}}`, String(vars[varKey]));
+    //   });
+    // }
     return msg;
   }, [translations]);
 
@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (!isFirebaseProperlyConfigured) { // Check the flag
+      if (!isFirebaseConfigValid) { // Check the flag
         setUser(null);
         setLoading(false);
         // Optionally, redirect to a specific page or show a global banner if Firebase isn't configured
@@ -116,6 +116,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw new Error('Firebase not configured');
     }
     try {
+      console.log('Trying to log in'); // Added console.log as per previous diff
       const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
       const firebaseUser = userCredential.user;
       const newUser: User = {
