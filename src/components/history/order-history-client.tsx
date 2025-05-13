@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLanguage } from '@/hooks/use-language';
+import { useAuth } from '@/hooks/use-auth'; // Import useAuth
 import { getOrdersForUser } from '@/lib/firebase/orders';
 import type { SavedOrder } from '@/lib/types';
 import { OrderFilters } from './order-filters';
@@ -11,9 +12,11 @@ import { Button } from '@/components/ui/button';
 import { Download, Printer, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import Link from 'next/link';
 
 export function OrderHistoryClient() {
   const { translations, language } = useLanguage();
+  const { user, loading: authLoading } = useAuth(); // Get user from useAuth
   const { toast } = useToast();
   const t = useCallback((key: string, fallback?: string) => translations[key] || fallback || key, [translations]);
 
@@ -26,21 +29,31 @@ export function OrderHistoryClient() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    // Fetch orders without user context. Assumes getOrdersForUser is adapted.
-    setIsLoading(true);
-    getOrdersForUser() // Removed userId argument
-      .then(setAllOrders)
-      .catch(err => {
-        console.error(err);
-        setError(err.message || t('history.table.loadingError', 'Failed to load order history.'));
-        toast({
-          title: t('history.toast.loadErrorTitle', 'Error'),
-          description: err.message || t('history.toast.loadErrorDescription', 'Could not load order history.'),
-          variant: 'destructive',
-        });
-      })
-      .finally(() => setIsLoading(false));
-  }, [t, toast]);
+    if (authLoading) return; // Wait for auth state to resolve
+
+    if (user) {
+      setIsLoading(true);
+      setError(null);
+      getOrdersForUser(user.uid) 
+        .then(setAllOrders)
+        .catch(err => {
+          console.error("Error fetching orders for user:", err);
+          const errorMessage = err.message || t('history.table.loadingError', 'Failed to load order history.');
+          setError(errorMessage);
+          toast({
+            title: t('history.toast.loadErrorTitle', 'Error'),
+            description: errorMessage,
+            variant: 'destructive',
+          });
+        })
+        .finally(() => setIsLoading(false));
+    } else {
+      // Not logged in, clear orders and set loading to false
+      setAllOrders([]);
+      setIsLoading(false);
+      setError(null); // No error, just no user
+    }
+  }, [user, authLoading, t, toast]);
 
   const filteredOrders = useMemo(() => {
     return allOrders
@@ -77,7 +90,7 @@ export function OrderHistoryClient() {
       t('history.table.header.originalPair', 'Pair'),
       t('history.table.header.targetCrypto', 'Target Crypto'),
       `${t('history.table.header.buyAmount', 'Bought Amount')} (${t('history.table.header.targetCrypto', 'Target Crypto')})`,
-      `${t('history.table.header.buyPrice', 'Buy Price')} (${t('history.table.header.quoteCurrency', 'Quote')}/${t('history.table.header.targetCrypto', 'Target')})`,
+      `${t('history.table.header.buyPrice', 'Buy Price')} (${t('history.table.header.quoteCurrency', 'Quote')}/${t('history.table.header.target')})`,
       `${t('history.table.header.buyComm', 'Buy Comm.')} (${t('history.table.header.quoteCurrency', 'Quote')})`,
       `${t('history.table.header.sellPrice', 'Sell Price')} (${t('history.table.header.quoteCurrency', 'Quote')}/${t('history.table.header.targetCrypto', 'Target')})`,
       `${t('history.table.header.sellComm', 'Sell Comm.')} (${t('history.table.header.quoteCurrency', 'Quote')})`,
@@ -133,6 +146,30 @@ export function OrderHistoryClient() {
     window.print();
   };
 
+  if (authLoading || isLoading) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto py-8 px-4 flex justify-center items-center min-h-[calc(100vh-10rem)]">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (!user) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto py-8 px-4 text-center">
+          <h1 className="text-3xl font-bold mb-8 text-foreground">{t('history.page.title', 'Order History')}</h1>
+          <p className="text-lg text-muted-foreground mb-6">{t('history.page.loginPrompt', 'Please log in to view your order history.')}</p>
+          <Button asChild>
+            <Link href="/login">{t('login.title', 'Login')}</Link>
+          </Button>
+        </div>
+      </MainLayout>
+    );
+  }
+
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -150,25 +187,19 @@ export function OrderHistoryClient() {
       />
 
       <div className="my-6 flex flex-col sm:flex-row gap-2">
-        <Button onClick={handleExportCSV} variant="outline" className="w-full sm:w-auto">
+        <Button onClick={handleExportCSV} variant="outline" className="w-full sm:w-auto" disabled={filteredOrders.length === 0}>
           <Download className="mr-2 h-4 w-4" />
           {t('history.export.csvButton', 'Export to CSV')}
         </Button>
-        <Button onClick={handlePrintPDF} variant="outline" className="w-full sm:w-auto">
+        <Button onClick={handlePrintPDF} variant="outline" className="w-full sm:w-auto" disabled={filteredOrders.length === 0}>
           <Printer className="mr-2 h-4 w-4" />
           {t('history.export.pdfButton', 'Export to PDF (Print)')}
         </Button>
       </div>
 
-      {isLoading ? (
-        <div className="flex items-center justify-center py-10">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="ml-3 text-muted-foreground">{t('history.table.loading', 'Loading order history...')}</p>
-        </div>
-      ) : error ? (
+      {error ? (
         <div className="text-center py-10">
           <p className="text-destructive">{error}</p>
-          <p className="text-muted-foreground py-2">{t('history.table.noAuthInfo', 'Order history is now general, not tied to specific user accounts.')}</p>
         </div>
       ) : (
         <OrderHistoryTable orders={filteredOrders} t={t} currentLanguage={language} />
@@ -176,3 +207,4 @@ export function OrderHistoryClient() {
     </div>
   );
 }
+

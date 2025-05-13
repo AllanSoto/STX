@@ -28,7 +28,7 @@ import type { CryptoSymbol } from '@/lib/constants';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
-// import { useAuth } from '@/hooks/use-auth'; // Auth removed
+import { useAuth } from '@/hooks/use-auth'; 
 import { saveSimulationToFirebase } from '@/lib/firebase/simulations'; 
 import { saveOrderToFirebase } from '@/lib/firebase/orders'; 
 import type { SimulationLogEntry, SavedOrder } from '@/lib/types';
@@ -82,7 +82,7 @@ interface SimulatedRow {
 export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimulatorProps) {
   const { translations, language, hydrated: languageHydrated } = useLanguage();
   const { toast } = useToast();
-  // const { user } = useAuth(); // Auth removed
+  const { user } = useAuth(); 
   const [isSavingSimulation, setIsSavingSimulation] = useState(false);
   const [savingOrderId, setSavingOrderId] = useState<string | null>(null);
   const [purchasePriceManuallyEdited, setPurchasePriceManuallyEdited] = useState(false);
@@ -152,7 +152,7 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
       
       if (autoFilledPrice > 0) {
         if (!purchasePriceManuallyEdited || isPurchaseFieldEffectivelyEmpty) {
-          form.setValue('purchasePriceOfBaseInQuote', autoFilledPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: autoFilledPrice < 0.01 ? 8 : 5 }));
+          form.setValue('purchasePriceOfBaseInQuote', autoFilledPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: autoFilledPrice < 0.01 ? 8 : 5, useGrouping: false }));
         }
       } else {
          if (!purchasePriceManuallyEdited || isPurchaseFieldEffectivelyEmpty) {
@@ -297,19 +297,19 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
 
 
   const handleSaveFullSimulation = async () => {
+    if (!user) {
+      toast({ title: t('dashboard.orderOpportunitySimulator.toast.notLoggedInError', 'You must be logged in to save simulations/orders.'), variant: "destructive" });
+      return;
+    }
     if (simulatedRows.length === 0 || !simulatedRows[0].isBuyRow || !selectedPair || !currentBaseCurrency || !currentQuoteCurrency) {
       toast({ title: t('dashboard.orderOpportunitySimulator.toast.noDataToSave', 'There is no valid simulation/order data to save.'), variant: "warning" });
       return;
     }
-    // Auth removed, saving to a general user or not at all
-    // if (!user) {
-    //   toast({ title: t('dashboard.orderOpportunitySimulator.toast.notLoggedInError', 'You must be logged in to save simulations/orders.'), variant: "destructive" });
-    //   return;
-    // }
+    
     setIsSavingSimulation(true);
     try {
       const buyRow = simulatedRows[0];
-      const simulationData: Omit<SimulationLogEntry, 'id' | 'usuario_id' | 'fecha'> = {
+      const simulationData: Omit<SimulationLogEntry, 'id' | 'userId' | 'fecha'> = {
         par_operacion: selectedPair,
         monto_compra_usdt: buyRow.rawTotalInvestmentInUSDT || 0, 
         precio_compra: buyRow.rawPriceOfBaseInQuote || 0, 
@@ -322,8 +322,8 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
           ganancia_neta: sellRow.netProfitValue || 0,
         })),
       };
-      // Using "general_user" as userId since auth is removed
-      await saveSimulationToFirebase("general_user", simulationData); 
+      
+      await saveSimulationToFirebase(user.uid, simulationData); 
       toast({
         title: t('dashboard.orderOpportunitySimulator.toast.savedSuccessTitle', 'Simulation Saved'),
         description: t('dashboard.orderOpportunitySimulator.toast.savedSuccessDescription', 'Your simulation has been successfully saved.'),
@@ -341,16 +341,15 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
   };
 
   const handleSaveOrder = async (sellRowIndex: number) => {
-     if (simulatedRows.length === 0 || !simulatedRows[0].isBuyRow || !selectedPair || !currentBaseCurrency || !currentQuoteCurrency || sellRowIndex >= simulatedRows.length || simulatedRows[sellRowIndex].isBuyRow) {
+     if (!user) {
+      toast({ title: t('dashboard.orderOpportunitySimulator.toast.notLoggedInError', 'You must be logged in to save simulations/orders.'), variant: "destructive" });
+      return;
+    }
+    if (simulatedRows.length === 0 || !simulatedRows[0].isBuyRow || !selectedPair || !currentBaseCurrency || !currentQuoteCurrency || sellRowIndex >= simulatedRows.length || simulatedRows[sellRowIndex].isBuyRow) {
       toast({ title: t('dashboard.orderOpportunitySimulator.toast.noDataToSave', 'There is no valid order data to save.'), variant: "warning" });
       return;
     }
-    // Auth removed
-    // if (!user) {
-    //   toast({ title: t('dashboard.orderOpportunitySimulator.toast.notLoggedInError', 'You must be logged in to save simulations/orders.'), variant: "destructive" });
-    //   return;
-    // }
-    
+        
     const buyRowData = simulatedRows[0];
     const sellRowData = simulatedRows[sellRowIndex];
     if (!buyRowData.rawAmountSpentInQuote || !buyRowData.rawPriceOfBaseInQuote || !buyRowData.rawAmountOfBaseBought || 
@@ -378,8 +377,8 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
         inputAmount: buyRowData.rawAmountSpentInQuote, 
         inputCurrency: String(quoteC), 
       };
-      // Using "general_user" as userId since auth is removed
-      await saveOrderToFirebase("general_user", orderData);
+      
+      await saveOrderToFirebase(user.uid, orderData);
       toast({
         title: t('dashboard.orderOpportunitySimulator.toast.orderSavedSuccessTitle', 'Order Saved'),
         description: t('dashboard.orderOpportunitySimulator.toast.orderSavedSuccessDescription', 'The specific order has been successfully saved.'),
@@ -536,8 +535,8 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
                             variant="outline"
                             size="sm"
                             onClick={() => handleSaveOrder(index)}
-                            disabled={isSavingSimulation || savingOrderId === row.operation } 
-                            title={t('dashboard.orderOpportunitySimulator.saveOrderButton', 'Save Order')}
+                            disabled={!user || isSavingSimulation || savingOrderId === row.operation } 
+                            title={user ? t('dashboard.orderOpportunitySimulator.saveOrderButton', 'Save Order') : t('dashboard.orderOpportunitySimulator.saveOrderButtonDisabled', 'Save Order (Login Required)')}
                           >
                             {savingOrderId === row.operation ? <Loader2 className="h-4 w-4 animate-spin" /> : <FilePlus2 className="h-4 w-4" />}
                           </Button>
@@ -550,9 +549,9 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
             </ScrollArea>
              <Button
                 onClick={handleSaveFullSimulation}
-                disabled={isSavingSimulation } 
+                disabled={!user || isSavingSimulation } 
                 className="mt-4 w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground"
-                title={t('dashboard.orderOpportunitySimulator.saveButton', 'Save Full Simulation')}
+                title={user ? t('dashboard.orderOpportunitySimulator.saveButton', 'Save Full Simulation') : t('dashboard.orderOpportunitySimulator.saveButtonDisabled', 'Save Simulation (Login Required)')}
               >
               {isSavingSimulation ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
               {t('dashboard.orderOpportunitySimulator.saveButton', 'Save Full Simulation')}
@@ -573,3 +572,4 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
     </Card>
   );
 }
+

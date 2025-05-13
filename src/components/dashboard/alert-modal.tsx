@@ -34,10 +34,10 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/use-language';
+import { useAuth } from '@/hooks/use-auth'; // Import useAuth
 import type { CryptoSymbol, PriceAlert, AlertDirection } from '@/lib/types';
-// Firebase functions savePriceAlert, updatePriceAlert, deletePriceAlert are removed as they require userId
-// import { savePriceAlert, updatePriceAlert, deletePriceAlert } from '@/lib/firebase/alerts';
-// import type { PriceAlertData } from '@/lib/firebase/alerts';
+import { savePriceAlert, updatePriceAlert, deletePriceAlert } from '@/lib/firebase/alerts';
+import type { PriceAlertData } from '@/lib/firebase/alerts';
 import { Loader2, Trash2 } from 'lucide-react';
 
 interface AlertModalProps {
@@ -45,7 +45,7 @@ interface AlertModalProps {
   onClose: () => void;
   cryptoSymbol: CryptoSymbol | null;
   currentPrice: number | null;
-  existingAlert?: PriceAlert | null; // This might be less relevant without user-specific saved alerts
+  existingAlert?: PriceAlert | null;
   onAlertSaved?: () => void; 
 }
 
@@ -65,12 +65,22 @@ export function AlertModal({
   onClose,
   cryptoSymbol,
   currentPrice,
-  existingAlert, // existingAlert might not be fetched if auth is removed
+  existingAlert,
   onAlertSaved,
 }: AlertModalProps) {
   const { toast } = useToast();
   const { translations, language } = useLanguage();
-  const t = (key: string, fallback?: string) => translations[key] || fallback || key;
+  const { user } = useAuth(); // Get user from useAuth
+  const t = (key: string, fallback?: string, vars?: Record<string, any>) => {
+    let msg = translations[key] || fallback || key;
+    if (vars) {
+        Object.keys(vars).forEach(varKey => {
+            msg = msg.replace(`{${varKey}}`, String(vars[varKey]));
+        });
+    }
+    return msg;
+  };
+
 
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -85,52 +95,97 @@ export function AlertModal({
   });
 
   useEffect(() => {
-    if (existingAlert) {
-      form.reset({
-        targetPrice: existingAlert.targetPrice.toString(),
-        direction: existingAlert.direction,
-      });
-    } else if (cryptoSymbol && currentPrice) {
-       form.reset({
-        targetPrice: currentPrice.toFixed(2), 
-        direction: 'above',
-      });
-    } else {
+    if (isOpen) { // Reset form only when modal opens
+        if (existingAlert) {
         form.reset({
-            targetPrice: '',
+            targetPrice: existingAlert.targetPrice.toString(),
+            direction: existingAlert.direction,
+        });
+        } else if (cryptoSymbol && currentPrice) {
+        form.reset({
+            targetPrice: currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 5, useGrouping: false}),
             direction: 'above',
-        })
+        });
+        } else {
+            form.reset({
+                targetPrice: '',
+                direction: 'above',
+            });
+        }
     }
   }, [existingAlert, cryptoSymbol, currentPrice, form, isOpen]);
 
   const handleSubmit = async (values: AlertFormValues) => {
-    if (!cryptoSymbol) return;
+    if (!cryptoSymbol || !user) {
+      toast({
+        title: t('alertModal.toast.authErrorTitle', 'Authentication Error'),
+        description: t('alertModal.toast.authErrorDescription', 'You must be logged in to manage alerts.'),
+        variant: 'destructive',
+      });
+      return;
+    }
     setIsProcessing(true);
 
-    // Saving to Firebase is disabled as it requires userId
-    console.log("Simulated alert save (Firebase saving disabled):", { cryptoSymbol, ...values });
-    toast({ 
-        title: t('alertModal.toast.savedTitle', 'Alert Defined (Locally)'), 
-        description: t('alertModal.toast.saveDisabledDescription', 'Alerts are not saved to server without user accounts. This is a local definition.') 
-    });
-    
-    // if (onAlertSaved) onAlertSaved(); // Call if alerts were managed locally
-    onClose();
-    setIsProcessing(false);
+    const alertData: PriceAlertData = {
+      symbol: cryptoSymbol,
+      targetPrice: parseFloat(values.targetPrice),
+      direction: values.direction as AlertDirection,
+    };
+
+    try {
+      if (existingAlert) {
+        await updatePriceAlert(user.uid, existingAlert.id, alertData);
+        toast({ 
+            title: t('alertModal.toast.updatedTitle', 'Alert Updated'), 
+            description: t('alertModal.toast.updatedDescription', 'Your price alert for {symbol} has been updated.', {symbol: cryptoSymbol}) 
+        });
+      } else {
+        await savePriceAlert(user.uid, alertData);
+        toast({ 
+            title: t('alertModal.toast.savedTitle', 'Alert Saved'), 
+            description: t('alertModal.toast.savedDescription', 'Your price alert for {symbol} has been set.', {symbol: cryptoSymbol}) 
+        });
+      }
+      if (onAlertSaved) onAlertSaved();
+      onClose();
+    } catch (error: any) {
+      toast({
+        title: existingAlert ? t('alertModal.toast.errorUpdateTitle', 'Error Updating Alert') : t('alertModal.toast.errorTitle', 'Error Saving Alert'),
+        description: error.message || t('alertModal.toast.errorDescriptionGeneric', 'Could not save the alert.'),
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  // Deleting from Firebase is disabled
   const handleDelete = async () => {
-    if (!existingAlert) return;
+    if (!existingAlert || !user) {
+       toast({
+        title: t('alertModal.toast.authErrorTitle', 'Authentication Error'),
+        description: t('alertModal.toast.authErrorDescription', 'You must be logged in to manage alerts.'),
+        variant: 'destructive',
+      });
+      return;
+    }
     setIsProcessing(true);
-    console.log("Simulated alert delete (Firebase deleting disabled):", existingAlert.id);
-    toast({ 
-        title: t('alertModal.toast.deletedTitle', 'Alert Removed (Locally)'), 
-        description: t('alertModal.toast.deleteDisabledDescription', 'Alerts are not removed from server without user accounts.') 
-    });
-    // if (onAlertSaved) onAlertSaved();
-    onClose();
-    setIsProcessing(false);
+    try {
+      await deletePriceAlert(user.uid, existingAlert.id);
+      toast({ 
+          title: t('alertModal.toast.deletedTitle', 'Alert Deleted'), 
+          description: t('alertModal.toast.deletedDescription', 'The price alert for {symbol} has been deleted.', {symbol: cryptoSymbol}) 
+      });
+      if (onAlertSaved) onAlertSaved();
+      onClose();
+    } catch (error: any) {
+      toast({
+        title: t('alertModal.toast.errorDeleteTitle', 'Error Deleting Alert'),
+        description: error.message || t('alertModal.toast.errorDescriptionGenericDelete', 'Could not delete the alert.'),
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
   
   if (!cryptoSymbol) return null;
@@ -188,7 +243,7 @@ export function AlertModal({
             />
             <DialogFooter className="sm:justify-between mt-6">
               {existingAlert && (
-                <Button type="button" variant="destructive" onClick={handleDelete} disabled={isProcessing}>
+                <Button type="button" variant="destructive" onClick={handleDelete} disabled={isProcessing || !user}>
                   {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
                   {t('alertModal.button.delete', 'Delete Alert')}
                 </Button>
@@ -199,10 +254,9 @@ export function AlertModal({
                     {t('alertModal.button.cancel', 'Cancel')}
                     </Button>
                 </DialogClose>
-                <Button type="submit" disabled={isProcessing} className="bg-primary hover:bg-primary/90">
+                <Button type="submit" disabled={isProcessing || !user} className="bg-primary hover:bg-primary/90">
                 {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {/* Button text updated to reflect local-only action */}
-                {existingAlert ? t('alertModal.button.updateLocal', 'Update Local Alert') : t('alertModal.button.setLocal', 'Set Local Alert')}
+                {existingAlert ? t('alertModal.button.update', 'Update Alert') : t('alertModal.button.save', 'Set Alert')}
                 </Button>
               </div>
             </DialogFooter>
@@ -212,3 +266,4 @@ export function AlertModal({
     </Dialog>
   );
 }
+

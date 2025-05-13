@@ -4,19 +4,18 @@ import { collection, addDoc, serverTimestamp, query, where, orderBy, getDocs, Ti
 import { db } from './config';
 import type { SavedOrder } from '@/lib/types';
 
-// Saving orders is user-specific, this function will no longer be called by components.
-// It's kept here for completeness but would be removed or adapted in a full non-auth refactor.
 export async function saveOrderToFirebase(userId: string, orderData: Omit<SavedOrder, 'id' | 'userId' | 'timestamp'>): Promise<string> {
   if (!userId) {
-    // This case should not be reached if components stop calling it without a user.
     console.warn('saveOrderToFirebase called without userId. Order not saved.');
     throw new Error('User ID is required to save the order.');
   }
 
   try {
-    const docRef = await addDoc(collection(db, `HistorialDeOrdenes/${userId}/ordenes`), { 
+    // Store orders in a subcollection under a general 'orders' collection, keyed by userId
+    const userOrdersCollectionRef = collection(db, 'userOrders', userId, 'orders');
+    const docRef = await addDoc(userOrdersCollectionRef, { 
       ...orderData,
-      userId: userId, 
+      // userId is implicitly part of the path, but can be stored redundantly if desired for easier querying across users (admin only)
       timestamp: serverTimestamp(),
     });
     return docRef.id;
@@ -29,17 +28,45 @@ export async function saveOrderToFirebase(userId: string, orderData: Omit<SavedO
   }
 }
 
-// Modified to not require userId and return empty array as specific user data is removed.
-// In a real scenario without auth, this might fetch public/sample data or be removed.
-export async function getOrdersForUser(): Promise<SavedOrder[]> {
-  console.log("getOrdersForUser called without specific user context. Returning empty array.");
-  // This function previously fetched orders for a specific user.
-  // Since authentication is removed, there's no specific user to fetch for.
-  // Returning an empty array for now.
-  // To show shared data, this would need to point to a general collection path.
-  // Example of fetching from a shared path (if one existed):
-  // const ordersRef = collection(db, `PublicHistorialDeOrdenes/all/ordenes`);
-  // const q = query(ordersRef, orderBy('timestamp', 'desc'));
-  // const querySnapshot = await getDocs(q); ... etc.
-  return Promise.resolve([]); 
+export async function getOrdersForUser(userId: string | null): Promise<SavedOrder[]> {
+  if (!userId) {
+    console.log("getOrdersForUser called without user. Returning empty array.");
+    return Promise.resolve([]); 
+  }
+  try {
+    const userOrdersCollectionRef = collection(db, 'userOrders', userId, 'orders');
+    const q = query(userOrdersCollectionRef, orderBy('timestamp', 'desc'));
+    const querySnapshot = await getDocs(q);
+    
+    const orders: SavedOrder[] = [];
+    querySnapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      orders.push({
+        id: docSnap.id,
+        userId: userId, // Add userId from parameter
+        timestamp: data.timestamp instanceof Timestamp ? data.timestamp.toDate() : new Date(data.timestamp?.seconds * 1000 || Date.now()),
+        targetCrypto: data.targetCrypto,
+        quoteCurrency: data.quoteCurrency,
+        amountOfTargetCryptoBought: data.amountOfTargetCryptoBought,
+        buyPricePerUnit: data.buyPricePerUnit,
+        totalBuyValueInQuote: data.totalBuyValueInQuote,
+        buyCommissionInQuote: data.buyCommissionInQuote,
+        sellPricePerUnit: data.sellPricePerUnit,
+        totalSellValueInQuote: data.totalSellValueInQuote,
+        sellCommissionInQuote: data.sellCommissionInQuote,
+        netProfitInQuote: data.netProfitInQuote,
+        originalPair: data.originalPair,
+        inputAmount: data.inputAmount,
+        inputCurrency: data.inputCurrency,
+      } as SavedOrder); 
+    });
+    return orders;
+  } catch (error) {
+    console.error(`Error fetching orders for user ${userId} from Firebase:`, error);
+    if (error instanceof Error) {
+      throw new Error(`Failed to fetch orders: ${error.message}`);
+    }
+    throw new Error('An unknown error occurred while fetching orders.');
+  }
 }
+

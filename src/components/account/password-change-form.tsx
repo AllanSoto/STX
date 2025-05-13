@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/use-language';
+import { useAuth } from '@/hooks/use-auth'; // Import useAuth
 
 const getPasswordChangeSchema = (t: (key: string, fallback?: string) => string) => z.object({
   currentPassword: z.string().min(1, { message: t('zod.password.currentRequired', 'Current password is required.') }),
@@ -39,6 +40,7 @@ export function PasswordChangeForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { translations, language } = useLanguage();
+  const { updateUserPassword, user } = useAuth(); // Get updateUserPassword and user from useAuth
   const t = (key: string, fallback?: string) => translations[key] || fallback || key;
 
   const passwordChangeSchema = useMemo(() => getPasswordChangeSchema(t), [language, t]);
@@ -53,27 +55,55 @@ export function PasswordChangeForm() {
   });
 
   async function onSubmit(values: PasswordChangeFormValues) {
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log('Password change submitted (mock):', values);
-    
-    if (values.currentPassword === "oldpassword") { 
-        toast({
-            title: t('account.passwordChange.toast.changedTitle', "Password Changed"),
-            description: t('account.passwordChange.toast.changedDescription', "Your password has been successfully updated."),
-        });
-        form.reset();
-    } else {
-        toast({
-            title: t('account.passwordChange.toast.failedTitle', "Password Change Failed"),
-            description: t('account.passwordChange.toast.failedDescriptionIncorrect', "Incorrect current password."),
-            variant: "destructive",
-        });
-        form.setError("currentPassword", { type: "manual", message: t('account.passwordChange.toast.failedDescriptionIncorrect', "Incorrect current password.") });
+    if (!user) {
+      toast({
+        title: t('account.passwordChange.toast.notLoggedInTitle', "Not Logged In"),
+        description: t('account.passwordChange.toast.notLoggedInDescription', "You must be logged in to change your password."),
+        variant: "destructive",
+      });
+      return;
     }
-    
-    setIsLoading(false);
+
+    setIsLoading(true);
+    try {
+      await updateUserPassword(values.currentPassword, values.newPassword);
+      toast({
+        title: t('account.passwordChange.toast.changedTitle', "Password Changed"),
+        description: t('account.passwordChange.toast.changedDescription', "Your password has been successfully updated."),
+      });
+      form.reset();
+    } catch (error: any) {
+      let errorMessage = error.message || t('account.passwordChange.toast.failedDescriptionGeneric', "Could not change password.");
+      if (error.code === 'auth/wrong-password') {
+        errorMessage = t('account.passwordChange.toast.failedDescriptionIncorrect', "Incorrect current password.");
+        form.setError("currentPassword", { type: "manual", message: errorMessage });
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = t('account.passwordChange.toast.failedDescriptionWeak', 'New password does not meet security requirements.');
+         form.setError("newPassword", { type: "manual", message: errorMessage });
+      }
+      toast({
+        title: t('account.passwordChange.toast.failedTitle', "Password Change Failed"),
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }
+  
+  if (!user) {
+    return (
+       <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle>{t('account.passwordChange.title', 'Change Password')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">{t('account.passwordChange.loginRequiredMessage', 'Please log in to change your password.')}</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
 
   return (
     <Card className="shadow-lg">

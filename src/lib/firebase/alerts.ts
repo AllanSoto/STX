@@ -16,12 +16,7 @@ import {
 import { db } from './config';
 import type { PriceAlert, AlertDirection, CryptoSymbol } from '@/lib/types';
 
-const ALERTS_COLLECTION = 'alerts';
-
-// Note: All functions in this file are user-specific and will effectively become unused
-// as components will stop calling them due to authentication removal.
-// They are kept for structural completeness but would be removed or heavily refactored
-// in a scenario where alerts are managed without user accounts (e.g., locally).
+const ALERTS_COLLECTION_BASE = 'userAlerts'; // Base collection for user-specific alerts
 
 export interface PriceAlertData {
   symbol: CryptoSymbol;
@@ -34,10 +29,10 @@ export async function savePriceAlert(userId: string, alertData: PriceAlertData):
     console.warn('savePriceAlert called without userId. Alert not saved.');
     throw new Error('User ID is required to save the alert.');
   }
-  // ... (implementation remains but won't be called)
   try {
-    const docRef = await addDoc(collection(db, ALERTS_COLLECTION), {
-      userId,
+    const userAlertsCollectionRef = collection(db, ALERTS_COLLECTION_BASE, userId, 'alerts');
+    const docRef = await addDoc(userAlertsCollectionRef, {
+      // userId is part of the path, not stored in doc unless needed for cross-user admin queries
       ...alertData,
       active: true,
       createdAt: serverTimestamp(),
@@ -58,10 +53,9 @@ export async function getActivePriceAlertsForUser(userId: string): Promise<Price
     console.warn('getActivePriceAlertsForUser called without userId. Returning empty array.');
     return Promise.resolve([]);
   }
-  // ... (implementation remains but won't be called meaningfully)
   try {
-    const alertsRef = collection(db, ALERTS_COLLECTION);
-    const q = query(alertsRef, where('userId', '==', userId), where('active', '==', true), orderBy('createdAt', 'desc'));
+    const userAlertsCollectionRef = collection(db, ALERTS_COLLECTION_BASE, userId, 'alerts');
+    const q = query(userAlertsCollectionRef, where('active', '==', true), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
     
     const alerts: PriceAlert[] = [];
@@ -69,7 +63,7 @@ export async function getActivePriceAlertsForUser(userId: string): Promise<Price
       const data = docSnap.data();
       alerts.push({
         id: docSnap.id,
-        userId: data.userId,
+        userId: userId, // Add userId from parameter
         symbol: data.symbol,
         targetPrice: data.targetPrice,
         direction: data.direction,
@@ -94,10 +88,9 @@ export async function getAllPriceAlertsForUser(userId: string): Promise<PriceAle
     console.warn('getAllPriceAlertsForUser called without userId. Returning empty array.');
     return Promise.resolve([]);
   }
-  // ... (implementation remains)
   try {
-    const alertsRef = collection(db, ALERTS_COLLECTION);
-    const q = query(alertsRef, where('userId', '==', userId), orderBy('createdAt', 'desc'));
+    const userAlertsCollectionRef = collection(db, ALERTS_COLLECTION_BASE, userId, 'alerts');
+    const q = query(userAlertsCollectionRef, orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
     
     const alerts: PriceAlert[] = [];
@@ -105,7 +98,7 @@ export async function getAllPriceAlertsForUser(userId: string): Promise<PriceAle
       const data = docSnap.data();
       alerts.push({
         id: docSnap.id,
-        userId: data.userId,
+        userId: userId, // Add userId from parameter
         symbol: data.symbol,
         targetPrice: data.targetPrice,
         direction: data.direction,
@@ -126,11 +119,12 @@ export async function getAllPriceAlertsForUser(userId: string): Promise<PriceAle
 }
 
 
-export async function updatePriceAlert(alertId: string, updates: Partial<Omit<PriceAlert, 'id' | 'userId' | 'createdAt'>>): Promise<void> {
-  // This function would require knowing an alertId, which implies it was fetched for a user.
-  // As user-specific fetching is removed, this is unlikely to be called meaningfully.
-  console.warn('updatePriceAlert called. This function may not work as expected without user context.');
-  const alertRef = doc(db, ALERTS_COLLECTION, alertId);
+export async function updatePriceAlert(userId: string, alertId: string, updates: Partial<Omit<PriceAlert, 'id' | 'userId' | 'createdAt'>>): Promise<void> {
+   if (!userId) {
+    console.warn('updatePriceAlert called without userId. Alert not updated.');
+    throw new Error('User ID is required to update the alert.');
+  }
+  const alertRef = doc(db, ALERTS_COLLECTION_BASE, userId, 'alerts', alertId);
   try {
     await updateDoc(alertRef, {
       ...updates,
@@ -145,9 +139,12 @@ export async function updatePriceAlert(alertId: string, updates: Partial<Omit<Pr
   }
 }
 
-export async function deletePriceAlert(alertId: string): Promise<void> {
-  console.warn('deletePriceAlert called. This function may not work as expected without user context.');
-  const alertRef = doc(db, ALERTS_COLLECTION, alertId);
+export async function deletePriceAlert(userId: string, alertId: string): Promise<void> {
+  if (!userId) {
+    console.warn('deletePriceAlert called without userId. Alert not deleted.');
+    throw new Error('User ID is required to delete the alert.');
+  }
+  const alertRef = doc(db, ALERTS_COLLECTION_BASE, userId, 'alerts', alertId);
   try {
     await deleteDoc(alertRef);
   } catch (error) {
@@ -159,7 +156,11 @@ export async function deletePriceAlert(alertId: string): Promise<void> {
   }
 }
 
-export async function deactivatePriceAlert(alertId: string): Promise<void> {
-  console.warn('deactivatePriceAlert called. This function may not work as expected without user context.');
-  await updatePriceAlert(alertId, { active: false, triggeredAt: serverTimestamp() });
+export async function deactivatePriceAlert(userId: string, alertId: string): Promise<void> {
+  if (!userId) {
+    console.warn('deactivatePriceAlert called without userId. Alert not deactivated.');
+    throw new Error('User ID is required to deactivate the alert.');
+  }
+  await updatePriceAlert(userId, alertId, { active: false, triggeredAt: serverTimestamp() });
 }
+

@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLanguage } from '@/hooks/use-language';
+import { useAuth } from '@/hooks/use-auth'; // Import useAuth
 import { getOrdersForUser } from '@/lib/firebase/orders';
 import type { SavedOrder } from '@/lib/types';
 import { BalanceFilters } from './balance-filters';
@@ -16,14 +17,18 @@ import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format, startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, subMonths, isWithinInterval } from 'date-fns';
+import Link from 'next/link';
+import { Button } from '../ui/button';
+import { MainLayout } from '../layout/main-layout';
 
-export interface ChartDataPoint { // Renamed from OrderProfitChartDataPoint for clarity
+export interface ChartDataPoint { 
   name: string; 
   profit: number;
 }
 
 export function BalanceClient() {
   const { translations, language } = useLanguage();
+  const { user, loading: authLoading } = useAuth(); // Get user and authLoading
   const { toast } = useToast();
   const t = useCallback((key: string, fallback?: string, vars?: Record<string, string|number>) => {
     let msg = translations[key] || fallback || key;
@@ -43,23 +48,30 @@ export function BalanceClient() {
   const [orderProfitChartView, setOrderProfitChartView] = useState<'daily' | 'monthly'>('daily');
 
   useEffect(() => {
-    // Fetch orders without user context. Assumes getOrdersForUser is adapted or uses a general source.
-    setIsOrdersLoading(true);
-    setOrdersError(null);
-    getOrdersForUser() // Removed userId argument
-      .then(setAllOrders)
-      .catch(err => {
-        console.error("Error fetching orders:", err);
-        const errorMessage = err.message || t('balance.loadingError', 'Failed to load balance data.');
-        setOrdersError(errorMessage);
-        toast({
-          title: t('balance.toast.loadErrorTitle', 'Error'),
-          description: errorMessage,
-          variant: 'destructive',
-        });
-      })
-      .finally(() => setIsOrdersLoading(false));
-  }, [t, toast]);
+    if (authLoading) return; // Wait for auth state
+
+    if (user) {
+      setIsOrdersLoading(true);
+      setOrdersError(null);
+      getOrdersForUser(user.uid) 
+        .then(setAllOrders)
+        .catch(err => {
+          console.error("Error fetching orders:", err);
+          const errorMessage = err.message || t('balance.loadingError', 'Failed to load balance data.');
+          setOrdersError(errorMessage);
+          toast({
+            title: t('balance.toast.loadErrorTitle', 'Error'),
+            description: errorMessage,
+            variant: 'destructive',
+          });
+        })
+        .finally(() => setIsOrdersLoading(false));
+    } else {
+      setAllOrders([]);
+      setIsOrdersLoading(false);
+      setOrdersError(null);
+    }
+  }, [user, authLoading, t, toast]);
 
 
   const filteredOrders = useMemo(() => {
@@ -154,11 +166,23 @@ export function BalanceClient() {
     }
   }, [t]);
 
-  if (isOrdersLoading) {
+  if (authLoading || isOrdersLoading) {
      return (
       <div className="container mx-auto py-8 px-4 flex flex-col items-center justify-center min-h-[calc(100vh-10rem)]">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
         <p className="mt-4 text-muted-foreground">{t('balance.page.loading', 'Loading balance information...')}</p>
+      </div>
+    );
+  }
+
+  if (!user && !authLoading) {
+    return (
+      <div className="container mx-auto py-8 px-4 text-center">
+        <h1 className="text-3xl font-bold mb-8 text-foreground">{t('balance.page.title', 'Balance Overview')}</h1>
+        <p className="text-lg text-muted-foreground mb-6">{t('balance.page.loginPrompt', 'Please log in to view your balance information.')}</p>
+        <Button asChild>
+          <Link href="/login">{t('login.title', 'Login')}</Link>
+        </Button>
       </div>
     );
   }
@@ -167,12 +191,11 @@ export function BalanceClient() {
     return (
       <div className="container mx-auto py-8 px-4 text-center">
         <p className="text-destructive py-10">{ordersError}</p>
-         <p className="text-muted-foreground py-2">{t('balance.page.noAuthInfo', 'Order history and balance are now general, not tied to specific user accounts.')}</p>
       </div>
     );
   }
   
-  if (allOrders.length === 0 && !isOrdersLoading && !ordersError) {
+  if (allOrders.length === 0 && !isOrdersLoading && !ordersError && user) {
     return (
       <div className="container mx-auto py-8 px-4">
         <h1 className="text-3xl font-bold mb-8 text-foreground">{t('balance.page.title', 'Balance Overview')}</h1>
@@ -244,3 +267,4 @@ export function BalanceClient() {
     </div>
   );
 }
+

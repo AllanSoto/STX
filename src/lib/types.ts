@@ -2,9 +2,10 @@
 import type { CryptoSymbol } from './constants';
 
 export interface User {
-  id: string;
-  email: string;
-  password?: string; // For mock password storage
+  uid: string; // Firebase User ID
+  email: string | null; // Firebase User email
+  displayName?: string | null; // Optional display name
+  // Add other relevant fields from Firebase User object if needed
 }
 
 export interface SimulatedTrade {
@@ -46,7 +47,7 @@ export interface SimulatedSaleEntry {
 
 export interface SimulationLogEntry {
   id: string; 
-  usuario_id: string;
+  userId: string; // Changed from usuario_id to consistently use userId
   fecha: any; 
   par_operacion: string; 
   monto_compra_usdt: number;
@@ -92,3 +93,4 @@ export interface PriceAlert {
   updatedAt: any; 
   triggeredAt?: any; 
 }
+

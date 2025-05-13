@@ -3,20 +3,23 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import type { CryptoCardData } from './types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'; // Added CardFooter
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendArrow } from '@/components/shared/TrendArrow';
 import { CryptoIcon } from '@/components/shared/CryptoIcon';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useLanguage } from '@/hooks/use-language';
+import { Button } from '@/components/ui/button'; // Import Button
+import { BellPlus } from 'lucide-react'; // Import BellPlus icon for alert button
 
 interface CryptoDisplayCardProps {
   data: CryptoCardData;
   isLoading: boolean;
   isAiTrendLoading: boolean;
+  onSetAlertClick: () => void; // Add prop for alert click
 }
 
-export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoDisplayCardProps) {
+export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading, onSetAlertClick }: CryptoDisplayCardProps) {
   const { symbol, value, previousValue, trendAnalysis } = data;
   const [priceChangeClass, setPriceChangeClass] = useState('');
   const { translations } = useLanguage();
@@ -51,7 +54,6 @@ export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoD
         trendText = t('dashboard.cryptoCard.trend.sideways', 'Sideways trend');
         break;
       default:
-        // This case should ideally not be reached if trendAnalysis.trend is always one of the enum values
         trendText = t('dashboard.cryptoCard.trend.notAvailable', 'Trend N/A');
     }
     return trendText;
@@ -62,27 +64,30 @@ export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoD
     switch (trendAnalysis.trend) {
       case 'upward': return 'text-primary';
       case 'downward': return 'text-destructive';
-      default: return 'text-muted-foreground'; // For 'sideways' or any unexpected values
+      default: return 'text-muted-foreground';
     }
   }, [trendAnalysis]);
 
   if (isLoading) {
     return (
-      <Card className="shadow-lg min-h-[120px]">
+      <Card className="shadow-lg min-h-[150px] flex flex-col"> {/* Adjusted min-height for button */}
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <Skeleton className="h-6 w-16" />
           <Skeleton className="h-6 w-6 rounded-full" />
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-grow">
           <Skeleton className="h-8 w-32 mb-1" />
           <Skeleton className="h-4 w-24" />
         </CardContent>
+        <CardFooter className="p-2 pt-0 mt-auto"> {/* Added CardFooter for button */}
+          <Skeleton className="h-8 w-full" />
+        </CardFooter>
       </Card>
     );
   }
 
   return (
-    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between min-h-[120px]">
+    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between min-h-[150px]">
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
         <div className="flex items-center">
            <CryptoIcon symbol={symbol} className="mr-2" />
@@ -128,7 +133,7 @@ export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoD
             {trendAnalysis ? (
               <p className={`text-xs mt-1 ${trendTextColorClass}`}>
                 {getTranslatedBaseTrendText()}
-                {trendAnalysis.confidence > 0 && ( // Only show confidence if it's non-zero
+                {trendAnalysis.confidence > 0 && ( 
                   <span className="ml-1 opacity-75">({(trendAnalysis.confidence * 100).toFixed(0)}%)</span>
                 )}
               </p>
@@ -140,6 +145,19 @@ export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoD
           </>
         )}
       </CardContent>
+      <CardFooter className="p-2 pt-0 mt-auto">
+        <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full" 
+            onClick={onSetAlertClick}
+            title={t('dashboard.cryptoCard.alertButton.title', 'Set Price Alert')}
+        >
+          <BellPlus className="mr-2 h-4 w-4" />
+          {t('dashboard.cryptoCard.alertButton.label', 'Set Alert')}
+        </Button>
+      </CardFooter>
     </Card>
   );
 }
+
