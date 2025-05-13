@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, AlertTriangle } from 'lucide-react'; // Added AlertTriangle
+import { Loader2, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -39,7 +39,7 @@ const getSignupFormSchema = (t: (key: string, fallback?: string) => string) => z
 type SignupFormValues = z.infer<ReturnType<typeof getSignupFormSchema>>;
 
 export function SignupForm() {
-  const { signup, isFirebaseConfigValid } = useAuth(); 
+  const { signup, isFirebaseConfigValid } = useAuth();
   const { translations, language } = useLanguage();
   const { toast } = useToast();
   const router = useRouter();
@@ -76,10 +76,14 @@ export function SignupForm() {
       router.push('/login');
     } catch (error: any) {
       let description = error.message || t('signup.toast.errorDescription', 'Could not create account. Please try again.');
-      if (error.code === 'auth/email-already-in-use') {
+      // The error.message from the provider will be the translated 'signup.error.emailTaken'
+      // if the error code was 'auth/email-already-in-use'.
+      // So, checking error.message first is sufficient.
+      if (error.message === t('signup.error.emailTaken', 'This email is already registered.') || error.code === 'auth/email-already-in-use') {
         description = t('signup.error.emailTaken', 'This email is already registered.');
+        form.setError("email", { type: "manual", message: description });
       } else if (error.code === 'auth/api-key-not-valid') {
-         description = t('firebase.config.apiKeyInvalid'); // Use the translation key directly
+         description = t('firebase.config.apiKeyInvalid');
       }
       toast({
         title: t('signup.toast.errorTitle', 'Signup Failed'),
@@ -146,7 +150,7 @@ export function SignupForm() {
           />
           <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isLoading || !isFirebaseConfigValid}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {t('signup.submitButton', 'Sign Up')}
+             {isFirebaseConfigValid ? t('signup.submitButton', 'Sign Up') : t('signup.submitButton', 'Sign Up (disabled)')}
           </Button>
         </form>
       </Form>
