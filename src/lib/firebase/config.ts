@@ -18,6 +18,8 @@ let app: FirebaseApp;
 let auth: Auth;
 let db: Firestore;
 
+export let isFirebaseProperlyConfigured = true; // Assume true initially
+
 const requiredEnvVars: (keyof typeof firebaseConfig)[] = [
   'apiKey',
   'authDomain',
@@ -26,27 +28,27 @@ const requiredEnvVars: (keyof typeof firebaseConfig)[] = [
   // but good to have. measurementId is optional.
 ];
 
-let configIsValid = true;
 let missingVars: string[] = [];
 
 for (const key of requiredEnvVars) {
   if (!firebaseConfig[key]) {
-    configIsValid = false;
+    isFirebaseProperlyConfigured = false; // Set to false if any required var is missing
     missingVars.push(`NEXT_PUBLIC_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`);
   }
 }
 
-if (!configIsValid) {
+if (!isFirebaseProperlyConfigured) {
   console.error(
+    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" +
     "CRITICAL FIREBASE CONFIGURATION ERROR:\n" +
-    "The following Firebase environment variables are missing or invalid in your '.env.local' file:\n" +
+    "The following Firebase environment variables are MISSING or INVALID in your '.env.local' file:\n" +
     missingVars.join('\n') + '\n' +
-    "Firebase features, especially Authentication and Firestore, will NOT work correctly.\n" +
-    "This is the most common cause of 'auth/api-key-not-valid' errors.\n" +
-    "Please ensure these environment variables are correctly set.\n" +
-    "Refer to the README.md for instructions on setting up Firebase credentials."
+    "Firebase features, especially Authentication and Firestore, WILL NOT WORK correctly.\n" +
+    "This is the MOST COMMON CAUSE of 'auth/api-key-not-valid' errors.\n" +
+    "Please ensure these environment variables are correctly set by copying them from your Firebase project settings.\n" +
+    "Refer to the README.md for detailed instructions on setting up Firebase credentials.\n" +
+    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
   );
-  // Attempt to initialize anyway, Firebase SDK will likely throw more specific errors on operations.
 }
 
 
@@ -54,14 +56,18 @@ if (!getApps().length) {
   try {
     app = initializeApp(firebaseConfig);
   } catch (e: any) {
-    console.error("CRITICAL FIREBASE INITIALIZATION ERROR:", e.message);
     console.error(
+      "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" +
+      "CRITICAL FIREBASE INITIALIZATION ERROR:", e.message + "\n" +
       "This usually means your Firebase configuration in '.env.local' is incorrect, incomplete, or the Firebase services (like Authentication) are not enabled in your Firebase project console.\n" +
-      "Please verify ALL your NEXT_PUBLIC_FIREBASE_... variables in the .env.local file and ensure that Authentication (e.g., Email/Password sign-in) is enabled in the Firebase console."
+      "Please verify ALL your NEXT_PUBLIC_FIREBASE_... variables in the .env.local file and ensure that Authentication (e.g., Email/Password sign-in) is ENABLED in the Firebase console.\n" +
+      "Refer to the README.md for setup instructions.\n" +
+      "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     );
-    // Fallback to a non-functional app state if initialization fails catastrophically
-    // to prevent further errors. This is a basic example; a real app might have a more robust error display.
-    throw new Error("Firebase initialization failed. App cannot start. Check .env.local and Firebase project settings.");
+    isFirebaseProperlyConfigured = false; 
+    // We throw here because if Firebase itself can't initialize, the app is fundamentally broken.
+    // The server will likely stop, or client-side will show Next.js error overlay.
+    throw new Error("Firebase initialization failed due to missing or invalid configuration. App cannot start. Check .env.local and your Firebase project settings. See server console for details.");
   }
 } else {
   app = getApp();

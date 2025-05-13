@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react'; // Added AlertTriangle
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -39,7 +39,7 @@ const getSignupFormSchema = (t: (key: string, fallback?: string) => string) => z
 type SignupFormValues = z.infer<ReturnType<typeof getSignupFormSchema>>;
 
 export function SignupForm() {
-  const { signup } = useAuth();
+  const { signup, isFirebaseConfigValid } = useAuth(); // Get isFirebaseConfigValid
   const { translations, language } = useLanguage();
   const { toast } = useToast();
   const router = useRouter();
@@ -58,6 +58,14 @@ export function SignupForm() {
   });
 
   async function onSubmit(values: SignupFormValues) {
+    if (!isFirebaseConfigValid) {
+      toast({
+        title: t('firebase.config.errorTitle', 'Firebase Configuration Error'),
+        description: t('firebase.config.errorMessage', 'Cannot sign up. Firebase is not configured.'),
+        variant: 'destructive',
+      });
+      return;
+    }
     setIsLoading(true);
     try {
       await signup(values.email, values.password);
@@ -67,9 +75,15 @@ export function SignupForm() {
       });
       router.push('/login');
     } catch (error: any) {
+      let description = error.message || t('signup.toast.errorDescription', 'Could not create account. Please try again.');
+      if (error.code === 'auth/email-already-in-use') {
+        description = t('signup.error.emailTaken', 'This email is already registered.');
+      } else if (error.code === 'auth/api-key-not-valid') {
+         description = t('firebase.config.apiKeyInvalid', 'The Firebase API Key is invalid. Please check your .env.local file.');
+      }
       toast({
         title: t('signup.toast.errorTitle', 'Signup Failed'),
-        description: error.message || t('signup.toast.errorDescription', 'Could not create account. Please try again.'),
+        description: description,
         variant: 'destructive',
       });
     } finally {
@@ -79,6 +93,15 @@ export function SignupForm() {
 
   return (
     <div className="w-full max-w-md p-8 space-y-8 bg-card rounded-xl shadow-2xl">
+      {!isFirebaseConfigValid && (
+        <div className="p-4 mb-6 text-sm text-destructive-foreground bg-destructive rounded-md flex items-start">
+          <AlertTriangle className="h-5 w-5 mr-3 flex-shrink-0" />
+          <div>
+            <p className="font-bold">{t('firebase.config.errorTitle', 'Firebase Configuration Error')}</p>
+            <p>{t('firebase.config.errorMessageSignup', 'Account creation is unavailable because the application is not properly configured to connect to Firebase. Please ensure all NEXT_PUBLIC_FIREBASE_... variables are correctly set in your .env.local file. Refer to README.md for setup instructions.')}</p>
+          </div>
+        </div>
+      )}
       <h1 className="text-3xl font-bold text-center text-foreground">{t('signup.title', 'Create your SimulTradex Account')}</h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -89,7 +112,7 @@ export function SignupForm() {
               <FormItem>
                 <FormLabel>{t('signup.emailLabel', 'Email Address')}</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder={t('signup.emailPlaceholder', 'you@example.com')} {...field} />
+                  <Input type="email" placeholder={t('signup.emailPlaceholder', 'you@example.com')} {...field} disabled={!isFirebaseConfigValid} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -102,7 +125,7 @@ export function SignupForm() {
               <FormItem>
                 <FormLabel>{t('signup.passwordLabel', 'Password')}</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} />
+                  <Input type="password" placeholder="••••••••" {...field} disabled={!isFirebaseConfigValid} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -115,13 +138,13 @@ export function SignupForm() {
               <FormItem>
                 <FormLabel>{t('signup.confirmPasswordLabel', 'Confirm Password')}</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} />
+                  <Input type="password" placeholder="••••••••" {...field} disabled={!isFirebaseConfigValid} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isLoading}>
+          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isLoading || !isFirebaseConfigValid}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t('signup.submitButton', 'Sign Up')}
           </Button>
@@ -129,7 +152,7 @@ export function SignupForm() {
       </Form>
       <div className="text-sm text-center text-muted-foreground">
         {t('signup.existingAccountPrompt', 'Already have an account?')}
-        <Link href="/login" className="font-medium text-primary hover:underline">
+        <Link href="/login" className={`font-medium text-primary hover:underline ${!isFirebaseConfigValid ? 'opacity-50 pointer-events-none' : ''}`}>
           {t('signup.loginLink', 'Log in')}
         </Link>
       </div>

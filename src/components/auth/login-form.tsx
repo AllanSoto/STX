@@ -19,7 +19,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react'; // Added AlertTriangle
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -32,14 +32,13 @@ const getLoginFormSchema = (t: (key: string, fallback?: string) => string) => z.
 type LoginFormValues = z.infer<ReturnType<typeof getLoginFormSchema>>;
 
 export function LoginForm() {
-  const { login, sendPasswordResetEmail } = useAuth();
+  const { login, sendPasswordResetEmail, isFirebaseConfigValid } = useAuth(); // Get isFirebaseConfigValid
   const { translations, language } = useLanguage();
   const { toast } = useToast();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [isPasswordResetLoading, setIsPasswordResetLoading] = useState(false);
-
 
   const t = (key: string, fallback?: string) => translations[key] || fallback || key;
   const loginFormSchema = useMemo(() => getLoginFormSchema(t), [language, t]);
@@ -54,6 +53,14 @@ export function LoginForm() {
   });
 
   async function onSubmit(values: LoginFormValues) {
+    if (!isFirebaseConfigValid) {
+      toast({
+        title: t('firebase.config.errorTitle', 'Firebase Configuration Error'),
+        description: t('firebase.config.errorMessage', 'Cannot log in. Firebase is not configured.'),
+        variant: 'destructive',
+      });
+      return;
+    }
     setIsLoading(true);
     try {
       await login(values.email, values.password, values.rememberMe);
@@ -63,9 +70,17 @@ export function LoginForm() {
       });
       router.push('/dashboard');
     } catch (error: any) {
+      let description = error.message || t('login.toast.errorDescription', 'Invalid credentials or server error.');
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        description = t('login.toast.errorDescriptionInvalid', 'Invalid email or password.');
+      } else if (error.code === 'auth/too-many-requests') {
+        description = t('login.toast.errorDescriptionTooManyRequests', 'Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.');
+      } else if (error.code === 'auth/api-key-not-valid') {
+         description = t('firebase.config.apiKeyInvalid', 'The Firebase API Key is invalid. Please check your .env.local file.');
+      }
       toast({
         title: t('login.toast.errorTitle', 'Login Failed'),
-        description: error.message || t('login.toast.errorDescription', 'Invalid credentials or server error.'),
+        description: description,
         variant: 'destructive',
       });
     } finally {
@@ -74,6 +89,14 @@ export function LoginForm() {
   }
 
   const handleForgotPassword = async () => {
+    if (!isFirebaseConfigValid) {
+      toast({
+        title: t('firebase.config.errorTitle', 'Firebase Configuration Error'),
+        description: t('firebase.config.errorMessage', 'Cannot send password reset. Firebase is not configured.'),
+        variant: 'destructive',
+      });
+      return;
+    }
     if (!forgotPasswordEmail) {
       toast({
         title: t('login.forgotPassword.toast.emailRequiredTitle', 'Email Required'),
@@ -100,9 +123,17 @@ export function LoginForm() {
     }
   };
 
-
   return (
     <div className="w-full max-w-md p-8 space-y-8 bg-card rounded-xl shadow-2xl">
+      {!isFirebaseConfigValid && (
+        <div className="p-4 mb-6 text-sm text-destructive-foreground bg-destructive rounded-md flex items-start">
+          <AlertTriangle className="h-5 w-5 mr-3 flex-shrink-0" />
+          <div>
+            <p className="font-bold">{t('firebase.config.errorTitle', 'Firebase Configuration Error')}</p>
+            <p>{t('firebase.config.errorMessageLogin', 'Login is unavailable because the application is not properly configured to connect to Firebase. Please ensure all NEXT_PUBLIC_FIREBASE_... variables are correctly set in your .env.local file. Refer to README.md for setup instructions.')}</p>
+          </div>
+        </div>
+      )}
       <h1 className="text-3xl font-bold text-center text-foreground">{t('login.title', 'Login to SimulTradex')}</h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -113,7 +144,7 @@ export function LoginForm() {
               <FormItem>
                 <FormLabel>{t('login.emailLabel', 'Email Address')}</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder={t('login.emailPlaceholder', 'you@example.com')} {...field} />
+                  <Input type="email" placeholder={t('login.emailPlaceholder', 'you@example.com')} {...field} disabled={!isFirebaseConfigValid} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -126,7 +157,7 @@ export function LoginForm() {
               <FormItem>
                 <FormLabel>{t('login.passwordLabel', 'Password')}</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} />
+                  <Input type="password" placeholder="••••••••" {...field} disabled={!isFirebaseConfigValid} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -141,6 +172,7 @@ export function LoginForm() {
                   <Checkbox
                     checked={field.value}
                     onCheckedChange={field.onChange}
+                    disabled={!isFirebaseConfigValid}
                   />
                 </FormControl>
                 <FormLabel className="font-normal">
@@ -149,7 +181,7 @@ export function LoginForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isLoading}>
+          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isLoading || !isFirebaseConfigValid}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t('login.submitButton', 'Log In')}
           </Button>
@@ -160,28 +192,29 @@ export function LoginForm() {
           {t('login.forgotPasswordPrompt', 'Forgot your password?')}
         </p>
         <div className="flex items-center gap-2 mt-2">
-            <Input 
-                type="email" 
-                placeholder={t('login.emailPlaceholder', 'you@example.com')} 
-                value={forgotPasswordEmail}
-                onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                className="flex-grow"
-            />
-            <Button 
-                type="button" 
-                variant="link" 
-                onClick={handleForgotPassword} 
-                disabled={isPasswordResetLoading}
-                className="p-0 h-auto"
-            >
-                {isPasswordResetLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {t('login.forgotPassword.sendResetLinkButton', 'Send Reset Link')}
-            </Button>
+          <Input
+            type="email"
+            placeholder={t('login.emailPlaceholder', 'you@example.com')}
+            value={forgotPasswordEmail}
+            onChange={(e) => setForgotPasswordEmail(e.target.value)}
+            className="flex-grow"
+            disabled={!isFirebaseConfigValid}
+          />
+          <Button
+            type="button"
+            variant="link"
+            onClick={handleForgotPassword}
+            disabled={isPasswordResetLoading || !isFirebaseConfigValid}
+            className="p-0 h-auto"
+          >
+            {isPasswordResetLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {t('login.forgotPassword.sendResetLinkButton', 'Send Reset Link')}
+          </Button>
         </div>
       </div>
       <div className="text-sm text-center text-muted-foreground">
         {t('login.noAccountPrompt', "Don't have an account?")}{' '}
-        <Link href="/signup" className="font-medium text-primary hover:underline">
+        <Link href="/signup" className={`font-medium text-primary hover:underline ${!isFirebaseConfigValid ? 'opacity-50 pointer-events-none' : ''}`}>
           {t('login.signUpLink', 'Sign up')}
         </Link>
       </div>
