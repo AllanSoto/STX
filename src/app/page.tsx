@@ -14,9 +14,9 @@ export default function RootPage() {
   const t = (key: string, fallback?: string) => translations[key] || fallback || key;
 
   useEffect(() => {
-    console.log('[RootPage] Auth State:', { authLoading, userEmail: user?.email }); // Debug log
+    console.log('[RootPage] Auth State:', { authLoading, userUid: user?.uid }); // Debug log uses uid
     if (!authLoading) { // Only redirect once auth state is resolved
-      if (user) {
+      if (user) { // Check if user object exists (implies logged in)
         console.log('[RootPage] User found, redirecting to /dashboard');
         router.replace('/dashboard');
       } else {

@@ -2,10 +2,10 @@
 import type { CryptoSymbol } from './constants';
 
 export interface User {
-  uid: string; // Firebase User ID
-  email: string | null; // Firebase User email
-  displayName?: string | null; // Optional display name
-  // Add other relevant fields from Firebase User object if needed
+  uid: string; 
+  email: string | null; 
+  displayName?: string | null; 
+  createdAt?: any; // Can be Firestore Timestamp or Date, handle accordingly
 }
 
 export interface SimulatedTrade {
@@ -47,7 +47,7 @@ export interface SimulatedSaleEntry {
 
 export interface SimulationLogEntry {
   id: string; 
-  userId: string; // Changed from usuario_id to consistently use userId
+  userId: string; 
   fecha: any; 
   par_operacion: string; 
   monto_compra_usdt: number;

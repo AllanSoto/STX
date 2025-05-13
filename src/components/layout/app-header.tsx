@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { BarChartBig, UserCircle, LogOut, LogIn, UserPlus } from 'lucide-react'; 
 import { APP_NAME as DEFAULT_APP_NAME } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
-import { useAuth } from '@/hooks/use-auth'; // Import useAuth
+import { useAuth } from '@/hooks/use-auth'; 
 import { SidebarTrigger } from '@/components/ui/sidebar'; 
 import { Button } from '@/components/ui/button';
 import {
@@ -21,18 +21,23 @@ import { useRouter } from 'next/navigation';
 
 export function AppHeader() {
   const { translations } = useLanguage();
-  const { user, logout, loading: authLoading } = useAuth(); // Get user and logout from useAuth
+  const { user, logout, loading: authLoading } = useAuth(); 
   const t = (key: string, fallback?: string) => translations[key] || fallback || key;
   const router = useRouter();
 
   const handleLogout = async () => {
     await logout();
-    router.push('/login'); 
+    // router.push('/login'); // AuthProvider already handles this
   };
 
-  const getInitials = (email: string | null | undefined) => {
-    if (!email) return 'U';
-    return email.substring(0, 2).toUpperCase();
+  const getInitials = (email: string | null | undefined, displayName?: string | null | undefined) => {
+    if (displayName) {
+      return displayName.substring(0, 2).toUpperCase();
+    }
+    if (email) {
+      return email.substring(0, 2).toUpperCase();
+    }
+    return 'U';
   }
 
   return (
@@ -55,15 +60,15 @@ export function AppHeader() {
                     <Avatar className="h-8 w-8">
                       {/* Placeholder for user avatar image if available */}
                       {/* <AvatarImage src="/avatars/01.png" alt="@shadcn" /> */}
-                      <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
+                      <AvatarFallback>{getInitials(user.email, user.displayName)}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user.displayName || user.email}</p>
-                      {user.displayName && <p className="text-xs leading-none text-muted-foreground">
+                      <p className="text-sm font-medium leading-none">{user.displayName || user.email || t('header.userMenu.anonymous', 'User')}</p>
+                      {user.displayName && user.email && <p className="text-xs leading-none text-muted-foreground">
                         {user.email}
                       </p>}
                     </div>

@@ -4,7 +4,7 @@
 import { MainLayout } from '@/components/layout/main-layout';
 import { PasswordChangeForm } from '@/components/account/password-change-form';
 import { useLanguage } from '@/hooks/use-language';
-import { useAuth } from '@/hooks/use-auth'; // Import useAuth
+import { useAuth } from '@/hooks/use-auth'; 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -12,7 +12,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function AccountPage() {
   const { translations } = useLanguage();
-  const { user, loading: authLoading } = useAuth(); // Get user from useAuth
+  const { user, loading: authLoading } = useAuth(); 
   const t = (key: string, fallback?: string) => translations[key] || fallback || key;
 
   if (authLoading) {
@@ -54,7 +54,7 @@ export default function AccountPage() {
             <CardContent className="space-y-3">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">{t('account.profile.emailLabel', 'Email Address')}</p>
-                <p className="text-lg">{user.email}</p>
+                <p className="text-lg">{user.email || t('account.profile.notAvailable', 'Not available')}</p>
               </div>
                {user.displayName && (
                 <div>
