@@ -13,14 +13,14 @@ import { CRYPTO_SYMBOLS, COIN_DATA, QUOTE_CURRENCY } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth'; 
-import { getActivePriceAlertsForUser, deactivatePriceAlert } from '@/lib/firebase/alerts';
+import { getActivePriceAlertsForUser, deactivatePriceAlert, savePriceAlert, updatePriceAlert, deletePriceAlert } from '@/lib/firebase/alerts';
 import { AlertModal } from '@/components/dashboard/alert-modal';
 import type { TrendAnalysis } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { fetchCoinGeckoHistoricalPrices } from '@/services/coingecko';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Loader2, WifiOff } from 'lucide-react'; // Added WifiOff
+import { Loader2, WifiOff } from 'lucide-react'; 
 
 
 const BINANCE_WS_URL = 'wss://stream.binance.com:9443/ws/!miniTicker@arr';
@@ -81,7 +81,7 @@ export default function DashboardPage() {
   const [isPricesLoading, setIsPricesLoading] = useState(true);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
-  const { translations } = useLanguage();
+  const { translations, language } = useLanguage();
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth(); 
 
@@ -95,7 +95,7 @@ export default function DashboardPage() {
   const [activeAlerts, setActiveAlerts] = useState<PriceAlert[]>([]);
   const activeAlertsRef = useRef<PriceAlert[]>([]);
   const [editingAlert, setEditingAlert] = useState<PriceAlert | null>(null);
-  const [alertsError, setAlertsError] = useState<string | null>(null); // For alerts fetching error
+  const [alertsError, setAlertsError] = useState<string | null>(null); 
 
 
   useEffect(() => {
@@ -118,6 +118,10 @@ export default function DashboardPage() {
     }
     return String(msg);
   }, [translations]);
+
+  useEffect(() => {
+    console.log('[DashboardPage] Auth State Update:', { authLoading, userEmail: user?.email });
+  }, [authLoading, user]);
 
   const fetchActiveAlerts = useCallback(async () => {
     if (!user) return; 
@@ -491,16 +495,19 @@ export default function DashboardPage() {
 
 
   if (authLoading) {
+    console.log('[DashboardPage] Rendering loader due to authLoading=true');
     return (
       <MainLayout>
         <div className="container mx-auto py-8 px-4 flex justify-center items-center min-h-[calc(100vh-10rem)]">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p className="mt-2 text-muted-foreground">{t('dashboard.loadingAuth', 'Verifying session...')}</p>
         </div>
       </MainLayout>
     );
   }
 
-  if (!user) {
+  if (!user && !authLoading) {
+    console.log('[DashboardPage] No user and not authLoading, redirecting to login');
     return (
       <MainLayout>
         <div className="container mx-auto py-8 px-4 text-center">
@@ -599,3 +606,4 @@ export default function DashboardPage() {
     </MainLayout>
   );
 }
+
