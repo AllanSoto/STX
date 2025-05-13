@@ -9,12 +9,12 @@ To get started, take a look at src/app/page.tsx.
 
 This application requires Firebase credentials to function correctly.
 
-**VERY IMPORTANT: The `auth/api-key-not-valid` error almost always means that your `NEXT_PUBLIC_FIREBASE_API_KEY` or `NEXT_PUBLIC_FIREBASE_PROJECT_ID` (or other Firebase config values) are missing or incorrect in your `.env.local` file, or your Firebase project is not correctly configured for web app usage (e.g., the API key is restricted or the Authentication service is not enabled). Please double-check these steps carefully.**
+**VERY IMPORTANT: The `auth/api-key-not-valid` error almost always means that your `NEXT_PUBLIC_FIREBASE_API_KEY` or `NEXT_PUBLIC_FIREBASE_PROJECT_ID` (or other Firebase config values) are missing or incorrect in your `.env.local` file, OR your Firebase project is not correctly configured for web app usage (e.g., the API key is restricted or the Authentication service is not enabled/configured with sign-in methods). Please double-check the following steps carefully.**
 
 1.  **Create a Firebase Project:** If you haven't already, create a project on the [Firebase Console](https://console.firebase.google.com/).
 2.  **Add a Web App:** In your Firebase project, add a new Web application. If you already have one, ensure it's correctly configured.
-3.  **Enable Authentication:** In the Firebase console, navigate to "Authentication" (under Build) and ensure at least one sign-in method (e.g., Email/Password) is enabled.
-4.  **Get Firebase Config:** After adding the web app (or selecting an existing one), Firebase will provide you with a `firebaseConfig` object. You can find this in your Project settings (click the gear icon next to "Project Overview", then scroll down to "Your apps"). It looks something like this:
+3.  **Enable Authentication:** In the Firebase console, navigate to "Authentication" (under Build), go to the "Sign-in method" tab, and ensure at least one sign-in provider (e.g., Email/Password) is enabled.
+4.  **Get Firebase Config:** After adding the web app (or selecting an existing one), Firebase will provide you with a `firebaseConfig` object. You can find this in your Project settings (click the gear icon next to "Project Overview", then scroll down to "Your apps", and select your web app). It looks something like this:
 
     ```javascript
     const firebaseConfig = {
@@ -28,7 +28,7 @@ This application requires Firebase credentials to function correctly.
     };
     ```
 5.  **Create a `.env.local` file:** In the root of your project, create a file named `.env.local`.
-6.  **Add Environment Variables:** Copy the values from your `firebaseConfig` object into the `.env.local` file, prefixing each key with `NEXT_PUBLIC_`. Refer to the `.env.example` file for the correct format if one exists, otherwise use the following:
+6.  **Add Environment Variables:** Copy ALL relevant values from your `firebaseConfig` object into the `.env.local` file, prefixing each key with `NEXT_PUBLIC_`. Refer to the `.env.example` file for the correct format if one exists, otherwise use the following structure:
 
     ```env
     NEXT_PUBLIC_FIREBASE_API_KEY=YOUR_FIREBASE_API_KEY
@@ -39,7 +39,7 @@ This application requires Firebase credentials to function correctly.
     NEXT_PUBLIC_FIREBASE_APP_ID=YOUR_FIREBASE_APP_ID
     # NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=YOUR_FIREBASE_MEASUREMENT_ID (Optional)
     ```
-    **Ensure there are no typos and that the values are copied exactly as they appear in your Firebase project settings.**
+    **Ensure there are no typos and that the values are copied exactly as they appear in your Firebase project settings.** Some values like `storageBucket` might be empty if not used, but `apiKey`, `authDomain`, and `projectId` are crucial.
 
 7.  **Restart your development server:** After creating or modifying the `.env.local` file, you **must** restart your Next.js development server for the changes to take effect.
 
