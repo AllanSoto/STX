@@ -1,4 +1,3 @@
-
 // src/app/dashboard/page.tsx
 'use client';
 
@@ -13,7 +12,7 @@ import type { CryptoSymbol, PriceAlert } from '@/lib/types';
 import { CRYPTO_SYMBOLS, COIN_DATA, QUOTE_CURRENCY } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/use-auth'; // Import useAuth
+import { useAuth } from '@/hooks/use-auth'; 
 import { getActivePriceAlertsForUser, deactivatePriceAlert } from '@/lib/firebase/alerts';
 import { AlertModal } from '@/components/dashboard/alert-modal';
 import type { TrendAnalysis } from '@/lib/types';
@@ -21,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { fetchCoinGeckoHistoricalPrices } from '@/services/coingecko';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
+import { Loader2, WifiOff } from 'lucide-react'; // Added WifiOff
 
 
 const BINANCE_WS_URL = 'wss://stream.binance.com:9443/ws/!miniTicker@arr';
@@ -84,7 +83,7 @@ export default function DashboardPage() {
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
   const { translations } = useLanguage();
   const { toast } = useToast();
-  const { user, loading: authLoading } = useAuth(); // Get user from useAuth
+  const { user, loading: authLoading } = useAuth(); 
 
   const webSocketRef = useRef<WebSocket | null>(null);
   const binanceFallbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -96,6 +95,7 @@ export default function DashboardPage() {
   const [activeAlerts, setActiveAlerts] = useState<PriceAlert[]>([]);
   const activeAlertsRef = useRef<PriceAlert[]>([]);
   const [editingAlert, setEditingAlert] = useState<PriceAlert | null>(null);
+  const [alertsError, setAlertsError] = useState<string | null>(null); // For alerts fetching error
 
 
   useEffect(() => {
@@ -111,24 +111,37 @@ export default function DashboardPage() {
     let msg = translations[key] || fallback || key;
     if (vars) {
       Object.keys(vars).forEach(varKey => {
-        msg = msg.replace(`{${varKey}}`, String(vars[varKey]));
-        });
+        if (typeof msg === 'string') {
+            msg = msg.replace(`{${varKey}}`, String(vars[varKey]));
+        }
+      });
     }
-    return msg;
+    return String(msg);
   }, [translations]);
 
   const fetchActiveAlerts = useCallback(async () => {
-    if (!user) return; // Only fetch if user is logged in
+    if (!user) return; 
+    setAlertsError(null); 
     try {
       const alerts = await getActivePriceAlertsForUser(user.uid);
       setActiveAlerts(alerts);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching active alerts:", error);
-      toast({
-        title: t('dashboard.alerts.fetchErrorTitle', 'Alerts Error'),
-        description: t('dashboard.alerts.fetchErrorDescription', 'Could not load your active price alerts.'),
-        variant: 'destructive',
-      });
+      const errorMessage = error.message || t('dashboard.alerts.fetchErrorDescription', 'Could not load your active price alerts.');
+      setAlertsError(errorMessage);
+      if (error.message && error.message.includes('offline')) {
+        toast({
+            title: t('firebase.offline.title', 'Offline'),
+            description: t('firebase.offline.fetchError', 'Could not load alerts. You appear to be offline.'),
+            variant: 'destructive',
+        });
+      } else {
+        toast({
+            title: t('dashboard.alerts.fetchErrorTitle', 'Alerts Error'),
+            description: errorMessage,
+            variant: 'destructive',
+        });
+      }
     }
   }, [user, t, toast]);
 
@@ -136,7 +149,8 @@ export default function DashboardPage() {
     if(user) {
       fetchActiveAlerts();
     } else {
-      setActiveAlerts([]); // Clear alerts if user logs out
+      setActiveAlerts([]); 
+      setAlertsError(null);
     }
   }, [user, fetchActiveAlerts]);
 
@@ -160,7 +174,7 @@ export default function DashboardPage() {
   };
 
   const handleAlertSaved = () => {
-    fetchActiveAlerts(); // Refresh alerts list
+    fetchActiveAlerts(); 
   };
 
 
@@ -442,18 +456,18 @@ export default function DashboardPage() {
               targetPrice: alert.targetPrice.toLocaleString(),
               currentPrice: currentPrice.toLocaleString()
             }),
-            duration: 10000, // Show for 10 seconds
+            duration: 10000, 
           });
-          await deactivatePriceAlert(user.uid, alert.id); // Mark as inactive in Firebase
-          fetchActiveAlerts(); // Refresh list
+          await deactivatePriceAlert(user.uid, alert.id); 
+          fetchActiveAlerts(); 
         }
       });
     };
 
-    if (user) { // Only run if user is logged in
+    if (user) { 
       alertIntervalId = setInterval(checkAlerts, ALERT_CHECK_INTERVAL);
     } else if (alertIntervalId) {
-      clearInterval(alertIntervalId); // Clear interval if user logs out
+      clearInterval(alertIntervalId); 
     }
     
     return () => {
@@ -539,6 +553,15 @@ export default function DashboardPage() {
                 <p className="text-muted-foreground">
                    {t('dashboard.portfolioBalance.loggedInMessage', "Portfolio balance features will be available if you connect your Binance API keys in Account Settings.")}
                 </p>
+                 {alertsError && (
+                    <div className="mt-4 p-3 text-sm text-destructive-foreground bg-destructive/20 rounded-md flex items-start">
+                        <WifiOff className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
+                        <div>
+                            <p className="font-semibold">{t('dashboard.alerts.fetchErrorTitle', 'Alerts Error')}</p>
+                            <p>{alertsError}</p>
+                        </div>
+                    </div>
+                )}
             </CardContent>
         </Card>
 
@@ -576,4 +599,3 @@ export default function DashboardPage() {
     </MainLayout>
   );
 }
-

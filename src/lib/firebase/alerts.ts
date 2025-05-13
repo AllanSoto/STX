@@ -1,4 +1,3 @@
-
 // src/lib/firebase/alerts.ts
 import { 
   collection, 
@@ -39,8 +38,11 @@ export async function savePriceAlert(userId: string, alertData: PriceAlertData):
       updatedAt: serverTimestamp(),
     });
     return docRef.id;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error saving price alert to Firebase:', error);
+    if (error.code === 'unavailable') {
+      throw new Error('Failed to save price alert: The application is offline. Your alert will be saved once you are back online.');
+    }
     if (error instanceof Error) {
       throw new Error(`Failed to save price alert: ${error.message}`);
     }
@@ -74,8 +76,11 @@ export async function getActivePriceAlertsForUser(userId: string): Promise<Price
       } as PriceAlert);
     });
     return alerts;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching active price alerts from Firebase:', error);
+     if (error.code === 'unavailable') {
+      throw new Error('Failed to fetch active price alerts: The application is offline. Please check your internet connection.');
+    }
     if (error instanceof Error) {
       throw new Error(`Failed to fetch active price alerts: ${error.message}`);
     }
@@ -109,8 +114,11 @@ export async function getAllPriceAlertsForUser(userId: string): Promise<PriceAle
       } as PriceAlert);
     });
     return alerts;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching all price alerts from Firebase:', error);
+    if (error.code === 'unavailable') {
+      throw new Error('Failed to fetch all price alerts: The application is offline. Please check your internet connection.');
+    }
     if (error instanceof Error) {
       throw new Error(`Failed to fetch all price alerts: ${error.message}`);
     }
@@ -130,8 +138,11 @@ export async function updatePriceAlert(userId: string, alertId: string, updates:
       ...updates,
       updatedAt: serverTimestamp(),
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating price alert in Firebase:', error);
+    if (error.code === 'unavailable') {
+      throw new Error('Failed to update price alert: The application is offline. Changes will be synced when online.');
+    }
     if (error instanceof Error) {
       throw new Error(`Failed to update price alert: ${error.message}`);
     }
@@ -147,8 +158,11 @@ export async function deletePriceAlert(userId: string, alertId: string): Promise
   const alertRef = doc(db, ALERTS_COLLECTION_BASE, userId, 'alerts', alertId);
   try {
     await deleteDoc(alertRef);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting price alert from Firebase:', error);
+    if (error.code === 'unavailable') {
+      throw new Error('Failed to delete price alert: The application is offline. This action will be processed when online.');
+    }
     if (error instanceof Error) {
       throw new Error(`Failed to delete price alert: ${error.message}`);
     }

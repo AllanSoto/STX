@@ -1,4 +1,3 @@
-
 // src/lib/firebase/orders.ts
 import { collection, addDoc, serverTimestamp, query, where, orderBy, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from './config';
@@ -19,8 +18,11 @@ export async function saveOrderToFirebase(userId: string, orderData: Omit<SavedO
       timestamp: serverTimestamp(),
     });
     return docRef.id;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error saving order to Firebase:', error);
+    if (error.code === 'unavailable') {
+      throw new Error('Failed to save order: The application is offline. Your order will be saved once you are back online.');
+    }
     if (error instanceof Error) {
       throw new Error(`Failed to save order: ${error.message}`);
     }
@@ -61,8 +63,11 @@ export async function getOrdersForUser(userId: string | null): Promise<SavedOrde
       } as SavedOrder); 
     });
     return orders;
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Error fetching orders for user ${userId} from Firebase:`, error);
+    if (error.code === 'unavailable') {
+      throw new Error('Failed to fetch orders: The application is offline. Please check your internet connection.');
+    }
     if (error instanceof Error) {
       throw new Error(`Failed to fetch orders: ${error.message}`);
     }

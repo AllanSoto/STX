@@ -1,4 +1,3 @@
-
 // src/components/balance/balance-client.tsx
 'use client';
 
@@ -12,14 +11,14 @@ import { FilteredPeriodSummaryCards } from './filtered-period-summary-cards';
 import { BalanceChart } from './balance-chart';
 import { DailyPerformanceSummary } from './daily-performance-summary';
 import { MonthlyPerformanceSummary } from './monthly-performance-summary';
-import { Loader2 } from 'lucide-react';
+import { Loader2, WifiOff } from 'lucide-react'; // Added WifiOff
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format, startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, subMonths, isWithinInterval } from 'date-fns';
 import Link from 'next/link';
 import { Button } from '../ui/button';
-import { MainLayout } from '../layout/main-layout';
+import { MainLayout } from '../layout/main-layout'; // Ensure MainLayout is imported if used
 
 export interface ChartDataPoint { 
   name: string; 
@@ -34,42 +33,56 @@ export function BalanceClient() {
     let msg = translations[key] || fallback || key;
     if (vars) {
       Object.keys(vars).forEach(varKey => {
-        msg = msg.replace(`{${varKey}}`, String(vars[varKey]));
+        if(typeof msg === 'string') {
+             msg = msg.replace(`{${varKey}}`, String(vars[varKey]));
+        }
       });
     }
-    return msg;
+    return String(msg);
   }, [translations]);
 
   const [allOrders, setAllOrders] = useState<SavedOrder[]>([]);
   const [isOrdersLoading, setIsOrdersLoading] = useState(true);
   const [ordersError, setOrdersError] = useState<string | null>(null);
+  const [isOfflineError, setIsOfflineError] = useState(false);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [orderProfitChartView, setOrderProfitChartView] = useState<'daily' | 'monthly'>('daily');
 
   useEffect(() => {
-    if (authLoading) return; // Wait for auth state
+    if (authLoading) return; 
 
     if (user) {
       setIsOrdersLoading(true);
       setOrdersError(null);
+      setIsOfflineError(false);
       getOrdersForUser(user.uid) 
         .then(setAllOrders)
         .catch(err => {
           console.error("Error fetching orders:", err);
           const errorMessage = err.message || t('balance.loadingError', 'Failed to load balance data.');
           setOrdersError(errorMessage);
-          toast({
-            title: t('balance.toast.loadErrorTitle', 'Error'),
-            description: errorMessage,
-            variant: 'destructive',
-          });
+          if (err.message && err.message.includes('offline')) {
+            setIsOfflineError(true);
+            toast({
+              title: t('firebase.offline.title', 'Offline'),
+              description: t('firebase.offline.fetchError', 'Could not load data. You appear to be offline.'),
+              variant: 'destructive',
+            });
+          } else {
+            toast({
+              title: t('balance.toast.loadErrorTitle', 'Error'),
+              description: errorMessage,
+              variant: 'destructive',
+            });
+          }
         })
         .finally(() => setIsOrdersLoading(false));
     } else {
       setAllOrders([]);
       setIsOrdersLoading(false);
       setOrdersError(null);
+      setIsOfflineError(false);
     }
   }, [user, authLoading, t, toast]);
 
@@ -168,39 +181,48 @@ export function BalanceClient() {
 
   if (authLoading || isOrdersLoading) {
      return (
-      <div className="container mx-auto py-8 px-4 flex flex-col items-center justify-center min-h-[calc(100vh-10rem)]">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="mt-4 text-muted-foreground">{t('balance.page.loading', 'Loading balance information...')}</p>
-      </div>
+       <MainLayout>
+        <div className="container mx-auto py-8 px-4 flex flex-col items-center justify-center min-h-[calc(100vh-10rem)]">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p className="mt-4 text-muted-foreground">{t('balance.page.loading', 'Loading balance information...')}</p>
+        </div>
+      </MainLayout>
     );
   }
 
   if (!user && !authLoading) {
     return (
-      <div className="container mx-auto py-8 px-4 text-center">
-        <h1 className="text-3xl font-bold mb-8 text-foreground">{t('balance.page.title', 'Balance Overview')}</h1>
-        <p className="text-lg text-muted-foreground mb-6">{t('balance.page.loginPrompt', 'Please log in to view your balance information.')}</p>
-        <Button asChild>
-          <Link href="/login">{t('login.title', 'Login')}</Link>
-        </Button>
-      </div>
+      <MainLayout>
+        <div className="container mx-auto py-8 px-4 text-center">
+          <h1 className="text-3xl font-bold mb-8 text-foreground">{t('balance.page.title', 'Balance Overview')}</h1>
+          <p className="text-lg text-muted-foreground mb-6">{t('balance.page.loginPrompt', 'Please log in to view your balance information.')}</p>
+          <Button asChild>
+            <Link href="/login">{t('login.title', 'Login')}</Link>
+          </Button>
+        </div>
+      </MainLayout>
     );
   }
   
   if (ordersError) {
     return (
-      <div className="container mx-auto py-8 px-4 text-center">
-        <p className="text-destructive py-10">{ordersError}</p>
-      </div>
+      <MainLayout>
+        <div className="container mx-auto py-8 px-4 text-center flex flex-col items-center justify-center">
+          {isOfflineError && <WifiOff className="h-12 w-12 text-destructive mb-4" />}
+          <p className="text-destructive py-10">{ordersError}</p>
+        </div>
+      </MainLayout>
     );
   }
   
   if (allOrders.length === 0 && !isOrdersLoading && !ordersError && user) {
     return (
-      <div className="container mx-auto py-8 px-4">
-        <h1 className="text-3xl font-bold mb-8 text-foreground">{t('balance.page.title', 'Balance Overview')}</h1>
-        <p className="text-muted-foreground text-center py-10">{t('balance.page.noOrdersFound', 'No order data found to display balance information.')}</p>
-      </div>
+      <MainLayout>
+        <div className="container mx-auto py-8 px-4">
+          <h1 className="text-3xl font-bold mb-8 text-foreground">{t('balance.page.title', 'Balance Overview')}</h1>
+          <p className="text-muted-foreground text-center py-10">{t('balance.page.noOrdersFound', 'No order data found to display balance information.')}</p>
+        </div>
+      </MainLayout>
     );
   }
 
@@ -216,11 +238,13 @@ export function BalanceClient() {
             todayNetProfit={dailyPerformance.todayNetProfit}
             yesterdayNetProfit={dailyPerformance.yesterdayNetProfit}
             t={t}
+            isOffline={isOfflineError}
           />
           <MonthlyPerformanceSummary
             currentMonthNetProfit={monthlyPerformance.currentMonthNetProfit}
             previousMonthNetProfit={monthlyPerformance.previousMonthNetProfit}
             t={t}
+            isOffline={isOfflineError}
           />
         </div>
       </section>
@@ -234,6 +258,7 @@ export function BalanceClient() {
           setEndDate={setEndDate}
           onResetFilters={handleResetFilters}
           t={t}
+          disabled={isOfflineError}
         />
 
         <FilteredPeriodSummaryCards
@@ -241,6 +266,7 @@ export function BalanceClient() {
           totalRecovered={totalRecovered}
           netResult={netResult}
           t={t}
+          isOffline={isOfflineError}
         />
 
         <div className="mt-8">
@@ -251,11 +277,16 @@ export function BalanceClient() {
             <CardContent>
               <Tabs value={orderProfitChartView} onValueChange={(value) => setOrderProfitChartView(value as 'daily' | 'monthly')} className="mb-4">
                 <TabsList>
-                  <TabsTrigger value="daily">{t('balance.chart.view.daily', 'Daily')}</TabsTrigger>
-                  <TabsTrigger value="monthly">{t('balance.chart.view.monthly', 'Monthly')}</TabsTrigger>
+                  <TabsTrigger value="daily" disabled={isOfflineError}>{t('balance.chart.view.daily', 'Daily')}</TabsTrigger>
+                  <TabsTrigger value="monthly" disabled={isOfflineError}>{t('balance.chart.view.monthly', 'Monthly')}</TabsTrigger>
                 </TabsList>
               </Tabs>
-              {filteredOrders.length > 0 ? (
+              {isOfflineError ? (
+                 <div className="text-center py-10 flex flex-col items-center justify-center">
+                    <WifiOff className="h-12 w-12 text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">{t('firebase.offline.fetchError', 'Could not load chart data. You appear to be offline.')}</p>
+                  </div>
+              ) : filteredOrders.length > 0 ? (
                   <BalanceChart data={orderProfitChartData} viewType={orderProfitChartView} t={t} currentLanguage={language} />
               ) : (
                   <p className="text-muted-foreground text-center py-10">{t('balance.chart.noData', 'No order data available for the selected period.')}</p>
@@ -267,4 +298,3 @@ export function BalanceClient() {
     </div>
   );
 }
-

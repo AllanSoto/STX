@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -9,10 +8,12 @@ import type { SavedOrder } from '@/lib/types';
 import { OrderFilters } from './order-filters';
 import { OrderHistoryTable } from './order-history-table';
 import { Button } from '@/components/ui/button';
-import { Download, Printer, Loader2 } from 'lucide-react';
+import { Download, Printer, Loader2, WifiOff } from 'lucide-react'; // Added WifiOff
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import Link from 'next/link';
+import { MainLayout } from '../layout/main-layout'; // Ensure MainLayout is imported if used
+
 
 export function OrderHistoryClient() {
   const { translations, language } = useLanguage();
@@ -23,35 +24,47 @@ export function OrderHistoryClient() {
   const [allOrders, setAllOrders] = useState<SavedOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isOfflineError, setIsOfflineError] = useState(false);
+
 
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    if (authLoading) return; // Wait for auth state to resolve
+    if (authLoading) return; 
 
     if (user) {
       setIsLoading(true);
       setError(null);
+      setIsOfflineError(false);
       getOrdersForUser(user.uid) 
         .then(setAllOrders)
         .catch(err => {
           console.error("Error fetching orders for user:", err);
           const errorMessage = err.message || t('history.table.loadingError', 'Failed to load order history.');
           setError(errorMessage);
-          toast({
-            title: t('history.toast.loadErrorTitle', 'Error'),
-            description: errorMessage,
-            variant: 'destructive',
-          });
+          if (err.message && err.message.includes('offline')) {
+            setIsOfflineError(true);
+             toast({
+              title: t('firebase.offline.title', 'Offline'),
+              description: t('firebase.offline.fetchError', 'Could not load data. You appear to be offline.'),
+              variant: 'destructive',
+            });
+          } else {
+            toast({
+              title: t('history.toast.loadErrorTitle', 'Error'),
+              description: errorMessage,
+              variant: 'destructive',
+            });
+          }
         })
         .finally(() => setIsLoading(false));
     } else {
-      // Not logged in, clear orders and set loading to false
       setAllOrders([]);
       setIsLoading(false);
-      setError(null); // No error, just no user
+      setError(null);
+      setIsOfflineError(false);
     }
   }, [user, authLoading, t, toast]);
 
@@ -187,18 +200,19 @@ export function OrderHistoryClient() {
       />
 
       <div className="my-6 flex flex-col sm:flex-row gap-2">
-        <Button onClick={handleExportCSV} variant="outline" className="w-full sm:w-auto" disabled={filteredOrders.length === 0}>
+        <Button onClick={handleExportCSV} variant="outline" className="w-full sm:w-auto" disabled={filteredOrders.length === 0 || isOfflineError}>
           <Download className="mr-2 h-4 w-4" />
           {t('history.export.csvButton', 'Export to CSV')}
         </Button>
-        <Button onClick={handlePrintPDF} variant="outline" className="w-full sm:w-auto" disabled={filteredOrders.length === 0}>
+        <Button onClick={handlePrintPDF} variant="outline" className="w-full sm:w-auto" disabled={filteredOrders.length === 0 || isOfflineError}>
           <Printer className="mr-2 h-4 w-4" />
           {t('history.export.pdfButton', 'Export to PDF (Print)')}
         </Button>
       </div>
 
       {error ? (
-        <div className="text-center py-10">
+        <div className="text-center py-10 flex flex-col items-center justify-center">
+          {isOfflineError && <WifiOff className="h-12 w-12 text-destructive mb-4" />}
           <p className="text-destructive">{error}</p>
         </div>
       ) : (
@@ -207,4 +221,3 @@ export function OrderHistoryClient() {
     </div>
   );
 }
-

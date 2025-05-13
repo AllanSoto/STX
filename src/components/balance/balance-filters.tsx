@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { Dispatch, SetStateAction } from 'react';
@@ -16,6 +15,7 @@ interface BalanceFiltersProps {
   setEndDate: Dispatch<SetStateAction<Date | undefined>>;
   onResetFilters: () => void;
   t: (key: string, fallback?: string) => string;
+  disabled?: boolean; // Added disabled prop
 }
 
 export function BalanceFilters({
@@ -25,6 +25,7 @@ export function BalanceFilters({
   setEndDate,
   onResetFilters,
   t,
+  disabled = false, // Default to false
 }: BalanceFiltersProps) {
   return (
     <div className="p-4 border rounded-lg shadow-sm bg-card mb-8">
@@ -38,6 +39,7 @@ export function BalanceFilters({
               <Button
                 id="balanceStartDate"
                 variant="outline"
+                disabled={disabled} // Apply disabled prop
                 className={cn(
                   "w-full justify-start text-left font-normal",
                   !startDate && "text-muted-foreground"
@@ -53,6 +55,7 @@ export function BalanceFilters({
                 selected={startDate}
                 onSelect={setStartDate}
                 initialFocus
+                disabled={disabled} // Apply disabled prop
               />
             </PopoverContent>
           </Popover>
@@ -67,6 +70,7 @@ export function BalanceFilters({
               <Button
                 id="balanceEndDate"
                 variant="outline"
+                disabled={disabled} // Apply disabled prop
                 className={cn(
                   "w-full justify-start text-left font-normal",
                   !endDate && "text-muted-foreground"
@@ -82,7 +86,7 @@ export function BalanceFilters({
                 selected={endDate}
                 onSelect={setEndDate}
                 disabled={(date) =>
-                  startDate ? date < startDate : false
+                  disabled || (startDate ? date < startDate : false) // Apply disabled prop
                 }
                 initialFocus
               />
@@ -91,7 +95,7 @@ export function BalanceFilters({
         </div>
       </div>
       <div className="mt-4 flex justify-end">
-        <Button onClick={onResetFilters} variant="ghost">
+        <Button onClick={onResetFilters} variant="ghost" disabled={disabled}> {/* Apply disabled prop */}
           <X className="mr-2 h-4 w-4" />
           {t('balance.filters.resetButton', 'Reset Filters')}
         </Button>
