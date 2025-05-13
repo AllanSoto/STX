@@ -1,23 +1,19 @@
-
 // src/components/dashboard/crypto-display-card.tsx
 'use client';
 
+import { useEffect, useState, useMemo } from 'react';
 import type { CryptoCardData } from './types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendArrow } from '@/components/shared/TrendArrow';
 import { CryptoIcon } from '@/components/shared/CryptoIcon';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-// import { Button } from '@/components/ui/button'; // Button removed
-// import { Bell } from 'lucide-react'; // Bell icon removed
-import { useEffect, useState } from 'react';
 import { useLanguage } from '@/hooks/use-language';
 
 interface CryptoDisplayCardProps {
   data: CryptoCardData;
   isLoading: boolean;
   isAiTrendLoading: boolean;
-  // onSetAlertClick removed
 }
 
 export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoDisplayCardProps) {
@@ -40,9 +36,39 @@ export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoD
     }
   }, [value, previousValue]);
 
+  const getTranslatedBaseTrendText = () => {
+    if (!trendAnalysis) return t('dashboard.cryptoCard.trend.notAvailable', 'Trend N/A');
+    
+    let trendText = '';
+    switch (trendAnalysis.trend) {
+      case 'upward':
+        trendText = t('dashboard.cryptoCard.trend.upward', 'Upward trend');
+        break;
+      case 'downward':
+        trendText = t('dashboard.cryptoCard.trend.downward', 'Downward trend');
+        break;
+      case 'sideways':
+        trendText = t('dashboard.cryptoCard.trend.sideways', 'Sideways trend');
+        break;
+      default:
+        // This case should ideally not be reached if trendAnalysis.trend is always one of the enum values
+        trendText = t('dashboard.cryptoCard.trend.notAvailable', 'Trend N/A');
+    }
+    return trendText;
+  };
+  
+  const trendTextColorClass = useMemo(() => {
+    if (!trendAnalysis) return 'text-muted-foreground';
+    switch (trendAnalysis.trend) {
+      case 'upward': return 'text-primary';
+      case 'downward': return 'text-destructive';
+      default: return 'text-muted-foreground'; // For 'sideways' or any unexpected values
+    }
+  }, [trendAnalysis]);
+
   if (isLoading) {
     return (
-      <Card className="shadow-lg">
+      <Card className="shadow-lg min-h-[120px]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <Skeleton className="h-6 w-16" />
           <Skeleton className="h-6 w-6 rounded-full" />
@@ -55,23 +81,8 @@ export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoD
     );
   }
 
-
-  const getTrendText = () => {
-    if (!trendAnalysis) return t('dashboard.cryptoCard.trend.notAvailable', 'Trend N/A');
-    switch (trendAnalysis.trend) {
-      case 'upward':
-        return t('dashboard.cryptoCard.trend.upward', 'Upward trend');
-      case 'downward':
-        return t('dashboard.cryptoCard.trend.downward', 'Downward trend');
-      case 'sideways':
-        return t('dashboard.cryptoCard.trend.sideways', 'Sideways trend');
-      default:
-        return t('dashboard.cryptoCard.trend.notAvailable', 'Trend N/A');
-    }
-  };
-
   return (
-    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between">
+    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between min-h-[120px]">
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
         <div className="flex items-center">
            <CryptoIcon symbol={symbol} className="mr-2" />
@@ -85,17 +96,22 @@ export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoD
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button type="button" className="focus:outline-none">
+                <button type="button" className="focus:outline-none" aria-label={t('dashboard.cryptoCard.trend.ariaLabel', 'Trend information')}>
                   <TrendArrow trend={trendAnalysis.trend} />
                 </button>
               </TooltipTrigger>
-              <TooltipContent>
-                <p>{t('dashboard.cryptoCard.tooltip.reason', 'Reason:')} {trendAnalysis.reason}</p>
-                <p>{t('dashboard.cryptoCard.tooltip.confidence', 'Confidence:')} {(trendAnalysis.confidence * 100).toFixed(0)}%</p>
+              <TooltipContent className="w-auto max-w-xs sm:max-w-sm md:max-w-md bg-background border-border shadow-lg rounded-md p-3">
+                <p className="font-semibold mb-1 text-foreground">{getTranslatedBaseTrendText()}</p>
+                <p className="text-xs text-muted-foreground mb-0.5">
+                  {t('dashboard.cryptoCard.tooltip.confidence', 'Confidence:')} {(trendAnalysis.confidence * 100).toFixed(0)}%
+                </p>
+                <p className="text-xs text-muted-foreground whitespace-normal break-words">
+                  {t('dashboard.cryptoCard.tooltip.reason', 'Reason:')} {trendAnalysis.reason}
+                </p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-        ) : <div className="h-5 w-5"></div>
+        ) : <div className="h-5 w-5"></div> 
       }
       </CardHeader>
       <CardContent className="flex-grow">
@@ -106,14 +122,24 @@ export function CryptoDisplayCard({ data, isLoading, isAiTrendLoading }: CryptoD
           })}
         </div>
         {isAiTrendLoading ? (
-            <Skeleton className="h-4 w-20 mt-1" />
+            <Skeleton className="h-4 w-full max-w-[150px] mt-1" />
         ) : (
-            <p className={`text-xs ${trendAnalysis && trendAnalysis.trend === 'upward' ? 'text-primary' : trendAnalysis && trendAnalysis.trend === 'downward' ? 'text-destructive' : 'text-muted-foreground'}`}>
-              {getTrendText()}
-            </p>
+          <>
+            {trendAnalysis ? (
+              <p className={`text-xs mt-1 ${trendTextColorClass}`}>
+                {getTranslatedBaseTrendText()}
+                {trendAnalysis.confidence > 0 && ( // Only show confidence if it's non-zero
+                  <span className="ml-1 opacity-75">({(trendAnalysis.confidence * 100).toFixed(0)}%)</span>
+                )}
+              </p>
+            ) : (
+              <p className="text-xs mt-1 text-muted-foreground">
+                {t('dashboard.cryptoCard.trend.notAvailable', 'Trend N/A')}
+              </p>
+            )}
+          </>
         )}
       </CardContent>
-      {/* Set Alert button removed from the card footer */}
     </Card>
   );
 }

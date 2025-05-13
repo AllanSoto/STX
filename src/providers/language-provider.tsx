@@ -61,24 +61,26 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.cryptoCard.trend.downward': "Downward trend",
     'dashboard.cryptoCard.trend.sideways': "Sideways trend",
     'dashboard.cryptoCard.trend.notAvailable': "Trend N/A",
+    'dashboard.cryptoCard.trend.ariaLabel': 'Trend information',
+
 
     'dashboard.orderOpportunitySimulator.title': 'Order & Opportunity Simulator',
     'dashboard.orderOpportunitySimulator.description': 'Simulate an exchange and see potential sell opportunities at incremental profit percentages.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Trading Pair',
-    'dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel': 'Amount to Spend ({currency})', // currency will be quote currency of pair
+    'dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel': 'Amount to Spend ({currency})', 
     'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': 'Purchase Price of {baseCurrency} (in {quoteCurrency})',
-    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': 'Exchanged Crypto ({crypto})', // crypto will be base currency of pair
+    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': 'Exchanged Crypto ({crypto})', 
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Select Trading Pair',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'Operation',
-    'dashboard.orderOpportunitySimulator.table.header.amountToTransact': 'Amount to Transact ({currency1})', // c1 will be quote for buy, base for sell
+    'dashboard.orderOpportunitySimulator.table.header.amountToTransact': 'Amount to Transact ({currency1})', 
     'dashboard.orderOpportunitySimulator.table.header.marketPriceDisplay': 'Market Price',
-    'dashboard.orderOpportunitySimulator.table.header.amountExchanged': 'Amount Exchanged ({currency2})', // c2 will be base for buy, quote for sell
+    'dashboard.orderOpportunitySimulator.table.header.amountExchanged': 'Amount Exchanged ({currency2})', 
     'dashboard.orderOpportunitySimulator.table.header.commissionDisplay': 'Commission ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.netProfitDisplay': 'Net Profit ({currency})',
     'dashboard.orderOpportunitySimulator.table.header.actions': 'Actions',
-    'dashboard.orderOpportunitySimulator.buyOperation': 'Buy {targetCrypto} with {baseCurrency}', // targetCrypto=Base, baseCurrency=Quote
-    'dashboard.orderOpportunitySimulator.exchangeOperation': 'Exchange {cur1} for {cur2}', // Generic, maybe not used for buy row anymore
-    'dashboard.orderOpportunitySimulator.sellOperationPerc': 'Sell {targetCrypto} (+{perc}%)', // targetCrypto=Base
+    'dashboard.orderOpportunitySimulator.buyOperation': 'Buy {targetCrypto} with {baseCurrency}', 
+    'dashboard.orderOpportunitySimulator.exchangeOperation': 'Exchange {cur1} for {cur2}', 
+    'dashboard.orderOpportunitySimulator.sellOperationPerc': 'Sell {targetCrypto} (+{perc}%)', 
     'dashboard.orderOpportunitySimulator.priceUnavailable': 'Price N/A',
     'dashboard.orderOpportunitySimulator.priceUnavailableShort': 'N/A',
     'dashboard.orderOpportunitySimulator.priceEditPlaceholder': 'e.g., 0.5',
@@ -128,7 +130,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.websocket.errorDescription': 'Connection to live price feed failed. Falling back to periodic updates.',
     'dashboard.websocket.errorDescriptionBinance': 'Connection to Binance live price feed failed. Falling back to periodic updates.',
     'dashboard.websocket.errorDescriptionBinanceFallback': 'Binance WebSocket failed. Using REST fallback.',
-    'dashboard.websocket.errorDescriptionCoinCap': 'Connection to CoinCap live price feed failed. Falling back to periodic updates.',
+    'dashboard.websocket.errorDescriptionCoinCap': 'Connection to CoinCap live price feed failed. Using REST fallback.',
     'dashboard.websocket.errorDescriptionCoinCapFallback': 'CoinCap WebSocket failed. Using REST fallback.',
     'dashboard.websocket.errorMessage': 'Error message: {message}, Type: {type}',
     'dashboard.websocket.eventType': 'Event type: {type}',
@@ -334,13 +336,14 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.cryptoCard.trend.downward': "Tendencia bajista",
     'dashboard.cryptoCard.trend.sideways': "Tendencia lateral",
     'dashboard.cryptoCard.trend.notAvailable': "Tendencia N/A",
+    'dashboard.cryptoCard.trend.ariaLabel': 'Información de tendencia',
 
     'dashboard.orderOpportunitySimulator.title': 'Simulador de Órdenes y Oportunidades',
     'dashboard.orderOpportunitySimulator.description': 'Simula un intercambio y visualiza oportunidades de venta potenciales con porcentajes de ganancia incrementales.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Par de Trading',
-    'dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel': 'Cantidad a Gastar ({currency})', // currency será la divisa cotizada del par
+    'dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel': 'Cantidad a Gastar ({currency})', 
     'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': 'Precio de Compra de {baseCurrency} (en {quoteCurrency})',
-    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': 'Cripto Intercambiado ({crypto})', // crypto será la divisa base del par
+    'dashboard.orderOpportunitySimulator.exchangedCryptoLabel': 'Cripto Intercambiado ({crypto})', 
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Selecciona Par de Trading',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'Operación',
     'dashboard.orderOpportunitySimulator.table.header.amountToTransact': 'Cantidad a Transactuar ({currency1})',
@@ -401,7 +404,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.websocket.errorDescription': 'Falló la conexión al feed de precios en vivo. Cambiando a actualizaciones periódicas.',
     'dashboard.websocket.errorDescriptionBinance': 'Falló la conexión al feed de precios en vivo de Binance. Cambiando a actualizaciones periódicas.',
     'dashboard.websocket.errorDescriptionBinanceFallback': 'Falló WebSocket de Binance. Usando API REST de respaldo.',
-    'dashboard.websocket.errorDescriptionCoinCap': 'Falló la conexión al feed de precios en vivo de CoinCap. Cambiando a actualizaciones periódicas.',
+    'dashboard.websocket.errorDescriptionCoinCap': 'Falló la conexión al feed de precios en vivo de CoinCap. Cambiando a REST de respaldo.',
     'dashboard.websocket.errorDescriptionCoinCapFallback': 'Falló WebSocket de CoinCap. Usando API REST de respaldo.',
     'dashboard.websocket.errorMessage': 'Mensaje de error: {message}, Tipo: {type}',
     'dashboard.websocket.eventType': 'Tipo de evento: {type}',
@@ -606,6 +609,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.cryptoCard.trend.downward': "Tendance baissière",
     'dashboard.cryptoCard.trend.sideways': "Tendance latérale",
     'dashboard.cryptoCard.trend.notAvailable': "Tendance N/A",
+    'dashboard.cryptoCard.trend.ariaLabel': 'Informations sur la tendance',
 
     'dashboard.orderOpportunitySimulator.title': 'Simulateur d\'Ordres et d\'Opportunités',
     'dashboard.orderOpportunitySimulator.description': 'Simulez un échange et visualisez les opportunités de vente potentielles avec des pourcentages de profit incrémentiels.',
@@ -673,7 +677,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.websocket.errorDescription': 'Échec de la connexion au flux de prix en direct. Passage aux mises à jour périodiques.',
     'dashboard.websocket.errorDescriptionBinance': 'Échec de la connexion au flux de prix en direct de Binance. Passage aux mises à jour périodiques.',
     'dashboard.websocket.errorDescriptionBinanceFallback': 'Échec du WebSocket Binance. Utilisation de l\'API REST de secours.',
-    'dashboard.websocket.errorDescriptionCoinCap': 'Échec de la connexion au flux de prix en direct de CoinCap. Passage aux mises à jour périodiques.',
+    'dashboard.websocket.errorDescriptionCoinCap': 'Échec de la connexion au flux de prix en direct de CoinCap. Utilisation de l\'API REST de secours.',
     'dashboard.websocket.errorDescriptionCoinCapFallback': 'Échec du WebSocket CoinCap. Utilisation de l\'API REST de secours.',
     'dashboard.websocket.errorMessage': 'Message d\'erreur : {message}, Type : {type}',
     'dashboard.websocket.eventType': 'Type d\'événement : {type}',
@@ -878,6 +882,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.cryptoCard.trend.downward': "नीचे की ओर प्रवृत्ति",
     'dashboard.cryptoCard.trend.sideways': "बग़ल में प्रवृत्ति",
     'dashboard.cryptoCard.trend.notAvailable': "प्रवृत्ति उपलब्ध नहीं है",
+    'dashboard.cryptoCard.trend.ariaLabel': 'प्रवृत्ति की जानकारी',
 
     'dashboard.orderOpportunitySimulator.title': 'ऑर्डर और अवसर सिम्युलेटर',
     'dashboard.orderOpportunitySimulator.description': 'एक एक्सचेंज का अनुकरण करें और वृद्धिशील लाभ प्रतिशत पर संभावित बिक्री के अवसर देखें।',
@@ -945,7 +950,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.websocket.errorDescription': 'लाइव मूल्य फ़ीड से कनेक्शन विफल। आवधिक अपडेट पर वापस जा रहे हैं।',
     'dashboard.websocket.errorDescriptionBinance': 'बायनेंस लाइव मूल्य फ़ीड से कनेक्शन विफल। आवधिक अपडेट पर वापस जा रहे हैं।',
     'dashboard.websocket.errorDescriptionBinanceFallback': 'बायनेंस वेबसॉकेट विफल। REST फ़ॉलबैक का उपयोग किया जा रहा है।',
-    'dashboard.websocket.errorDescriptionCoinCap': 'कॉइनकैप लाइव मूल्य फ़ीड से कनेक्शन विफल। आवधिक अपडेट पर वापस जा रहे हैं।',
+    'dashboard.websocket.errorDescriptionCoinCap': 'कॉइनकैप लाइव मूल्य फ़ीड से कनेक्शन विफल। REST फ़ॉलबैक का उपयोग किया जा रहा है।',
     'dashboard.websocket.errorDescriptionCoinCapFallback': 'कॉइनकैप वेबसॉकेट विफल। REST फ़ॉलबैक का उपयोग किया जा रहा है।',
     'dashboard.websocket.errorMessage': 'त्रुटि संदेश: {message}, प्रकार: {type}',
     'dashboard.websocket.eventType': 'घटना प्रकार: {type}',
@@ -1152,6 +1157,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.cryptoCard.trend.downward': "下跌趋势",
     'dashboard.cryptoCard.trend.sideways': "横盘趋势",
     'dashboard.cryptoCard.trend.notAvailable': "趋势不可用",
+    'dashboard.cryptoCard.trend.ariaLabel': '趋势信息',
 
     'dashboard.orderOpportunitySimulator.title': '订单与机会模拟器',
     'dashboard.orderOpportunitySimulator.description': '模拟交易并查看增量利润百分比下的潜在卖出机会。',
@@ -1218,7 +1224,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.websocket.errorDescription': '连接实时价格源失败。将回退到定期更新。',
     'dashboard.websocket.errorDescriptionBinance': '连接币安实时价格源失败。将回退到定期更新。',
     'dashboard.websocket.errorDescriptionBinanceFallback': '币安WebSocket失败。正在使用REST备用方案。',
-    'dashboard.websocket.errorDescriptionCoinCap': '连接CoinCap实时价格源失败。将回退到定期更新。',
+    'dashboard.websocket.errorDescriptionCoinCap': '连接CoinCap实时价格源失败。将回退到REST备用方案。',
     'dashboard.websocket.errorDescriptionCoinCapFallback': 'CoinCap WebSocket失败。正在使用REST备用方案。',
     'dashboard.websocket.errorMessage': '错误信息：{message}，类型：{type}',
     'dashboard.websocket.eventType': '事件类型：{type}',
@@ -1446,4 +1452,3 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     </LanguageContext.Provider>
   );
 };
-
