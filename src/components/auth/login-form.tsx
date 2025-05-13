@@ -19,7 +19,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, AlertTriangle } from 'lucide-react'; // Added AlertTriangle
+import { Loader2, AlertTriangle } from 'lucide-react'; 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -32,7 +32,7 @@ const getLoginFormSchema = (t: (key: string, fallback?: string) => string) => z.
 type LoginFormValues = z.infer<ReturnType<typeof getLoginFormSchema>>;
 
 export function LoginForm() {
-  const { login, sendPasswordResetEmail, isFirebaseConfigValid } = useAuth(); // Get isFirebaseConfigValid
+  const { login, sendPasswordResetEmail, isFirebaseConfigValid } = useAuth(); 
   const { translations, language } = useLanguage();
   const { toast } = useToast();
   const router = useRouter();
@@ -56,7 +56,7 @@ export function LoginForm() {
     if (!isFirebaseConfigValid) {
       toast({
         title: t('firebase.config.errorTitle', 'Firebase Configuration Error'),
-        description: t('firebase.config.errorMessage', 'Cannot log in. Firebase is not configured.'),
+        description: t('firebase.config.errorMessageLogin', 'Login is unavailable because the application is not properly configured to connect to Firebase. Please ensure all NEXT_PUBLIC_FIREBASE_... variables are correctly set in your .env.local file. Refer to README.md for setup instructions.'),
         variant: 'destructive',
       });
       return;
@@ -76,7 +76,7 @@ export function LoginForm() {
       } else if (error.code === 'auth/too-many-requests') {
         description = t('login.toast.errorDescriptionTooManyRequests', 'Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.');
       } else if (error.code === 'auth/api-key-not-valid') {
-         description = t('firebase.config.apiKeyInvalid', 'The Firebase API Key is invalid. Please check your .env.local file.');
+         description = t('firebase.config.apiKeyInvalid'); // Use the translation key directly
       }
       toast({
         title: t('login.toast.errorTitle', 'Login Failed'),

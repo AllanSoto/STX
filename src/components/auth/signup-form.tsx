@@ -39,7 +39,7 @@ const getSignupFormSchema = (t: (key: string, fallback?: string) => string) => z
 type SignupFormValues = z.infer<ReturnType<typeof getSignupFormSchema>>;
 
 export function SignupForm() {
-  const { signup, isFirebaseConfigValid } = useAuth(); // Get isFirebaseConfigValid
+  const { signup, isFirebaseConfigValid } = useAuth(); 
   const { translations, language } = useLanguage();
   const { toast } = useToast();
   const router = useRouter();
@@ -61,7 +61,7 @@ export function SignupForm() {
     if (!isFirebaseConfigValid) {
       toast({
         title: t('firebase.config.errorTitle', 'Firebase Configuration Error'),
-        description: t('firebase.config.errorMessage', 'Cannot sign up. Firebase is not configured.'),
+        description: t('firebase.config.errorMessageSignup', 'Account creation is unavailable because the application is not properly configured to connect to Firebase. Please ensure all NEXT_PUBLIC_FIREBASE_... variables are correctly set in your .env.local file. Refer to README.md for setup instructions.'),
         variant: 'destructive',
       });
       return;
@@ -79,7 +79,7 @@ export function SignupForm() {
       if (error.code === 'auth/email-already-in-use') {
         description = t('signup.error.emailTaken', 'This email is already registered.');
       } else if (error.code === 'auth/api-key-not-valid') {
-         description = t('firebase.config.apiKeyInvalid', 'The Firebase API Key is invalid. Please check your .env.local file.');
+         description = t('firebase.config.apiKeyInvalid'); // Use the translation key directly
       }
       toast({
         title: t('signup.toast.errorTitle', 'Signup Failed'),
