@@ -76,7 +76,7 @@ export function LoginForm() {
       } else if (error.code === 'auth/too-many-requests') {
         description = t('login.toast.errorDescriptionTooManyRequests', 'Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.');
       } else if (error.code === 'auth/api-key-not-valid') {
-         description = t('firebase.config.apiKeyInvalid'); // Use the translation key directly
+         description = t('firebase.config.apiKeyInvalid', "Firebase API Key invalid. Check .env.local. Also, in Firebase Console, ensure Email/Password sign-in is ENABLED & API key has no restrictions for this app."); 
       }
       toast({
         title: t('login.toast.errorTitle', 'Login Failed'),
@@ -171,7 +171,12 @@ export function LoginForm() {
                 <FormControl>
                   <Checkbox
                     checked={field.value}
-                    onCheckedChange={field.onChange}
+                    onCheckedChange={(checked) => {
+                      // Defer the update slightly to avoid potential flushSync issues
+                      setTimeout(() => {
+                        field.onChange(checked);
+                      }, 0);
+                    }}
                     disabled={!isFirebaseConfigValid}
                   />
                 </FormControl>
@@ -183,7 +188,7 @@ export function LoginForm() {
           />
           <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isLoading || !isFirebaseConfigValid}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {t('login.submitButton', 'Log In')}
+             {isFirebaseConfigValid ? t('login.submitButton', 'Log In') : t('login.submitButton', 'Log In (disabled)')}
           </Button>
         </form>
       </Form>
