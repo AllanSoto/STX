@@ -1,7 +1,7 @@
 // src/lib/firebase/config.ts
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, setPersistence, browserLocalPersistence, browserSessionPersistence, inMemoryPersistence, type Auth } from 'firebase/auth';
-import { getFirestore, type Firestore } from 'firebase/firestore';
+import { getFirestore, type Firestore, initializeFirestore, persistentLocalCache } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -39,7 +39,7 @@ for (const key of requiredEnvVars) {
 
 if (!isFirebaseProperlyConfigured) {
   console.error(
-    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" +
+   "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" +
     "CRITICAL FIREBASE CONFIGURATION ERROR:\n" +
     "The following Firebase environment variables are MISSING or INVALID in your '.env.local' file:\n" +
     missingVars.join('\n') + '\n' +
@@ -57,7 +57,7 @@ if (!getApps().length) {
     app = initializeApp(firebaseConfig);
   } catch (e: any) {
     console.error(
-      "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" +
+     "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" +
       "CRITICAL FIREBASE INITIALIZATION ERROR:", e.message + "\n" +
       "This usually means your Firebase configuration in '.env.local' is incorrect, incomplete, or the Firebase services (like Authentication) are not enabled in your Firebase project console.\n" +
       "Please verify ALL your NEXT_PUBLIC_FIREBASE_... variables in the .env.local file and ensure that Authentication (e.g., Email/Password sign-in) is ENABLED in the Firebase console.\n" +
@@ -74,28 +74,43 @@ if (!getApps().length) {
 }
 
 auth = getAuth(app);
-db = getFirestore(app);
+
+// Initialize Firestore with persistence settings
+try {
+  db = initializeFirestore(app, {
+    localCache: persistentLocalCache()
+  });
+  console.log("Firestore initialized with persistent local cache.");
+} catch (e: any) {
+  console.error("Error initializing Firestore with persistence:", e);
+  db = getFirestore(app); // Fallback to standard initialization
+  console.warn("Firestore initialized without persistent local cache due to an error.");
+}
+
 
 // Set auth persistence (example: local, session, or none)
 // This is where 'rememberMe' functionality logic would tie in.
 // For now, default to browserLocalPersistence.
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined') { // Ensure this runs only in the browser
   setPersistence(auth, browserLocalPersistence)
     .catch((error) => {
       console.error("Error setting auth persistence to browserLocalPersistence:", error);
     });
 }
 
+
 // Example function to change persistence based on rememberMe, could be called from AuthProvider
 export const setAuthPersistence = async (rememberMe: boolean) => {
-  const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
-  // For a truly 'none' option if user unchecks rememberMe and was previously local:
-  // const persistenceType = rememberMe ? browserLocalPersistence : inMemoryPersistence;
-  try {
-    await setPersistence(auth, persistenceType);
-    console.log(`Auth persistence set to: ${rememberMe ? 'local' : 'session/memory'}`);
-  } catch (error) {
-    console.error("Error setting auth persistence:", error);
+  if (typeof window !== 'undefined') { // Ensure this runs only in the browser
+    const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
+    // For a truly 'none' option if user unchecks rememberMe and was previously local:
+    // const persistenceType = rememberMe ? browserLocalPersistence : inMemoryPersistence;
+    try {
+      await setPersistence(auth, persistenceType);
+      console.log(`Auth persistence set to: ${rememberMe ? 'local' : 'session/memory'}`);
+    } catch (error) {
+      console.error("Error setting auth persistence:", error);
+    }
   }
 };
 
