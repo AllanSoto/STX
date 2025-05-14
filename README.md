@@ -15,15 +15,18 @@ The application's codebase already includes several checks and guidance mechanis
     *   Restart the development server.
     The README also explicitly states that the `auth/api-key-not-valid` error is typically due to incorrect `.env.local` values or Firebase project configuration.
 
-Given these existing measures, no further code changes within the application are required to address this specific error. The solution lies in the user meticulously following the setup instructions in the `README.md` to ensure their Firebase project is correctly configured and that their `.env.local` file contains the correct and valid credentials.
+**Additionally, if you encounter "permission-denied" errors when trying to access Firestore data (e.g., user profiles, orders, alerts), it is CRITICAL that you have the correct Firestore Security Rules deployed in your Firebase project console. Refer to the "Firestore Security Rules" section in `src/README.md` for the rules that MUST be deployed.**
+
+Given these existing measures, no further code changes within the application are required to address this specific error. The solution lies in the user meticulously following the setup instructions in the `README.md` to ensure their Firebase project is correctly configured and that their `.env.local` file contains the correct and valid credentials, and that Firestore Security Rules are correctly deployed.
 
 The error message in the screenshot ("Falló el Inicio de Sesión Firebase: Error (auth/api-key-not-valid...)") confirms that the application *is* attempting a Firebase operation (login), but Firebase is rejecting the API key. This means the problem is external to the application's current code logic for handling configuration, as the error originates from the Firebase backend due to an invalid key.
 
 **Recommendation to the user:**
 
-Please carefully review and follow the "Environment Setup" section in the `README.md` file. Pay close attention to:
+Please carefully review and follow the "Environment Setup" and "Firestore Security Rules" sections in the `src/README.md` file. Pay close attention to:
 1.  Ensuring **Authentication is enabled** in your Firebase project console (under Build > Authentication > Sign-in method). At least one provider (like Email/Password) must be enabled.
 2.  Double-checking that **all `NEXT_PUBLIC_FIREBASE_...` variables** in your `.env.local` file are copied exactly from your Firebase project settings.
 3.  Ensuring there are **no typos** in the variable names or their values in the `.env.local` file.
 4.  **Restarting your Next.js development server** after any changes to the `.env.local` file.
 5.  Verifying that your Firebase API key does not have any restrictions (e.g., HTTP referrer restrictions) that would prevent it from being used from `localhost` or your deployment domain.
+6.  **Deploying the correct Firestore Security Rules** to your Firebase project as detailed in `src/README.md`.

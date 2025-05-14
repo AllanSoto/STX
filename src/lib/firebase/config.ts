@@ -24,15 +24,13 @@ const requiredEnvVars: (keyof typeof firebaseConfig)[] = [
   'apiKey',
   'authDomain',
   'projectId',
-  // storageBucket, messagingSenderId, appId are often not strictly required for basic auth/firestore
-  // but good to have. measurementId is optional.
 ];
 
 let missingVars: string[] = [];
 
 for (const key of requiredEnvVars) {
   if (!firebaseConfig[key]) {
-    isFirebaseProperlyConfigured = false; // Set to false if any required var is missing
+    isFirebaseProperlyConfigured = false; 
     missingVars.push(`NEXT_PUBLIC_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`);
   }
 }
@@ -65,8 +63,6 @@ if (!getApps().length) {
       "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     );
     isFirebaseProperlyConfigured = false; 
-    // We throw here because if Firebase itself can't initialize, the app is fundamentally broken.
-    // The server will likely stop, or client-side will show Next.js error overlay.
     throw new Error("Firebase initialization failed due to missing or invalid configuration. App cannot start. Check .env.local and your Firebase project settings. See server console for details.");
   }
 } else {
@@ -75,36 +71,27 @@ if (!getApps().length) {
 
 auth = getAuth(app);
 
-// Initialize Firestore with persistence settings
 try {
   db = initializeFirestore(app, {
     localCache: persistentLocalCache()
   });
   console.log("Firestore initialized with persistent local cache.");
 } catch (e: any) {
-  console.error("Error initializing Firestore with persistence:", e);
-  db = getFirestore(app); // Fallback to standard initialization
-  console.warn("Firestore initialized without persistent local cache due to an error.");
+  console.warn("Error initializing Firestore with persistence, falling back to default:", e);
+  db = getFirestore(app); 
 }
 
 
-// Set auth persistence (example: local, session, or none)
-// This is where 'rememberMe' functionality logic would tie in.
-// For now, default to browserLocalPersistence.
-if (typeof window !== 'undefined') { // Ensure this runs only in the browser
+if (typeof window !== 'undefined') { 
   setPersistence(auth, browserLocalPersistence)
     .catch((error) => {
       console.error("Error setting auth persistence to browserLocalPersistence:", error);
     });
 }
 
-
-// Example function to change persistence based on rememberMe, could be called from AuthProvider
 export const setAuthPersistence = async (rememberMe: boolean) => {
-  if (typeof window !== 'undefined') { // Ensure this runs only in the browser
+  if (typeof window !== 'undefined') { 
     const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
-    // For a truly 'none' option if user unchecks rememberMe and was previously local:
-    // const persistenceType = rememberMe ? browserLocalPersistence : inMemoryPersistence;
     try {
       await setPersistence(auth, persistenceType);
       console.log(`Auth persistence set to: ${rememberMe ? 'local' : 'session/memory'}`);
@@ -118,41 +105,65 @@ export const setAuthPersistence = async (rememberMe: boolean) => {
 export { app, auth, db };
 
 /*
-Conceptual Firestore Security Rules (to be applied in Firebase console or firebase.rules):
+==========================================================================================
+IMPORTANT: FIREBASE FIRESTORE SECURITY RULES
+==========================================================================================
+The following rules are essential for the application to function correctly.
+You MUST copy and paste these rules into your Firebase project's
+Firestore Security Rules editor and PUBLISH them.
 
+Failure to do so will result in "permission-denied" errors when users try to
+access or modify their data.
+
+To apply these rules:
+1. Go to your Firebase project in the Firebase Console.
+2. Navigate to "Firestore Database" (under Build).
+3. Click on the "Rules" tab.
+4. Replace the existing rules with the content below.
+5. Click "Publish".
+
+--- START OF RULES TO COPY ---
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // User profile data
+    // User profile data:
+    // Allows a user to read and write to their own document in the 'users' collection.
+    // This is crucial for fetching user details after login and for updating profile information.
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // User-specific orders stored under /userOrders/{userId}/orders/{orderId}
+    // User-specific orders:
+    // Allows a user to manage (read, write, delete) their own orders.
     match /userOrders/{userId}/orders/{orderId} {
       allow read, write, delete: if request.auth != null && request.auth.uid == userId;
     }
 
-    // User-specific simulations stored under /userSimulations/{userId}/simulations/{simulationId}
+    // User-specific simulations:
+    // Allows a user to manage their own simulations.
     match /userSimulations/{userId}/simulations/{simulationId} {
       allow read, write, delete: if request.auth != null && request.auth.uid == userId;
     }
 
-    // User-specific alerts stored under /userAlerts/{userId}/alerts/{alertId}
+    // User-specific alerts:
+    // Allows a user to manage their own price alerts.
     match /userAlerts/{userId}/alerts/{alertId} {
       allow read, write, delete: if request.auth != null && request.auth.uid == userId;
     }
     
-    // User-specific daily balance snapshots
+    // User-specific daily balance snapshots:
+    // Allows a user to read and write their own daily balance snapshots.
     match /userDailyBalances/{userId}/snapshots/{snapshotId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Fallback rule: Deny all other access by default
+    // Fallback rule: Deny all other access by default for security.
     match /{document=**} {
       allow read, write: if false;
     }
   }
 }
+--- END OF RULES TO COPY ---
+==========================================================================================
 */
