@@ -1,4 +1,3 @@
-
 // src/providers/language-provider.tsx
 'use client';
 
@@ -8,13 +7,7 @@ import { LANGUAGES } from '@/lib/constants';
 
 export type LanguageCode = typeof LANGUAGES[number]['code'];
 
-interface LanguageContextType {
-  language: LanguageCode;
-  setLanguage: (language: LanguageCode) => void;
-  translations: Record<string, string>;
-  hydrated: boolean; 
-}
-
+// Full translationsData as it exists in the user's current file
 const translationsData: Record<LanguageCode, Record<string, string>> = {
   en: {
     'app.name': 'SimulTradex',
@@ -48,8 +41,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.alerts.triggeredDescription': '{symbol} has reached your target price of ${targetPrice}. Current price: ${currentPrice}.',
     'dashboard.ai.historicalDataError': 'Could not fetch historical data for {symbol}.',
     'dashboard.loginPrompt': 'Please log in to view the dashboard and use SimulTradex features.',
-
-
     'account.passwordChange.title': "Change Password",
     'account.passwordChange.description': "Update your account password.",
     'account.passwordChange.currentPasswordLabel': "Current Password",
@@ -66,8 +57,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.passwordChange.toast.notLoggedInTitle': "Not Logged In",
     'account.passwordChange.toast.notLoggedInDescription': "You must be logged in to change your password.",
     'account.passwordChange.loginRequiredMessage': 'Please log in to change your password.',
-
-
     'account.page.title': "Account Settings",
     'account.page.loginPrompt': 'Please log in to view your account settings.',
     'account.profile.title': 'Profile Information',
@@ -75,8 +64,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.profile.emailLabel': 'Email Address',
     'account.profile.displayNameLabel': 'Display Name',
     'account.profile.notAvailable': 'Not available',
-
-
     'dashboard.cryptoCard.tooltip.reason': "Reason:",
     'dashboard.cryptoCard.tooltip.confidence': "Confidence:",
     'dashboard.cryptoCard.trend.upward': "Upward trend",
@@ -84,12 +71,11 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.cryptoCard.trend.sideways': "Sideways trend",
     'dashboard.cryptoCard.trend.notAvailable': "Trend N/A",
     'dashboard.cryptoCard.trend.ariaLabel': 'Trend information',
-
-    'dashboard.orderOpportunitySimulator.title': 'Order &amp; Opportunity Simulator',
+    'dashboard.orderOpportunitySimulator.title': 'Order & Opportunity Simulator',
     'dashboard.orderOpportunitySimulator.description': 'Simulate an exchange and see potential sell opportunities at incremental profit percentages.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Trading Pair',
-    'dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel': `Amount to Spend ({currency})`,
-    'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': 'Price of {baseCurrency} ({quoteCurrency})',
+    'dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel': 'Amount to Spend ({currency})',
+    'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': 'Purchase Price of {baseCurrency} ({quoteCurrency})',
     'dashboard.orderOpportunitySimulator.cryptoValueLabel': 'Exchanged Crypto ({crypto})',
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Select Trading Pair',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'Operation',
@@ -130,20 +116,18 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': 'Order Save Disabled',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': 'Saving orders is disabled as user authentication has been removed.',
     'dashboard.orderOpportunitySimulator.exchangeOperation': 'Exchange {cur1} for {cur2}',
-
-
+    'dashboard.orderOpportunitySimulator.quantityLabel': 'Quantity ({currency})',
+    'dashboard.orderOpportunitySimulator.purchasePriceLabel': 'Purchase Price ({baseCurrency} per {quoteCurrency})',
+    'dashboard.orderOpportunitySimulator.exchangedCryptoValueLabel': 'Exchanged Value ({targetCurrency})',
     'dashboard.connectionStatus.title': 'Connection Issue',
     'dashboard.connectionStatus.noFeed': 'Currently not receiving live price updates. Attempting to connect...',
     'dashboard.connectionStatus.fallbackTitle': 'Using Fallback Connection',
     'dashboard.connectionStatus.restFallbackActive': 'WebSocket connection failed. Using periodic REST API updates for prices.',
-
     'dashboard.api.binance.fetchError': 'Failed to fetch prices from Binance: {status}',
     'dashboard.api.binance.errorTitle': 'Price Fetch Error (Binance)',
     'dashboard.api.binance.unknownError': 'Could not fetch live prices from Binance.',
     'dashboard.api.coincap.errorTitle': 'Price Fetch Error (CoinCap)',
     'dashboard.api.coincap.unknownError': 'Could not fetch live prices from CoinCap.',
-
-
     'dashboard.ai.errorTitle': 'AI Analysis Error',
     'dashboard.ai.errorDescription': 'Could not update AI trends.',
     'dashboard.ai.clientErrorReason': 'Client error fetching trend for {symbol}: {details}',
@@ -156,7 +140,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.websocket.errorDescriptionCoinCapFallback': 'CoinCap WebSocket failed. Using REST fallback.',
     'dashboard.websocket.errorMessage': 'Error message: {message}, Type: {type}',
     'dashboard.websocket.eventType': 'Event type: {type}',
-
     'history.page.title': "Order History",
     'history.menuItem': 'Order History',
     'history.page.loginPrompt': 'Please log in to view your order history.',
@@ -189,7 +172,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'history.toast.noDataExportDescription': 'There is no data to export.',
     'history.toast.csvExportSuccessTitle': 'Export Successful',
     'history.toast.csvExportSuccessDescription': 'Order history exported to CSV.',
-
     'alertModal.title.edit': 'Edit Alert for {symbol}',
     'alertModal.title.create': 'Set Alert for {symbol}',
     'alertModal.description': 'Current price: ${price}',
@@ -222,8 +204,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'alertModal.toast.authErrorTitle': 'Authentication Error',
     'alertModal.toast.authErrorDescription': 'You must be logged in to manage alerts.',
     'alertModal.toast.authErrorDescriptionLoginToSet': 'Please log in to set price alerts.',
-
-
     'activeAlerts.title': 'My Price Alerts',
     'activeAlerts.description': 'Manage your active and inactive price alerts.',
     'activeAlerts.loading': 'Loading alerts...',
@@ -255,7 +235,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'activeAlerts.toast.deactivatedDescription': 'The alert for {symbol} is now inactive.',
     'activeAlerts.toast.toggleErrorTitle': 'Error Updating Alert',
     'activeAlerts.toast.toggleErrorDescription': 'Could not update alert status.',
-
     'login.title': 'Login to SimulTradex',
     'login.emailLabel': 'Email Address',
     'login.emailPlaceholder': 'you@example.com',
@@ -283,8 +262,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.toast.logoutSuccessDescription': 'You have been successfully logged out.',
     'login.toast.logoutErrorTitle': 'Logout Failed',
     'login.toast.logoutErrorDescription': 'Could not log out. Please try again.',
-
-
     'signup.title': 'Create your SimulTradex Account',
     'signup.emailLabel': 'Email Address',
     'signup.emailPlaceholder': 'you@example.com',
@@ -298,8 +275,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'signup.toast.errorTitle': 'Signup Failed',
     'signup.toast.errorDescription': 'Could not create account. Please try again.',
     'signup.error.emailTaken': 'This email is already registered.',
-
-
     'zod.email.invalid': 'Invalid email address.',
     'zod.password.required': 'Password is required.',
     'zod.password.minLength': 'Password must be at least 8 characters.',
@@ -318,13 +293,12 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.orderOpportunity.selectPair': 'Please select a trading pair.',
     'zod.orderOpportunity.positiveInputAmount': 'Amount must be a positive number.',
     'zod.orderOpportunity.marketPricePositive': 'Market price must be a positive number.',
-    'zod.orderOpportunity.purchasePriceUsdtPositive': 'Price of Crypto must be a positive number.',
+    'zod.orderOpportunity.purchasePriceUsdtPositive': 'Purchase Price of Crypto must be a positive number.',
     'zod.orderOpportunity.targetPricePositive': 'Sell price must be a positive number.',
     'zod.alert.targetPricePositive': 'Target price must be a positive number.',
     'zod.alert.directionRequired': 'Please select a direction for the alert.',
     'footer.createdBy': 'Created with AI by Allan Soto',
     'toaster.notificationsLabel': 'Notifications (F8)',
-
     'firebase.config.errorTitle': 'Firebase Configuration Error',
     'firebase.config.errorMessage': 'The application is not properly configured to connect to Firebase. Please check your .env.local file and ensure all NEXT_PUBLIC_FIREBASE_... variables are correctly set. Refer to README.md for setup instructions.',
     'firebase.config.errorMessageLogin': 'Login is unavailable because the application is not properly configured to connect to Firebase. Please ensure all NEXT_PUBLIC_FIREBASE_... variables are correctly set in your .env.local file. Refer to README.md for setup instructions.',
@@ -368,8 +342,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.alerts.triggeredDescription': '{symbol} ha alcanzado su precio objetivo de ${targetPrice}. Precio actual: ${currentPrice}.',
     'dashboard.ai.historicalDataError': 'No se pudieron obtener los datos históricos para {symbol}.',
     'dashboard.loginPrompt': 'Por favor, inicie sesión para ver el tablero y usar las funciones de SimulTradex.',
-
-
     'account.passwordChange.title': "Cambiar Contraseña",
     'account.passwordChange.description': "Actualiza la contraseña de tu cuenta.",
     'account.passwordChange.currentPasswordLabel': "Contraseña Actual",
@@ -386,7 +358,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.passwordChange.toast.notLoggedInTitle': "No Has Iniciado Sesión",
     'account.passwordChange.toast.notLoggedInDescription': "Debes iniciar sesión para cambiar tu contraseña.",
     'account.passwordChange.loginRequiredMessage': 'Por favor, inicia sesión para cambiar tu contraseña.',
-
     'account.page.title': "Configuración de Cuenta",
     'account.page.loginPrompt': 'Por favor, inicia sesión para ver la configuración de tu cuenta.',
     'account.profile.title': 'Información del Perfil',
@@ -394,8 +365,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.profile.emailLabel': 'Dirección de Correo Electrónico',
     'account.profile.displayNameLabel': 'Nombre para Mostrar',
     'account.profile.notAvailable': 'No disponible',
-
-
     'dashboard.cryptoCard.tooltip.reason': "Razón:",
     'dashboard.cryptoCard.tooltip.confidence': "Confianza:",
     'dashboard.cryptoCard.trend.upward': "Tendencia alcista",
@@ -403,12 +372,11 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.cryptoCard.trend.sideways': "Tendencia lateral",
     'dashboard.cryptoCard.trend.notAvailable': "Tendencia N/A",
     'dashboard.cryptoCard.trend.ariaLabel': 'Información de tendencia',
-
     'dashboard.orderOpportunitySimulator.title': 'Simulador de Órdenes y Oportunidades',
     'dashboard.orderOpportunitySimulator.description': 'Simula un intercambio y visualiza oportunidades de venta potenciales con porcentajes de ganancia incrementales.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Par de Trading',
     'dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel': 'Cantidad a Gastar ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': 'Precio de {baseCurrency} ({quoteCurrency})',
+    'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': 'Precio de Compra de {baseCurrency} ({quoteCurrency})',
     'dashboard.orderOpportunitySimulator.cryptoValueLabel': 'Cripto Intercambiado ({crypto})',
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Selecciona Par de Trading',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'Operación',
@@ -449,19 +417,18 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': 'Guardar Orden Deshabilitado',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': 'Guardar órdenes está deshabilitado ya que se eliminó la autenticación de usuarios.',
     'dashboard.orderOpportunitySimulator.exchangeOperation': 'Intercambiar {cur1} por {cur2}',
-
+    'dashboard.orderOpportunitySimulator.quantityLabel': 'Cantidad ({currency})',
+    'dashboard.orderOpportunitySimulator.purchasePriceLabel': 'Precio de Compra ({baseCurrency} por {quoteCurrency})',
+    'dashboard.orderOpportunitySimulator.exchangedCryptoValueLabel': 'Valor Intercambiado ({targetCurrency})',
     'dashboard.connectionStatus.title': 'Problema de Conexión',
     'dashboard.connectionStatus.noFeed': 'Actualmente no se reciben actualizaciones de precios en vivo. Intentando conectar...',
     'dashboard.connectionStatus.fallbackTitle': 'Usando Conexión de Respaldo',
     'dashboard.connectionStatus.restFallbackActive': 'Falló la conexión WebSocket. Usando actualizaciones periódicas de API REST para precios.',
-
     'dashboard.api.binance.fetchError': 'Error al obtener precios de Binance: {status}',
     'dashboard.api.binance.errorTitle': 'Error al Obtener Precios (Binance)',
     'dashboard.api.binance.unknownError': 'No se pudieron obtener los precios en vivo de Binance.',
     'dashboard.api.coincap.errorTitle': 'Error al Obtener Precios (CoinCap)',
     'dashboard.api.coincap.unknownError': 'No se pudieron obtener los precios en vivo de CoinCap.',
-
-
     'dashboard.ai.errorTitle': 'Error en Análisis de IA',
     'dashboard.ai.errorDescription': 'No se pudieron actualizar las tendencias de IA.',
     'dashboard.ai.clientErrorReason': 'Error de cliente al obtener tendencia para {symbol}: {details}',
@@ -474,7 +441,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.websocket.errorDescriptionCoinCapFallback': 'Falló WebSocket de CoinCap. Usando API REST de respaldo.',
     'dashboard.websocket.errorMessage': 'Mensaje de error: {message}, Tipo: {type}',
     'dashboard.websocket.eventType': 'Tipo de evento: {type}',
-
     'history.page.title': "Historial de Órdenes",
     'history.menuItem': 'Historial de Órdenes',
     'history.page.loginPrompt': 'Por favor, inicia sesión para ver tu historial de órdenes.',
@@ -507,7 +473,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'history.toast.noDataExportDescription': 'No hay datos para exportar.',
     'history.toast.csvExportSuccessTitle': 'Exportación Exitosa',
     'history.toast.csvExportSuccessDescription': 'Historial de órdenes exportado a CSV.',
-
     'alertModal.title.edit': 'Editar Alerta para {symbol}',
     'alertModal.title.create': 'Crear Alerta para {symbol}',
     'alertModal.description': 'Precio actual: ${price}',
@@ -540,8 +505,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'alertModal.toast.authErrorTitle': 'Error de Autenticación',
     'alertModal.toast.authErrorDescription': 'Debes iniciar sesión para administrar las alertas.',
     'alertModal.toast.authErrorDescriptionLoginToSet': 'Por favor, inicia sesión para establecer alertas de precios.',
-
-
     'activeAlerts.title': 'Mis Alertas de Precio',
     'activeAlerts.description': 'Gestiona tus alertas de precio activas e inactivas.',
     'activeAlerts.loading': 'Cargando alertas...',
@@ -573,7 +536,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'activeAlerts.toast.deactivatedDescription': 'La alerta para {symbol} ahora está inactiva.',
     'activeAlerts.toast.toggleErrorTitle': 'Error al Actualizar Alerta',
     'activeAlerts.toast.toggleErrorDescription': 'No se pudo actualizar el estado de la alerta.',
-
     'login.title': 'Iniciar Sesión en SimulTradex',
     'login.emailLabel': 'Dirección de Correo Electrónico',
     'login.emailPlaceholder': 'tu@ejemplo.com',
@@ -601,8 +563,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.toast.logoutSuccessDescription': 'Has cerrado sesión exitosamente.',
     'login.toast.logoutErrorTitle': 'Falló el Cierre de Sesión',
     'login.toast.logoutErrorDescription': 'No se pudo cerrar sesión. Por favor, inténtalo de nuevo.',
-
-
     'signup.title': 'Crea tu Cuenta en SimulTradex',
     'signup.emailLabel': 'Dirección de Correo Electrónico',
     'signup.emailPlaceholder': 'tu@ejemplo.com',
@@ -616,9 +576,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'signup.toast.errorTitle': 'Falló el Registro',
     'signup.toast.errorDescription': 'No se pudo crear la cuenta. Por favor, inténtalo de nuevo.',
     'signup.error.emailTaken': 'Este correo electrónico ya está registrado.',
-
-
-     'zod.email.invalid': 'Dirección de correo electrónico no válida.',
+    'zod.email.invalid': 'Dirección de correo electrónico no válida.',
     'zod.password.required': 'La contraseña es obligatoria.',
     'zod.password.minLength': 'La contraseña debe tener al menos 8 caracteres.',
     'zod.password.lowercase': 'La contraseña debe contener al menos una letra minúscula.',
@@ -642,7 +600,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.alert.directionRequired': 'Por favor, selecciona una dirección para la alerta.',
     'footer.createdBy': 'Creado con IA por Allan Soto',
     'toaster.notificationsLabel': 'Notificaciones (F8)',
-
     'firebase.config.errorTitle': 'Error de Configuración de Firebase',
     'firebase.config.errorMessage': 'La aplicación no está configurada correctamente para conectarse a Firebase. Por favor, revisa tu archivo .env.local y asegúrate de que todas las variables NEXT_PUBLIC_FIREBASE_... estén correctamente establecidas. Consulta README.md para instrucciones de configuración.',
     'firebase.config.errorMessageLogin': 'El inicio de sesión no está disponible porque la aplicación no está configurada correctamente para conectarse a Firebase. Por favor, asegúrate de que todas las variables NEXT_PUBLIC_FIREBASE_... estén correctamente establecidas en tu archivo .env.local. Consulta README.md para instrucciones de configuración.',
@@ -656,7 +613,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'firebase.permissionDenied.title': 'Permiso Denegado',
     'firebase.permissionDenied.userDataError': "No se pudieron cargar los datos del usuario debido a permisos insuficientes. Por favor, revise sus Reglas de Seguridad de Firestore. Consulte src/README.md para obtener orientación."
   },
-  fr: { 
+  fr: {
     'app.name': 'SimulTradex',
     'app.loadingMessage': 'Chargement de SimulTradex...',
     'app.loadingAuth': 'Vérification de la session...',
@@ -686,7 +643,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.alerts.triggeredDescription': '{symbol} a atteint votre prix cible de ${targetPrice}. Prix actuel : ${currentPrice}.',
     'dashboard.ai.historicalDataError': 'Impossible de récupérer les données historiques pour {symbol}.',
     'dashboard.loginPrompt': 'Veuillez vous connecter pour afficher le tableau de bord et utiliser les fonctionnalités de SimulTradex.',
-
     'account.passwordChange.title': "Changer le Mot de Passe",
     'account.passwordChange.description': "Mettez à jour le mot de passe de votre compte.",
     'account.passwordChange.currentPasswordLabel': "Mot de Passe Actuel",
@@ -703,7 +659,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.passwordChange.toast.notLoggedInTitle': "Non Connecté",
     'account.passwordChange.toast.notLoggedInDescription': "Vous devez être connecté pour changer votre mot de passe.",
     'account.passwordChange.loginRequiredMessage': 'Veuillez vous connecter pour changer votre mot de passe.',
-
     'account.page.title': "Paramètres du Compte",
     'account.page.loginPrompt': 'Veuillez vous connecter pour afficher les paramètres de votre compte.',
     'account.profile.title': 'Informations du Profil',
@@ -711,8 +666,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.profile.emailLabel': 'Adresse E-mail',
     'account.profile.displayNameLabel': 'Nom d\'Affichage',
     'account.profile.notAvailable': 'Non disponible',
-
-
     'dashboard.cryptoCard.tooltip.reason': "Raison :",
     'dashboard.cryptoCard.tooltip.confidence': "Confiance :",
     'dashboard.cryptoCard.trend.upward': "Tendance haussière",
@@ -720,12 +673,11 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.cryptoCard.trend.sideways': "Tendance latérale",
     'dashboard.cryptoCard.trend.notAvailable': "Tendance N/A",
     'dashboard.cryptoCard.trend.ariaLabel': 'Informations sur la tendance',
-
     'dashboard.orderOpportunitySimulator.title': 'Simulateur d\'Ordres et d\'Opportunités',
     'dashboard.orderOpportunitySimulator.description': 'Simulez un échange et visualisez les opportunités de vente potentielles avec des pourcentages de profit incrémentiels.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Paire de Trading',
     'dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel': 'Montant à Dépenser ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': 'Prix de {baseCurrency} ({quoteCurrency})',
+    'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': 'Prix d\'Achat de {baseCurrency} ({quoteCurrency})',
     'dashboard.orderOpportunitySimulator.cryptoValueLabel': 'Crypto Échangé ({crypto})',
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Sélectionner Paire de Trading',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'Opération',
@@ -766,19 +718,18 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': 'Sauvegarde d\'Ordre Désactivée',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': 'La sauvegarde des ordres est désactivée car l\'authentification utilisateur a été supprimée.',
     'dashboard.orderOpportunitySimulator.exchangeOperation': 'Échanger {cur1} contre {cur2}',
-
+    'dashboard.orderOpportunitySimulator.quantityLabel': 'Quantité ({currency})',
+    'dashboard.orderOpportunitySimulator.purchasePriceLabel': 'Prix d\'Achat ({baseCurrency} par {quoteCurrency})',
+    'dashboard.orderOpportunitySimulator.exchangedCryptoValueLabel': 'Valeur Échangée ({targetCurrency})',
     'dashboard.connectionStatus.title': 'Problème de Connexion',
     'dashboard.connectionStatus.noFeed': 'Actuellement, aucune mise à jour des prix en direct n\'est reçue. Tentative de connexion...',
     'dashboard.connectionStatus.fallbackTitle': 'Utilisation de la Connexion de Secours',
     'dashboard.connectionStatus.restFallbackActive': 'Échec de la connexion WebSocket. Utilisation des mises à jour périodiques de l\'API REST pour les prix.',
-
     'dashboard.api.binance.fetchError': 'Échec de la récupération des prix de Binance : {status}',
     'dashboard.api.binance.errorTitle': 'Erreur de Récupération des Prix (Binance)',
     'dashboard.api.binance.unknownError': 'Impossible de récupérer les prix en direct de Binance.',
     'dashboard.api.coincap.errorTitle': 'Erreur de Récupération des Prix (CoinCap)',
     'dashboard.api.coincap.unknownError': 'Impossible de récupérer les prix en direct de CoinCap.',
-
-
     'dashboard.ai.errorTitle': 'Erreur d\'Analyse IA',
     'dashboard.ai.errorDescription': 'Impossible de mettre à jour les tendances IA.',
     'dashboard.ai.clientErrorReason': 'Erreur client lors de la récupération de la tendance pour {symbol} : {details}',
@@ -791,7 +742,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.websocket.errorDescriptionCoinCapFallback': 'Échec du WebSocket CoinCap. Utilisation de l\'API REST de secours.',
     'dashboard.websocket.errorMessage': 'Message d\'erreur : {message}, Type : {type}',
     'dashboard.websocket.eventType': 'Type d\'événement : {type}',
-
     'history.page.title': "Historique des Ordres",
     'history.menuItem': 'Historique des Ordres',
     'history.page.loginPrompt': 'Veuillez vous connecter pour afficher votre historique d\'ordres.',
@@ -824,7 +774,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'history.toast.noDataExportDescription': 'Aucune donnée à exporter.',
     'history.toast.csvExportSuccessTitle': 'Exportation Réussie',
     'history.toast.csvExportSuccessDescription': 'Historique des ordres exporté en CSV.',
-
     'alertModal.title.edit': 'Modifier l\'Alerte pour {symbol}',
     'alertModal.title.create': 'Définir une Alerte pour {symbol}',
     'alertModal.description': 'Prix actuel : ${price}',
@@ -857,8 +806,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'alertModal.toast.authErrorTitle': 'Erreur d\'Authentification',
     'alertModal.toast.authErrorDescription': 'Vous devez être connecté pour gérer les alertes.',
     'alertModal.toast.authErrorDescriptionLoginToSet': 'Veuillez vous connecter pour définir des alertes de prix.',
-
-
     'activeAlerts.title': 'Mes Alertes de Prix',
     'activeAlerts.description': 'Gérez vos alertes de prix actives et inactives.',
     'activeAlerts.loading': 'Chargement des alertes...',
@@ -890,7 +837,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'activeAlerts.toast.deactivatedDescription': 'L\'alerte pour {symbol} est maintenant inactive.',
     'activeAlerts.toast.toggleErrorTitle': 'Erreur de Mise à Jour de l\'Alerte',
     'activeAlerts.toast.toggleErrorDescription': 'Impossible de mettre à jour le statut de l\'alerte.',
-
     'login.title': 'Connexion à SimulTradex',
     'login.emailLabel': 'Adresse E-mail',
     'login.emailPlaceholder': 'vous@exemple.com',
@@ -915,11 +861,9 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.toast.errorDescriptionTooManyRequests': 'L\'accès à ce compte a été temporairement désactivé en raison de nombreuses tentatives de connexion infructueuses. Vous pouvez le restaurer immédiatement en réinitialisant votre mot de passe ou réessayer plus tard.',
     'login.toast.errorDescriptionSocialConflict': "Un compte existe déjà avec la même adresse e-mail mais des identifiants de connexion différents. Connectez-vous à l'aide d'un fournisseur associé à cette adresse e-mail.",
     'login.toast.logoutSuccessTitle': 'Déconnecté',
-    'login.toast.logoutSuccessDescription': 'Vous avez été déconnecté avec succès.',
+    'login.toast.successDescription': 'Vous avez été déconnecté avec succès.',
     'login.toast.logoutErrorTitle': 'Échec de la Déconnexion',
     'login.toast.logoutErrorDescription': 'Impossible de se déconnecter. Veuillez réessayer.',
-
-
     'signup.title': 'Créez votre Compte SimulTradex',
     'signup.emailLabel': 'Adresse E-mail',
     'signup.emailPlaceholder': 'vous@exemple.com',
@@ -933,9 +877,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'signup.toast.errorTitle': 'Échec de l\'Inscription',
     'signup.toast.errorDescription': 'Impossible de créer le compte. Veuillez réessayer.',
     'signup.error.emailTaken': 'Cet e-mail est déjà enregistré.',
-
-
-     'zod.email.invalid': 'Adresse e-mail invalide.',
+    'zod.email.invalid': 'Adresse e-mail invalide.',
     'zod.password.required': 'Le mot de passe est requis.',
     'zod.password.minLength': 'Le mot de passe doit comporter au moins 8 caractères.',
     'zod.password.lowercase': 'Le mot de passe doit contenir au moins une lettre minuscule.',
@@ -953,13 +895,12 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.orderOpportunity.selectPair': 'Veuillez sélectionner une paire de trading.',
     'zod.orderOpportunity.positiveInputAmount': 'Le montant doit être un nombre positif.',
     'zod.orderOpportunity.marketPricePositive': 'Le prix du marché doit être un nombre positif.',
-    'zod.orderOpportunity.purchasePriceUsdtPositive': 'Le Prix de Crypto doit être un nombre positif.',
+    'zod.orderOpportunity.purchasePriceUsdtPositive': 'Le Prix d\'Achat de Crypto doit être un nombre positif.',
     'zod.orderOpportunity.targetPricePositive': 'Le prix de vente doit être un nombre positif.',
     'zod.alert.targetPricePositive': 'Le prix cible doit être un nombre positif.',
     'zod.alert.directionRequired': 'Veuillez sélectionner une direction pour l\'alerte.',
     'footer.createdBy': 'Créé avec IA par Allan Soto',
     'toaster.notificationsLabel': 'Notifications (F8)',
-
     'firebase.config.errorTitle': 'Erreur de Configuration Firebase',
     'firebase.config.errorMessage': 'L\'application n\'est pas correctement configurée pour se connecter à Firebase. Veuillez vérifier votre fichier .env.local et vous assurer que toutes les variables NEXT_PUBLIC_FIREBASE_... sont correctement définies. Consultez README.md pour les instructions de configuration.',
     'firebase.config.errorMessageLogin': 'La connexion n\'est pas disponible car l\'application n\'est pas correctement configurée pour se connecter à Firebase. Veuillez vous assurer que toutes les variables NEXT_PUBLIC_FIREBASE_... sont correctement définies dans votre fichier .env.local. Consultez README.md pour les instructions de configuration.',
@@ -973,7 +914,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'firebase.permissionDenied.title': 'Permission Refusée',
     'firebase.permissionDenied.userDataError': "Impossible de charger les données utilisateur en raison d'autorisations insuffisantes. Veuillez vérifier vos règles de sécurité Firestore. Consultez src/README.md pour obtenir des conseils."
   },
-  hi: { 
+  hi: {
     'app.name': 'सिमुलट्रेडेक्स',
     'app.loadingMessage': 'सिमुलट्रेडेक्स लोड हो रहा है...',
     'app.loadingAuth': 'सत्र सत्यापित किया जा रहा है...',
@@ -1003,8 +944,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.alerts.triggeredDescription': '{symbol} आपके लक्ष्य मूल्य ${targetPrice} पर पहुंच गया है। वर्तमान मूल्य: ${currentPrice}।',
     'dashboard.ai.historicalDataError': '{symbol} के लिए ऐतिहासिक डेटा प्राप्त नहीं किया जा सका।',
     'dashboard.loginPrompt': 'डैशबोर्ड देखने और सिमुलट्रेडेक्स सुविधाओं का उपयोग करने के लिए कृपया लॉग इन करें।',
-
-
     'account.passwordChange.title': "पासवर्ड बदलें",
     'account.passwordChange.description': "अपना खाता पासवर्ड अपडेट करें।",
     'account.passwordChange.currentPasswordLabel': "वर्तमान पासवर्ड",
@@ -1021,8 +960,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.passwordChange.toast.notLoggedInTitle': "लॉग इन नहीं किया है",
     'account.passwordChange.toast.notLoggedInDescription': "अपना पासवर्ड बदलने के लिए आपको लॉग इन होना चाहिए।",
     'account.passwordChange.loginRequiredMessage': 'कृपया अपना पासवर्ड बदलने के लिए लॉग इन करें।',
-
-
     'account.page.title': "खाता सेटिंग्स",
     'account.page.loginPrompt': 'कृपया अपनी खाता सेटिंग्स देखने के लिए लॉग इन करें।',
     'account.profile.title': 'प्रोफ़ाइल जानकारी',
@@ -1030,8 +967,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.profile.emailLabel': 'ईमेल पता',
     'account.profile.displayNameLabel': 'प्रदर्शित होने वाला नाम',
     'account.profile.notAvailable': 'उपलब्ध नहीं है',
-
-
     'dashboard.cryptoCard.tooltip.reason': "कारण:",
     'dashboard.cryptoCard.tooltip.confidence': "आत्मविश्वास:",
     'dashboard.cryptoCard.trend.upward': "ऊपर की ओर प्रवृत्ति",
@@ -1039,12 +974,11 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.cryptoCard.trend.sideways': "बग़ल में प्रवृत्ति",
     'dashboard.cryptoCard.trend.notAvailable': "प्रवृत्ति उपलब्ध नहीं है",
     'dashboard.cryptoCard.trend.ariaLabel': 'प्रवृत्ति की जानकारी',
-
     'dashboard.orderOpportunitySimulator.title': 'ऑर्डर और अवसर सिम्युलेटर',
     'dashboard.orderOpportunitySimulator.description': 'एक एक्सचेंज का अनुकरण करें और वृद्धिशील लाभ प्रतिशत पर संभावित बिक्री के अवसर देखें।',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'ट्रेडिंग जोड़ी',
     'dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel': 'खर्च की जाने वाली राशि ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': '{baseCurrency} का मूल्य ({quoteCurrency})',
+    'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': '{baseCurrency} का खरीद मूल्य ({quoteCurrency})',
     'dashboard.orderOpportunitySimulator.cryptoValueLabel': 'एक्सचेंज्ड क्रिप्टो ({crypto})',
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'ट्रेडिंग जोड़ी चुनें',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'ऑपरेशन',
@@ -1085,19 +1019,18 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': 'ऑर्डर सहेजना अक्षम',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': 'ऑर्डर सहेजना अक्षम है क्योंकि उपयोगकर्ता प्रमाणीकरण हटा दिया गया है।',
     'dashboard.orderOpportunitySimulator.exchangeOperation': '{cur1} को {cur2} से एक्सचेंज करें',
-
+    'dashboard.orderOpportunitySimulator.quantityLabel': 'मात्रा ({currency})',
+    'dashboard.orderOpportunitySimulator.purchasePriceLabel': 'खरीद मूल्य ({baseCurrency} प्रति {quoteCurrency})',
+    'dashboard.orderOpportunitySimulator.exchangedCryptoValueLabel': 'विनिमयित मूल्य ({targetCurrency})',
     'dashboard.connectionStatus.title': 'कनेक्शन समस्या',
     'dashboard.connectionStatus.noFeed': 'वर्तमान में लाइव मूल्य अपडेट प्राप्त नहीं हो रहे हैं। कनेक्ट करने का प्रयास किया जा रहा है...',
     'dashboard.connectionStatus.fallbackTitle': 'फॉल बैक कनेक्शन का उपयोग किया जा रहा है',
     'dashboard.connectionStatus.restFallbackActive': 'वेबसॉकेट कनेक्शन विफल। कीमतों के लिए आवधिक REST API अपडेट का उपयोग किया जा रहा है।',
-
     'dashboard.api.binance.fetchError': 'बायनेंस से कीमतें प्राप्त करने में विफल: {status}',
     'dashboard.api.binance.errorTitle': 'कीमत प्राप्त करने में त्रुटि (बायनेंस)',
     'dashboard.api.binance.unknownError': 'बायनेंस से लाइव कीमतें प्राप्त नहीं की जा सकीं।',
     'dashboard.api.coincap.errorTitle': 'कीमत प्राप्त करने में त्रुटि (कॉइनकैप)',
     'dashboard.api.coincap.unknownError': 'कॉइनकैप से लाइव कीमतें प्राप्त नहीं की जा सकीं।',
-
-
     'dashboard.ai.errorTitle': 'AI विश्लेषण त्रुटि',
     'dashboard.ai.errorDescription': 'AI रुझान अपडेट नहीं किए जा सके।',
     'dashboard.ai.clientErrorReason': '{symbol} के लिए रुझान प्राप्त करने में क्लाइंट त्रुटि: {details}',
@@ -1110,7 +1043,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.websocket.errorDescriptionCoinCapFallback': 'कॉइनकैप वेबसॉकेट विफल। REST फ़ॉलबैक का उपयोग किया जा रहा है।',
     'dashboard.websocket.errorMessage': 'त्रुटि संदेश: {message}, प्रकार: {type}',
     'dashboard.websocket.eventType': 'घटना प्रकार: {type}',
-
     'history.page.title': "ऑर्डर इतिहास",
     'history.menuItem': 'ऑर्डर इतिहास',
     'history.page.loginPrompt': 'कृपया अपना ऑर्डर इतिहास देखने के लिए लॉग इन करें।',
@@ -1143,7 +1075,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'history.toast.noDataExportDescription': 'निर्यात करने के लिए कोई डेटा नहीं है।',
     'history.toast.csvExportSuccessTitle': 'निर्यात सफल',
     'history.toast.csvExportSuccessDescription': 'ऑर्डर इतिहास CSV में निर्यात किया गया।',
-
     'alertModal.title.edit': '{symbol} के लिए चेतावनी संपादित करें',
     'alertModal.title.create': '{symbol} के लिए चेतावनी सेट करें',
     'alertModal.description': 'वर्तमान मूल्य: ${price}',
@@ -1176,8 +1107,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'alertModal.toast.authErrorTitle': 'प्रमाणीकरण त्रुटि',
     'alertModal.toast.authErrorDescription': 'चेतावनियों का प्रबंधन करने के लिए आपको लॉग इन होना चाहिए।',
     'alertModal.toast.authErrorDescriptionLoginToSet': 'मूल्य चेतावनी सेट करने के लिए कृपया लॉग इन करें।',
-
-
     'activeAlerts.title': 'मेरी मूल्य चेतावनियां',
     'activeAlerts.description': 'अपनी सक्रिय और निष्क्रिय मूल्य चेतावनियों का प्रबंधन करें।',
     'activeAlerts.loading': 'चेतावनियां लोड हो रही हैं...',
@@ -1209,7 +1138,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'activeAlerts.toast.deactivatedDescription': '{symbol} के लिए चेतावनी अब निष्क्रिय है।',
     'activeAlerts.toast.toggleErrorTitle': 'चेतावनी अपडेट करने में त्रुटि',
     'activeAlerts.toast.toggleErrorDescription': 'चेतावनी स्थिति अपडेट नहीं की जा सकी।',
-
     'login.title': 'सिमुलट्रेडेक्स में लॉग इन करें',
     'login.emailLabel': 'ईमेल पता',
     'login.emailPlaceholder': 'आपका@उदाहरण.कॉम',
@@ -1224,7 +1152,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.forgotPassword.toast.emailSentDescription': 'पासवर्ड रीसेट निर्देशों के लिए अपना इनबॉक्स जांचें।',
     'login.forgotPassword.toast.emailErrorTitle': 'ईमेल भेजने में त्रुटि',
     'login.forgotPassword.toast.emailErrorDescription': 'पासवर्ड रीसेट ईमेल नहीं भेजा जा सका।',
-    'login.noAccountPrompt': 'खाता नहीं है?',
+    'login.noAccountPrompt': "खाता नहीं है?",
     'login.signUpLink': 'साइन अप करें',
     'login.toast.successTitle': 'लॉगिन सफल',
     'login.toast.successDescription': 'वापसी पर स्वागत है!',
@@ -1237,7 +1165,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.toast.logoutSuccessDescription': 'आप सफलतापूर्वक लॉग आउट हो गए हैं।',
     'login.toast.logoutErrorTitle': 'लॉगआउट विफल',
     'login.toast.logoutErrorDescription': 'लॉग आउट नहीं किया जा सका। कृपया पुनः प्रयास करें।',
-
     'signup.title': 'अपना सिमुलट्रेडेक्स खाता बनाएँ',
     'signup.emailLabel': 'ईमेल पता',
     'signup.emailPlaceholder': 'आपका@उदाहरण.कॉम',
@@ -1264,7 +1191,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.toast.logoutSuccessDescription': 'आप सफलतापूर्वक लॉग आउट हो गए हैं।',
     'login.toast.logoutErrorTitle': 'लॉगआउट विफल',
     'login.toast.logoutErrorDescription': 'लॉग आउट नहीं किया जा सका। कृपया पुनः प्रयास करें।',
-
     'signup.title': 'अपना सिमुलट्रेडेक्स खाता बनाएँ',
     'signup.emailLabel': 'ईमेल पता',
     'signup.emailPlaceholder': 'आपका@उदाहरण.कॉम',
@@ -1278,7 +1204,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'signup.toast.errorTitle': 'साइनअप विफल',
     'signup.toast.errorDescription': 'खाता नहीं बनाया जा सका। कृपया पुनः प्रयास करें।',
     'signup.error.emailTaken': 'यह ईमेल पहले से पंजीकृत है।',
-
     'zod.email.invalid': 'अमान्य ईमेल पता।',
     'zod.password.required': 'पासवर्ड आवश्यक है।',
     'zod.password.minLength': 'पासवर्ड में कम से कम 8 वर्ण होने चाहिए।',
@@ -1297,15 +1222,14 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.orderOpportunity.selectPair': 'कृपया एक ट्रेडिंग जोड़ी चुनें।',
     'zod.orderOpportunity.positiveInputAmount': 'राशि एक सकारात्मक संख्या होनी चाहिए।',
     'zod.orderOpportunity.marketPricePositive': 'बाजार मूल्य एक सकारात्मक संख्या होनी चाहिए।',
-    'zod.orderOpportunity.purchasePriceUsdtPositive': 'क्रिप्टो का मूल्य एक सकारात्मक संख्या होनी चाहिए।',
+    'zod.orderOpportunity.purchasePriceUsdtPositive': 'क्रिप्टो का खरीद मूल्य एक सकारात्मक संख्या होनी चाहिए।',
     'zod.orderOpportunity.targetPricePositive': 'बिक्री मूल्य एक सकारात्मक संख्या होनी चाहिए।',
     'zod.alert.targetPricePositive': 'लक्ष्य मूल्य एक धनात्मक संख्या होनी चाहिए।',
     'zod.alert.directionRequired': 'कृपया चेतावनी के लिए एक दिशा चुनें।',
     'footer.createdBy': 'IA द्वारा एलन सोटो द्वारा बनाया गया',
     'toaster.notificationsLabel': 'सूचनाएं (F8)',
-
     'firebase.config.errorTitle': 'फायरबेस कॉन्फ़िगरेशन त्रुटि',
-    'firebase.config.errorMessage': 'एप्लिकेशन फायरबेस से कनेक्ट करने के लिए ठीक से कॉन्फ़िगर नहीं है। कृपया अपनी .env.local फ़ाइल जांचें और सुनिश्चित करें कि सभी NEXT_PUBLIC_FIREBASE_... متغیرات درست طریقے سے سیٹ ہیں۔ سیٹ اپ ہدایات کے لیے README.md دیکھیں۔',
+    'firebase.config.errorMessage': 'एप्लिकेशन फायरबेस से कनेक्ट करने के लिए ठीक से कॉन्फ़िगर नहीं है। कृपया अपनी .env.local फ़ाइल जांचें और सुनिश्चित करें कि सभी NEXT_PUBLIC_FIREBASE_... متغیرات درست طریقے سے سیٹ ہیں۔ سیٹ اپ ہدایات کے لیے README.md देखیں۔',
     'firebase.config.errorMessageLogin': 'लॉगिन अनुपलब्ध है क्योंकि एप्लिकेशन फायरबेस से कनेक्ट करने के लिए ठीक से कॉन्फ़िगर नहीं है। कृपया सुनिश्चित करें कि सभी NEXT_PUBLIC_FIREBASE_... متغیرات آپ کی .env.local फ़ाइल में درست तरीके से سیٹ ہیں۔ سیٹ اپ ہدایات کے لیے README.md देखیں۔',
     'firebase.config.errorMessageSignup': 'खाता निर्माण अनुपलब्ध है क्योंकि एप्लिकेशन फायरबेस से कनेक्ट करने के लिए ठीक से कॉन्फ़िगर नहीं है। कृपया सुनिश्चित करें कि सभी NEXT_PUBLIC_FIREBASE_... متغیرات آپ کی .env.local फ़ाइल में درست तरीके से سیٹ ہیں۔ سیٹ اپ ہدایات کے لیے README.md देखیں۔',
     'firebase.config.apiKeyInvalid': 'फायरबेस एपीआई कुंजी अमान्य। .env.local जांचें। इसके अतिरिक्त, फायरबेस कंसोल में, सुनिश्चित करें कि ईमेल/पासवर्ड साइन-इन सक्षम है और एपीआई कुंजी में इस ऐप के लिए कोई प्रतिबंध नहीं है।',
@@ -1317,7 +1241,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'firebase.permissionDenied.title': 'अनुमति अस्वीकृत',
     'firebase.permissionDenied.userDataError': "अपर्याप्त अनुमतियों के कारण उपयोगकर्ता डेटा लोड नहीं किया जा सका। कृपया अपनी फायरस्टोर सुरक्षा नियम जांचें। मार्गदर्शन के लिए src/README.md देखें।"
   },
-  zh: { 
+  zh: {
     'app.name': 'SimulTradex',
     'app.loadingMessage': '正在加载SimulTradex...',
     'app.loadingAuth': '正在验证会话...',
@@ -1347,7 +1271,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.alerts.triggeredDescription': '{symbol} 已达到您的目标价格 ${targetPrice}。当前价格：${currentPrice}。',
     'dashboard.ai.historicalDataError': '无法获取 {symbol} 的历史数据。',
     'dashboard.loginPrompt': '请登录以查看仪表板并使用SimulTradex功能。',
-
     'account.passwordChange.title': "更改密码",
     'account.passwordChange.description': "更新您的帐户密码。",
     'account.passwordChange.currentPasswordLabel': "当前密码",
@@ -1364,8 +1287,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.passwordChange.toast.notLoggedInTitle': "未登录",
     'account.passwordChange.toast.notLoggedInDescription': "您必须登录才能更改密码。",
     'account.passwordChange.loginRequiredMessage': '请登录以更改您的密码。',
-
-
     'account.page.title': "账户设置",
     'account.page.loginPrompt': '请登录以查看您的帐户设置。',
     'account.profile.title': '个人资料信息',
@@ -1373,7 +1294,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.profile.emailLabel': '电子邮件地址',
     'account.profile.displayNameLabel': '显示名称',
     'account.profile.notAvailable': '不可用',
-
     'dashboard.cryptoCard.tooltip.reason': "原因：",
     'dashboard.cryptoCard.tooltip.confidence': "置信度：",
     'dashboard.cryptoCard.trend.upward': "上涨趋势",
@@ -1381,12 +1301,11 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.cryptoCard.trend.sideways': "横盘趋势",
     'dashboard.cryptoCard.trend.notAvailable': "趋势不可用",
     'dashboard.cryptoCard.trend.ariaLabel': '趋势信息',
-
     'dashboard.orderOpportunitySimulator.title': '订单与机会模拟器',
     'dashboard.orderOpportunitySimulator.description': '模拟交易并查看增量利润百分比下的潜在卖出机会。',
     'dashboard.orderOpportunitySimulator.operationPairLabel': '交易对',
     'dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel': '花费金额 ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': '{baseCurrency}的价格 ({quoteCurrency})',
+    'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': '{baseCurrency}的购买价格 ({quoteCurrency})',
     'dashboard.orderOpportunitySimulator.cryptoValueLabel': '兑换的加密货币 ({crypto})',
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': '选择交易对',
     'dashboard.orderOpportunitySimulator.table.header.operation': '操作',
@@ -1427,23 +1346,22 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledTitle': '订单保存已禁用',
     'dashboard.orderOpportunitySimulator.toast.orderSaveDisabledDescription': '由于用户认证已移除，保存订单功能已禁用。',
     'dashboard.orderOpportunitySimulator.exchangeOperation': '将{cur1}兑换为{cur2}',
-
-
+    'dashboard.orderOpportunitySimulator.quantityLabel': '数量 ({currency})',
+    'dashboard.orderOpportunitySimulator.purchasePriceLabel': '购买价格 ({baseCurrency} / {quoteCurrency})',
+    'dashboard.orderOpportunitySimulator.exchangedCryptoValueLabel': 'विनिमयित मूल्य ({targetCurrency})',
     'dashboard.connectionStatus.title': '连接问题',
     'dashboard.connectionStatus.noFeed': '目前未收到实时价格更新。正在尝试连接...',
     'dashboard.connectionStatus.fallbackTitle': '正在使用备用连接',
     'dashboard.connectionStatus.restFallbackActive': 'WebSocket连接失败。正在使用定期的REST API更新价格。',
-
     'dashboard.api.binance.fetchError': '从币安获取价格失败：{status}',
     'dashboard.api.binance.errorTitle': '价格获取错误 (币安)',
     'dashboard.api.binance.unknownError': '无法从币安获取实时价格。',
     'dashboard.api.coincap.errorTitle': '价格获取错误 (CoinCap)',
     'dashboard.api.coincap.unknownError': '无法从CoinCap获取实时价格。',
-
     'dashboard.ai.errorTitle': 'AI分析错误',
     'dashboard.ai.errorDescription': '无法更新AI趋势。',
     'dashboard.ai.clientErrorReason': '客户端获取{symbol}趋势时出错：{details}',
-    'dashboard.ai.temporarilyDisabled': 'AI趋势分析暂时禁用。',
+    'dashboard.ai.temporarilyDisabled': 'AI ट्रेंड विश्लेषण अस्थायी रूप से अक्षम है।',
     'dashboard.websocket.errorTitle': 'WebSocket错误',
     'dashboard.websocket.errorDescription': '连接实时价格源失败。将回退到定期更新。',
     'dashboard.websocket.errorDescriptionBinance': '连接币安实时价格源失败。将回退到定期更新。',
@@ -1452,7 +1370,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.websocket.errorDescriptionCoinCapFallback': 'CoinCap WebSocket失败。正在使用REST备用方案。',
     'dashboard.websocket.errorMessage': '错误信息：{message}，类型：{type}',
     'dashboard.websocket.eventType': '事件类型：{type}',
-
     'history.page.title': "订单历史",
     'history.menuItem': '订单历史',
     'history.page.loginPrompt': '请登录以查看您的订单历史记录。',
@@ -1485,7 +1402,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'history.toast.noDataExportDescription': '没有可导出的数据。',
     'history.toast.csvExportSuccessTitle': '导出成功',
     'history.toast.csvExportSuccessDescription': '订单历史已导出为CSV。',
-
     'alertModal.title.edit': '编辑{symbol}的提醒',
     'alertModal.title.create': '为{symbol}设置提醒',
     'alertModal.description': '当前价格：${price}',
@@ -1518,8 +1434,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'alertModal.toast.authErrorTitle': '认证错误',
     'alertModal.toast.authErrorDescription': '您必须登录才能管理警报。',
     'alertModal.toast.authErrorDescriptionLoginToSet': '请登录以设置价格提醒。',
-
-
     'activeAlerts.title': '我的价格提醒',
     'activeAlerts.description': '管理您的活动和非活动价格提醒。',
     'activeAlerts.loading': '正在加载提醒...',
@@ -1551,7 +1465,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'activeAlerts.toast.deactivatedDescription': '{symbol}的提醒现已停用。',
     'activeAlerts.toast.toggleErrorTitle': '更新提醒时出错',
     'activeAlerts.toast.toggleErrorDescription': '无法更新提醒状态。',
-
     'login.title': '登录SimulTradex',
     'login.emailLabel': '电子邮件地址',
     'login.emailPlaceholder': 'you@example.com',
@@ -1579,7 +1492,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.toast.logoutSuccessDescription': '您已成功登出。',
     'login.toast.logoutErrorTitle': '登出失败',
     'login.toast.logoutErrorDescription': '无法登出。请再试一次。',
-
     'signup.title': '创建您的SimulTradex账户',
     'signup.emailLabel': '电子邮件地址',
     'signup.emailPlaceholder': 'you@example.com',
@@ -1606,7 +1518,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.toast.logoutSuccessDescription': '您已成功登出。',
     'login.toast.logoutErrorTitle': '登出失败',
     'login.toast.logoutErrorDescription': '无法登出。请再试一次。',
-
     'signup.title': '创建您的SimulTradex账户',
     'signup.emailLabel': '电子邮件地址',
     'signup.emailPlaceholder': 'you@example.com',
@@ -1620,7 +1531,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'signup.toast.errorTitle': '注册失败',
     'signup.toast.errorDescription': '无法创建账户。请重试。',
     'signup.error.emailTaken': '此电子邮件已被注册。',
-
     'zod.email.invalid': '无效的电子邮件地址。',
     'zod.password.required': '密码是必需的。',
     'zod.password.minLength': '密码必须至少为8个字符。',
@@ -1639,13 +1549,12 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.orderOpportunity.selectPair': '请选择一个交易对。',
     'zod.orderOpportunity.positiveInputAmount': '金额必须是正数。',
     'zod.orderOpportunity.marketPricePositive': '市场价格必须是正数。',
-    'zod.orderOpportunity.purchasePriceUsdtPositive': '加密货币的价格必须是正数。',
+    'zod.orderOpportunity.purchasePriceUsdtPositive': '加密货币的购买价格必须是正数。',
     'zod.orderOpportunity.targetPricePositive': '卖出价格必须是正数。',
     'zod.alert.targetPricePositive': '目标价格必须是正数。',
     'zod.alert.directionRequired': '请选择提醒的方向。',
     'footer.createdBy': '由Allan Soto使用AI创建',
     'toaster.notificationsLabel': '通知 (F8)',
-
     'firebase.config.errorTitle': 'Firebase 配置错误',
     'firebase.config.errorMessage': '应用程序未正确配置以连接到 Firebase。请检查您的 .env.local 文件并确保所有 NEXT_PUBLIC_FIREBASE_... 变量均已正确设置。有关设置说明，请参阅 README.md。',
     'firebase.config.errorMessageLogin': '登录不可用，因为应用程序未正确配置以连接到 Firebase。请确保所有 NEXT_PUBLIC_FIREBASE_... 变量均已在您的 .env.local 文件中正确设置。有关设置说明，请参阅 README.md。',
@@ -1663,18 +1572,31 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
 
 const DEFAULT_LANGUAGE: LanguageCode = 'en';
 
+export interface LanguageContextType {
+  language: LanguageCode;
+  setLanguage: (language: LanguageCode) => void;
+  translations: Record<string, string>;
+  t: (key: string, fallback?: string, vars?: Record<string, string | number>) => string;
+  hydrated: boolean;
+}
+
 export const LanguageContext = createContext<LanguageContextType | undefined>(
   undefined
 );
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
+  const isServer = typeof window === 'undefined';
+
   const [language, setCurrentLanguage] = useState<LanguageCode>(DEFAULT_LANGUAGE);
-  const [translations, setTranslations] = useState<Record<string, string>>(
+  const [translations, setTranslationsState] = useState<Record<string, string>>(
     translationsData[DEFAULT_LANGUAGE]
   );
-  const [hydrated, setHydrated] = useState(false);
+  // Initialize hydrated to false. Client-side useEffect will set it to true.
+  // For SSR, it effectively remains false for the initial render pass.
+  const [hydrated, setHydrated] = useState(false); 
 
   useEffect(() => {
+    // This effect runs only on the client.
     const storedLanguage = localStorage.getItem('simultradex_language') as LanguageCode | null;
     let initialLang = DEFAULT_LANGUAGE;
     if (storedLanguage && translationsData[storedLanguage]) {
@@ -1682,41 +1604,63 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     }
     
     setCurrentLanguage(initialLang);
-    setTranslations(translationsData[initialLang]);
-    if (typeof document !== 'undefined') {
-      document.documentElement.lang = initialLang;
-    }
+    setTranslationsState(translationsData[initialLang]);
+    document.documentElement.lang = initialLang;
     
-    setHydrated(true); 
-  }, []); 
-
-
-  const setLanguage = useCallback((langCode: LanguageCode) => {
-    if (translationsData[langCode]) {
-      setCurrentLanguage(langCode);
-      setTranslations(translationsData[langCode]);
-      localStorage.setItem('simultradex_language', langCode);
-       if (typeof document !== 'undefined') {
-        document.documentElement.lang = langCode; 
-      }
-    } else {
-      console.warn(`Language code ${langCode} not found in translations. Falling back to default.`);
-      setCurrentLanguage(DEFAULT_LANGUAGE);
-      setTranslations(translationsData[DEFAULT_LANGUAGE]);
-      localStorage.setItem('simultradex_language', DEFAULT_LANGUAGE);
-       if (typeof document !== 'undefined') {
-        document.documentElement.lang = DEFAULT_LANGUAGE; 
-      }
-    }
+    setHydrated(true); // Set hydrated to true once client-side setup is complete
   }, []);
 
 
+  const setLanguageCallback = useCallback((langCode: LanguageCode) => {
+    if (translationsData[langCode]) {
+      setCurrentLanguage(langCode);
+      setTranslationsState(translationsData[langCode]);
+      if (!isServer) {
+        localStorage.setItem('simultradex_language', langCode);
+        document.documentElement.lang = langCode;
+      }
+    } else {
+      setCurrentLanguage(DEFAULT_LANGUAGE);
+      setTranslationsState(translationsData[DEFAULT_LANGUAGE]);
+      if (!isServer) {
+        localStorage.setItem('simultradex_language', DEFAULT_LANGUAGE);
+        document.documentElement.lang = DEFAULT_LANGUAGE;
+      }
+    }
+  }, [isServer]);
+
+  const t = useCallback((key: string, fallback: string = key, vars?: Record<string, string | number>) => {
+    let effectiveTranslations;
+    let effectiveHydrated;
+
+    if (isServer) {
+      // During SSR, always use default language and consider it "not hydrated" for translation purposes
+      // This ensures server renders fallbacks, matching initial client render before hydration.
+      effectiveTranslations = translationsData[DEFAULT_LANGUAGE];
+      effectiveHydrated = false;
+    } else {
+      // On the client, use the current state
+      effectiveTranslations = translations;
+      effectiveHydrated = hydrated;
+    }
+
+    let msg = effectiveHydrated ? (effectiveTranslations[key] || fallback || key) : (fallback || key);
+    
+    if (vars && typeof msg === 'string') {
+      Object.keys(vars).forEach(varKey => {
+        msg = (msg as string).replace(`{${varKey}}`, String(vars[varKey]));
+      });
+    }
+    return String(msg || key);
+  }, [translations, language, hydrated, isServer]); // Added language and isServer for completeness, though primary drivers are translations & hydrated
+
   const contextValue = useMemo(() => ({
     language,
-    setLanguage,
-    translations,
-    hydrated
-  }), [language, setLanguage, translations, hydrated]);
+    setLanguage: setLanguageCallback,
+    translations, // This is the current, potentially client-updated, translations
+    t,
+    hydrated // This signals if client-side language determination has completed
+  }), [language, setLanguageCallback, translations, t, hydrated]);
 
   return (
     <LanguageContext.Provider value={contextValue}>
@@ -1724,3 +1668,5 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     </LanguageContext.Provider>
   );
 };
+
+    
