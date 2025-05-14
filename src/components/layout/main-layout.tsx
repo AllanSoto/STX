@@ -16,7 +16,7 @@ import {
   SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { BarChartBig, History, Wallet, LayoutDashboard, Languages as LanguagesIcon, ChevronDown, Copyright, Settings, Check } from 'lucide-react';
+import { BarChartBig, History, LayoutDashboard, Languages as LanguagesIcon, ChevronDown, Copyright, Settings, Check } from 'lucide-react';
 import { LANGUAGES, APP_NAME as DEFAULT_APP_NAME } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
 import type { LanguageCode } from '@/providers/language-provider';
@@ -120,20 +120,6 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
                   <History className="h-5 w-5" />
                   <span className="group-data-[collapsible=icon]:hidden">
                     {t('history.menuItem', 'Order History')}
-                  </span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname === '/balance'}
-                tooltip={{content: t('balance.menuItem', 'Balance'), side: 'right', align: 'center' }}
-              >
-                <Link href="/balance">
-                  <Wallet className="h-5 w-5" />
-                  <span className="group-data-[collapsible=icon]:hidden">
-                    {t('balance.menuItem', 'Balance')}
                   </span>
                 </Link>
               </SidebarMenuButton>

@@ -93,12 +93,6 @@ service cloud.firestore {
     match /userAlerts/{userId}/alerts/{alertId} {
       allow read, write, delete: if request.auth != null && request.auth.uid == userId;
     }
-    
-    // User-specific daily balance snapshots:
-    // Allows a user to read and write their own daily balance snapshots.
-    match /userDailyBalances/{userId}/snapshots/{snapshotId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
 
     // Fallback rule: Deny all other access by default for security.
     match /{document=**} {
