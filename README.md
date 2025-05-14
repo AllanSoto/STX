@@ -25,7 +25,7 @@ The error message in the screenshot ("Falló el Inicio de Sesión Firebase: Erro
 **Recommendation to the user:**
 
 Please carefully review and follow the "Environment Setup" and "Firestore Security Rules" sections in the `src/README.md` file. Pay close attention to:
-1.  Ensuring **Authentication is enabled** in your Firebase project console (under Build > Authentication > Sign-in method). At least one provider (like Email/Password) must be enabled.
+1.  Ensuring **Authentication is enabled** in your Firebase project console (under Build &gt; Authentication &gt; Sign-in method). At least one provider (like Email/Password) must be enabled.
 2.  Double-checking that **all `NEXT_PUBLIC_FIREBASE_...` variables** in your `.env.local` file are copied exactly from your Firebase project settings.
 3.  Ensuring there are **no typos** in the variable names or their values in the `.env.local` file.
 4.  **Restarting your Next.js development server** after any changes to the `.env.local` file.

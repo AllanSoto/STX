@@ -111,3 +111,8 @@ service cloud.firestore {
 5.  Click **"Publish"**.
 
 If you skip this step, Firestore will block your application's attempts to read or write data, leading to errors and a non-functional application.
+If you still encounter "permission-denied" errors after deploying these rules, ensure:
+- You are correctly logged in within the application.
+- The `userId` in your Firestore paths matches the `request.auth.uid` of the logged-in user.
+- There are no typos in collection or document paths in your code or rules.
+- You have refreshed your application or cleared any local cache that might be holding onto old data or auth state.

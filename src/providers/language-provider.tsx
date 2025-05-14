@@ -73,6 +73,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.profile.description': 'Your account details.',
     'account.profile.emailLabel': 'Email Address',
     'account.profile.displayNameLabel': 'Display Name',
+    'account.profile.notAvailable': 'Not available',
 
 
     'dashboard.cryptoCard.tooltip.reason': "Reason:",
@@ -83,8 +84,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.cryptoCard.trend.notAvailable': "Trend N/A",
     'dashboard.cryptoCard.trend.ariaLabel': 'Trend information',
 
-
-    'dashboard.orderOpportunitySimulator.title': 'Order & Opportunity Simulator',
+    'dashboard.orderOpportunitySimulator.title': 'Order &amp; Opportunity Simulator',
     'dashboard.orderOpportunitySimulator.description': 'Simulate an exchange and see potential sell opportunities at incremental profit percentages.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Trading Pair',
     'dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel': `Amount to Spend ({currency})`,
@@ -315,6 +315,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.toast.errorDescription': 'Invalid credentials or server error.',
     'login.toast.errorDescriptionInvalid': 'Invalid email or password.',
     'login.toast.errorDescriptionTooManyRequests': 'Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.',
+    'login.toast.errorDescriptionSocialConflict': "An account already exists with the same email address but different sign-in credentials. Sign in using a provider associated with this email address.",
     'login.toast.logoutSuccessTitle': 'Logged Out',
     'login.toast.logoutSuccessDescription': 'You have been successfully logged out.',
     'login.toast.logoutErrorTitle': 'Logout Failed',
@@ -365,12 +366,14 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'firebase.config.errorMessage': 'The application is not properly configured to connect to Firebase. Please check your .env.local file and ensure all NEXT_PUBLIC_FIREBASE_... variables are correctly set. Refer to README.md for setup instructions.',
     'firebase.config.errorMessageLogin': 'Login is unavailable because the application is not properly configured to connect to Firebase. Please ensure all NEXT_PUBLIC_FIREBASE_... variables are correctly set in your .env.local file. Refer to README.md for setup instructions.',
     'firebase.config.errorMessageSignup': 'Account creation is unavailable because the application is not properly configured to connect to Firebase. Please ensure all NEXT_PUBLIC_FIREBASE_... variables are correctly set in your .env.local file. Refer to README.md for setup instructions.',
-    'firebase.config.apiKeyInvalid': 'Firebase API Key invalid. Check .env.local. Also, in Firebase Console, ensure Email/Password sign-in is ENABLED & API key has no restrictions for this app.',
+    'firebase.config.apiKeyInvalid': 'Firebase API Key invalid. Check .env.local. Also, in Firebase Console, ensure Email/Password sign-in is ENABLED &amp; API key has no restrictions for this app.',
     'firebase.offline.title': 'Offline',
     'firebase.offline.userDataError': 'Could not load user data. You appear to be offline. Some features may be limited.',
     'firebase.offline.fetchError': 'Could not load data. You appear to be offline.',
     'firebase.generalError.title': 'Error',
     'firebase.generalError.userDataError': 'An error occurred while loading user data.',
+    'firebase.permissionDenied.title': 'Permission Denied',
+    'firebase.permissionDenied.userDataError': "Could not load user data due to insufficient permissions. Please check your Firestore Security Rules. Refer to src/README.md for guidance."
   },
   es: {
     'app.name': 'SimulTradex',
@@ -427,6 +430,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.profile.description': 'Los detalles de tu cuenta.',
     'account.profile.emailLabel': 'Dirección de Correo Electrónico',
     'account.profile.displayNameLabel': 'Nombre para Mostrar',
+    'account.profile.notAvailable': 'No disponible',
 
 
     'dashboard.cryptoCard.tooltip.reason': "Razón:",
@@ -618,7 +622,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'activeAlerts.loading': 'Cargando alertas...',
     'activeAlerts.noAlerts': 'Aún no has configurado ninguna alerta de precio.',
     'activeAlerts.refreshButton': 'Refrescar Alertas',
-    'activeAlerts.confirmDelete': '¿Estás seguro de que quieres eliminar esta alerta para {symbol}?',
+    'activeAlerts.confirmDelete': '¿Estás seguro de que quieres eliminar esta alerta para {symbol} ?',
     'activeAlerts.table.symbol': 'Cripto',
     'activeAlerts.table.condition': 'Condición',
     'activeAlerts.table.status': 'Estado',
@@ -667,6 +671,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.toast.errorDescription': 'Credenciales inválidas o error del servidor.',
     'login.toast.errorDescriptionInvalid': 'Correo electrónico o contraseña no válidos.',
     'login.toast.errorDescriptionTooManyRequests': 'El acceso a esta cuenta ha sido deshabilitado temporalmente debido a muchos intentos fallidos de inicio de sesión. Puede restaurarlo inmediatamente restableciendo su contraseña o puede intentarlo de nuevo más tarde.',
+    'login.toast.errorDescriptionSocialConflict': "Ya existe una cuenta con la misma dirección de correo electrónico pero con credenciales de inicio de sesión diferentes. Inicie sesión utilizando un proveedor asociado con esta dirección de correo electrónico.",
     'login.toast.logoutSuccessTitle': 'Sesión Cerrada',
     'login.toast.logoutSuccessDescription': 'Has cerrado sesión exitosamente.',
     'login.toast.logoutErrorTitle': 'Falló el Cierre de Sesión',
@@ -723,6 +728,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'firebase.offline.fetchError': 'No se pudieron cargar los datos. Parece que no tienes conexión.',
     'firebase.generalError.title': 'Error',
     'firebase.generalError.userDataError': 'Ocurrió un error al cargar los datos del usuario.',
+    'firebase.permissionDenied.title': 'Permiso Denegado',
+    'firebase.permissionDenied.userDataError': "No se pudieron cargar los datos del usuario debido a permisos insuficientes. Por favor, revise sus Reglas de Seguridad de Firestore. Consulte src/README.md para obtener orientación."
   },
   fr: { 
     'app.name': 'SimulTradex',
@@ -778,6 +785,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.profile.description': 'Détails de votre compte.',
     'account.profile.emailLabel': 'Adresse E-mail',
     'account.profile.displayNameLabel': 'Nom d\'Affichage',
+    'account.profile.notAvailable': 'Non disponible',
 
 
     'dashboard.cryptoCard.tooltip.reason': "Raison :",
@@ -1018,6 +1026,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.toast.errorDescription': 'Identifiants invalides ou erreur serveur.',
     'login.toast.errorDescriptionInvalid': 'Email ou mot de passe incorrect.',
     'login.toast.errorDescriptionTooManyRequests': 'L\'accès à ce compte a été temporairement désactivé en raison de nombreuses tentatives de connexion infructueuses. Vous pouvez le restaurer immédiatement en réinitialisant votre mot de passe ou réessayer plus tard.',
+    'login.toast.errorDescriptionSocialConflict': "Un compte existe déjà avec la même adresse e-mail mais des identifiants de connexion différents. Connectez-vous à l'aide d'un fournisseur associé à cette adresse e-mail.",
     'login.toast.logoutSuccessTitle': 'Déconnecté',
     'login.toast.logoutSuccessDescription': 'Vous avez été déconnecté avec succès.',
     'login.toast.logoutErrorTitle': 'Échec de la Déconnexion',
@@ -1074,6 +1083,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'firebase.offline.fetchError': 'Impossible de charger les données. Vous semblez être hors ligne.',
     'firebase.generalError.title': 'Erreur',
     'firebase.generalError.userDataError': 'Une erreur s\'est produite lors du chargement des données utilisateur.',
+    'firebase.permissionDenied.title': 'Permission Refusée',
+    'firebase.permissionDenied.userDataError': "Impossible de charger les données utilisateur en raison d'autorisations insuffisantes. Veuillez vérifier vos règles de sécurité Firestore. Consultez src/README.md pour obtenir des conseils."
   },
   hi: { 
     'app.name': 'सिमुलट्रेडेक्स',
@@ -1131,6 +1142,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.profile.description': 'आपके खाते का विवरण।',
     'account.profile.emailLabel': 'ईमेल पता',
     'account.profile.displayNameLabel': 'प्रदर्शित होने वाला नाम',
+    'account.profile.notAvailable': 'उपलब्ध नहीं है',
 
 
     'dashboard.cryptoCard.tooltip.reason': "कारण:",
@@ -1372,6 +1384,34 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.toast.errorDescription': 'अमान्य क्रेडेंशियल या सर्वर त्रुटि।',
     'login.toast.errorDescriptionInvalid': 'अमान्य ईमेल या पासवर्ड।',
     'login.toast.errorDescriptionTooManyRequests': 'कई असफल लॉगिन प्रयासों के कारण इस खाते तक पहुंच अस्थायी रूप से अक्षम कर दी गई है। आप अपना पासवर्ड रीसेट करके इसे तुरंत पुनर्स्थापित कर सकते हैं या आप बाद में पुनः प्रयास कर सकते हैं।',
+    'login.toast.errorDescriptionSocialConflict': "एक ही ईमेल पते के साथ एक खाता पहले से मौजूद है लेकिन अलग-अलग साइन-इन क्रेडेंशियल के साथ। इस ईमेल पते से जुड़े प्रदाता का उपयोग करके साइन इन करें।",
+    'login.toast.logoutSuccessTitle': 'लॉग आउट किया गया',
+    'login.toast.logoutSuccessDescription': 'आप सफलतापूर्वक लॉग आउट हो गए हैं।',
+    'login.toast.logoutErrorTitle': 'लॉगआउट विफल',
+    'login.toast.logoutErrorDescription': 'लॉग आउट नहीं किया जा सका। कृपया पुनः प्रयास करें।',
+
+    'signup.title': 'अपना सिमुलट्रेडेक्स खाता बनाएँ',
+    'signup.emailLabel': 'ईमेल पता',
+    'signup.emailPlaceholder': 'आपका@उदाहरण.कॉम',
+    'login.passwordLabel': 'पासवर्ड',
+    'login.rememberMeLabel': 'मुझे याद रखें',
+    'login.submitButton': 'लॉग इन करें',
+    'login.forgotPasswordPrompt': 'अपना पासवर्ड भूल गए?',
+    'login.forgotPassword.sendResetLinkButton': 'रीसेट लिंक भेजें',
+    'login.forgotPassword.toast.emailRequiredTitle': 'ईमेल आवश्यक',
+    'login.forgotPassword.toast.emailRequiredDescription': 'पासवर्ड रीसेट करने के लिए कृपया अपना ईमेल दर्ज करें।',
+    'login.forgotPassword.toast.emailSentTitle': 'पासवर्ड रीसेट ईमेल भेजा गया',
+    'login.forgotPassword.toast.emailSentDescription': 'पासवर्ड रीसेट निर्देशों के लिए अपना इनबॉक्स जांचें।',
+    'login.forgotPassword.toast.emailErrorTitle': 'ईमेल भेजने में त्रुटि',
+    'login.forgotPassword.toast.emailErrorDescription': 'पासवर्ड रीसेट ईमेल नहीं भेजा जा सका।',
+    'login.noAccountPrompt': "खाता नहीं है?",
+    'login.signUpLink': 'साइन अप करें',
+    'login.toast.successTitle': 'लॉगिन सफल',
+    'login.toast.successDescription': 'वापसी पर स्वागत है!',
+    'login.toast.errorTitle': 'लॉगिन विफल',
+    'login.toast.errorDescription': 'क्रेडेंशियल अमान्य या सर्वर त्रुटि।',
+    'login.toast.errorDescriptionInvalid': 'अमान्य ईमेल या पासवर्ड।',
+    'login.toast.errorDescriptionTooManyRequests': 'कई असफल लॉगिन प्रयासों के कारण इस खाते तक पहुंच अस्थायी रूप से अक्षम कर दी गई है। आप अपना पासवर्ड रीसेट करके इसे तुरंत पुनर्स्थापित कर सकते हैं या आप बाद में पुनः प्रयास कर सकते हैं।',
     'login.toast.logoutSuccessTitle': 'लॉग आउट किया गया',
     'login.toast.logoutSuccessDescription': 'आप सफलतापूर्वक लॉग आउट हो गए हैं।',
     'login.toast.logoutErrorTitle': 'लॉगआउट विफल',
@@ -1417,15 +1457,17 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'toaster.notificationsLabel': 'सूचनाएं (F8)',
 
     'firebase.config.errorTitle': 'फायरबेस कॉन्फ़िगरेशन त्रुटि',
-    'firebase.config.errorMessage': 'एप्लिकेशन फायरबेस से कनेक्ट करने के लिए ठीक से कॉन्फ़िगर नहीं है। कृपया अपनी .env.local फ़ाइल जांचें और सुनिश्चित करें कि सभी NEXT_PUBLIC_FIREBASE_... متغیرات درست तरीके से سیٹ ہیں۔ سیٹ اپ ہدایات کے لیے README.md دیکھیں۔',
-    'firebase.config.errorMessageLogin': 'लॉगिन अनुपलब्ध है क्योंकि एप्लिकेशन फायरबेस से कनेक्ट करने के लिए ठीक से कॉन्फ़िगर नहीं है। कृपया सुनिश्चित करें कि सभी NEXT_PUBLIC_FIREBASE_... متغیرات آپ کی .env.local फ़ाइल में درست तरीके से سیٹ ہیں۔ سیٹ اپ ہدایات کے لیے README.md دیکھیں۔',
-    'firebase.config.errorMessageSignup': 'खाता निर्माण अनुपलब्ध है क्योंकि एप्लिकेशन फायरबेस से कनेक्ट करने के लिए ठीक से कॉन्फ़िगर नहीं है। कृपया सुनिश्चित करें कि सभी NEXT_PUBLIC_FIREBASE_... متغیرات آپ کی .env.local फ़ाइल میں درست तरीके से سیٹ ہیں۔ سیٹ اپ ہدایات کے لیے README.md دیکھیں۔',
+    'firebase.config.errorMessage': 'एप्लिकेशन फायरबेस से कनेक्ट करने के लिए ठीक से कॉन्फ़िगर नहीं है। कृपया अपनी .env.local फ़ाइल जांचें और सुनिश्चित करें कि सभी NEXT_PUBLIC_FIREBASE_... متغیرات درست तरीके से सीٹ ہیں۔ سیٹ اپ ہدایات کے لیے README.md دیکھیں۔',
+    'firebase.config.errorMessageLogin': 'लॉगिन अनुपलब्ध है क्योंकि एप्लिकेशन फायरबेस से कनेक्ट करने के लिए ठीक से कॉन्फ़िगर नहीं है। कृपया सुनिश्चित करें कि सभी NEXT_PUBLIC_FIREBASE_... متغیرات آپ کی .env.local फ़ाइल में درست तरीके से سیٹ ہیں۔ سیٹ اپ ہدایات کے لیے README.md देखیں۔',
+    'firebase.config.errorMessageSignup': 'खाता निर्माण अनुपलब्ध है क्योंकि एप्लिकेशन फायरबेस से कनेक्ट करने के लिए ठीक से कॉन्फ़िगर नहीं है। कृपया सुनिश्चित करें कि सभी NEXT_PUBLIC_FIREBASE_... متغیرات آپ کی .env.local फ़ाइल में درست तरीके से سیٹ ہیں۔ سیٹ اپ ہدایات کے لیے README.md देखیں۔',
     'firebase.config.apiKeyInvalid': 'फायरबेस एपीआई कुंजी अमान्य। .env.local जांचें। इसके अतिरिक्त, फायरबेस कंसोल में, सुनिश्चित करें कि ईमेल/पासवर्ड साइन-इन सक्षम है और एपीआई कुंजी में इस ऐप के लिए कोई प्रतिबंध नहीं है।',
     'firebase.offline.title': 'ऑफलाइन',
     'firebase.offline.userDataError': 'उपयोगकर्ता डेटा लोड नहीं किया जा सका। आप ऑफ़लाइन प्रतीत होते हैं। कुछ सुविधाएँ सीमित हो सकती हैं।',
     'firebase.offline.fetchError': 'डेटा लोड नहीं किया जा सका। आप ऑफ़लाइन प्रतीत होते हैं।',
     'firebase.generalError.title': 'त्रुटि',
     'firebase.generalError.userDataError': 'उपयोगकर्ता डेटा लोड करते समय एक त्रुटि हुई।',
+    'firebase.permissionDenied.title': 'अनुमति अस्वीकृत',
+    'firebase.permissionDenied.userDataError': "अपर्याप्त अनुमतियों के कारण उपयोगकर्ता डेटा लोड नहीं किया जा सका। कृपया अपनी फायरस्टोर सुरक्षा नियम जांचें। मार्गदर्शन के लिए src/README.md देखें।"
   },
   zh: { 
     'app.name': 'SimulTradex',
@@ -1482,6 +1524,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'account.profile.description': '您的帐户详细信息。',
     'account.profile.emailLabel': '电子邮件地址',
     'account.profile.displayNameLabel': '显示名称',
+    'account.profile.notAvailable': '不可用',
 
     'dashboard.cryptoCard.tooltip.reason': "原因：",
     'dashboard.cryptoCard.tooltip.confidence': "置信度：",
@@ -1713,7 +1756,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.forgotPassword.toast.emailSentDescription': '请检查您的收件箱以获取密码重置说明。',
     'login.forgotPassword.toast.emailErrorTitle': '发送邮件时出错',
     'login.forgotPassword.toast.emailErrorDescription': '无法发送密码重置邮件。',
-    'login.noAccountPrompt': '没有账户？',
+    'login.noAccountPrompt': "没有账户？",
     'login.signUpLink': '注册',
     'login.toast.successTitle': '登录成功',
     'login.toast.successDescription': '欢迎回来！',
@@ -1721,6 +1764,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.toast.errorDescription': '凭据无效或服务器错误。',
     'login.toast.errorDescriptionInvalid': '无效的电子邮件或密码。',
     'login.toast.errorDescriptionTooManyRequests': '由于多次登录尝试失败，此帐户的访问权限已暂时禁用。您可以通过重置密码立即恢复，或者稍后再试。',
+    'login.toast.errorDescriptionSocialConflict': "已存在使用相同电子邮件地址但不同登录凭据的帐户。请使用与此电子邮件地址关联的提供商登录。",
     'login.toast.logoutSuccessTitle': '已登出',
     'login.toast.logoutSuccessDescription': '您已成功登出。',
     'login.toast.logoutErrorTitle': '登出失败',
@@ -1802,6 +1846,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'firebase.offline.fetchError': '无法加载数据。您似乎处于离线状态。',
     'firebase.generalError.title': '错误',
     'firebase.generalError.userDataError': '加载用户数据时出错。',
+    'firebase.permissionDenied.title': '权限被拒绝',
+    'firebase.permissionDenied.userDataError': "由于权限不足，无法加载用户数据。请检查您的 Firestore 安全规则。有关指导，请参阅 src/README.md。"
   }
 };
 
@@ -1868,4 +1914,3 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     </LanguageContext.Provider>
   );
 };
-

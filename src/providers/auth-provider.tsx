@@ -118,8 +118,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               description: t('firebase.offline.userDataError', 'Could not load user data. You appear to be offline. Some features may be limited.'),
               variant: 'warning',
             });
+            // Attempt to set a minimal user object if offline but authenticated
             setUser({ uid: firebaseUser.uid, email: firebaseUser.email, displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || t('app.name', 'SimulTradex')});
-          } else {
+          } else if (err.code === 'permission-denied') {
+            console.error("AuthProvider: PERMISSION DENIED fetching user document for UID:", firebaseUser.uid, "Error:", err);
+             toast({
+              title: t('firebase.permissionDenied.title', 'Permission Denied'),
+              description: t('firebase.permissionDenied.userDataError', "Could not load user data due to insufficient permissions. Please check your Firestore Security Rules. Refer to src/README.md for guidance."),
+              variant: 'destructive',
+              duration: 9000, // Longer duration for important messages
+            });
+            setUser(null); // Critical error, assume user data cannot be trusted/loaded
+          }
+          else {
             console.error("AuthProvider: Non-offline error fetching user document for UID:", firebaseUser.uid, "Error:", err);
              toast({
               title: t('firebase.generalError.title', 'Error'),
@@ -159,6 +170,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(t('signup.error.emailTaken', 'This email is already registered.'));
       } else if (error.code === 'auth/api-key-not-valid') {
          toast({ title: t('firebase.config.errorTitle', 'Firebase Configuration Error'), description: t('firebase.config.apiKeyInvalid'), variant: 'destructive' });
+         throw new Error(t('firebase.config.apiKeyInvalid'));
       } else {
         toast({ title: t('signup.toast.errorTitle', 'Signup Failed'), description: error.message || t('signup.toast.errorDescription', 'Could not create account.'), variant: 'destructive' });
       }
