@@ -75,11 +75,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsFirebaseConfigValid(isFirebaseProperlyConfigured);
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (!isFirebaseProperlyConfigured) { // Check the flag from config.ts
+      if (!isFirebaseConfigValid) { 
         setUser(null);
         setLoading(false);
-        // Optionally, show a persistent warning if config is invalid
-        // toast({ title: "Configuration Error", description: "Firebase is not properly configured.", variant: "destructive" });
         return;
       }
 
@@ -93,11 +91,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               uid: firebaseUser.uid,
               email: firebaseUser.email,
               displayName: firebaseUser.displayName || userData.displayName,
-              // @ts-ignore
               createdAt: userData.createdAt instanceof Timestamp ? userData.createdAt.toDate() : new Date(userData.createdAt?.seconds * 1000 || Date.now()),
             });
           } else {
-            const newUserPayload = { // Explicitly type for clarity
+            const newUserPayload = { 
               uid: firebaseUser.uid,
               email: firebaseUser.email,
               displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'New User',
@@ -108,22 +105,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               uid: newUserPayload.uid, 
               email: newUserPayload.email, 
               displayName: newUserPayload.displayName, 
-              // @ts-ignore
-              createdAt: new Date() // For local state after creation
+              createdAt: new Date() 
             });
           }
         } catch (err: any) {
-          console.error("AuthProvider: Error fetching/setting user document:", err);
-          if (err.code === 'unavailable' || (err.message && err.message.includes('offline'))) {
+          console.error("AuthProvider: Error during getDoc(userDocRef) for user:", firebaseUser.uid, "Error object:", err);
+          const errMessage = typeof err.message === 'string' ? err.message.toLowerCase() : '';
+          if (err.code === 'unavailable' || errMessage.includes('offline') || errMessage.includes('failed to get document because the client is offline')) {
+            console.warn("AuthProvider: Detected offline state while fetching user document for UID:", firebaseUser.uid);
             toast({
               title: t('firebase.offline.title', 'Offline'),
               description: t('firebase.offline.userDataError', 'Could not load user data. You appear to be offline. Some features may be limited.'),
-              variant: 'warning', // Use warning for less severe than destructive
+              variant: 'warning',
             });
-            // Set a minimal user object if offline and profile data can't be fetched
-            // This acknowledges authentication but indicates data might be stale/incomplete.
             setUser({ uid: firebaseUser.uid, email: firebaseUser.email, displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || t('app.name', 'SimulTradex')});
           } else {
+            console.error("AuthProvider: Non-offline error fetching user document for UID:", firebaseUser.uid, "Error:", err);
              toast({
               title: t('firebase.generalError.title', 'Error'),
               description: t('firebase.generalError.userDataError', 'An error occurred while loading user data.'),
@@ -138,7 +135,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     });
     return () => unsubscribe();
-  }, [t, toast]); // Removed isFirebaseConfigValid from deps as it's set from a module-level var
+  }, [isFirebaseConfigValid, t, toast]); // Ensure t and toast are in dependencies
 
   const signup = async (email: string, pass: string) => {
     if (!isFirebaseConfigValid) {
@@ -158,6 +155,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error: any) {
       console.error("Signup error:", error);
       if (error.code === 'auth/email-already-in-use') {
+        toast({ title: t('signup.toast.errorTitle', 'Signup Failed'), description: t('signup.error.emailTaken', 'This email is already registered.'), variant: 'destructive' });
         throw new Error(t('signup.error.emailTaken', 'This email is already registered.'));
       } else if (error.code === 'auth/api-key-not-valid') {
          toast({ title: t('firebase.config.errorTitle', 'Firebase Configuration Error'), description: t('firebase.config.apiKeyInvalid'), variant: 'destructive' });
@@ -176,7 +174,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await setFbAuthPersistence(rememberMe);
     try {
       await signInWithEmailAndPassword(auth, email, pass);
-      router.push('/dashboard'); // Redirect after successful login
+      // router.push('/dashboard'); // AuthProvider useEffect handles user state change and RootPage handles redirect
     } catch (error: any) {
        console.error("Login error:", error);
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
@@ -195,8 +193,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       await signOut(auth);
-      setUser(null); // Clear local user state
-      router.push('/login');
+      setUser(null); 
+      router.push('/login'); 
       toast({title: t('login.toast.logoutSuccessTitle', "Logged Out"), description: t('login.toast.logoutSuccessDescription',"You have been successfully logged out.")})
     } catch (error: any) {
       console.error("Logout error:", error);
@@ -231,10 +229,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         await updatePassword(fUser, newPass);
       } catch (error: any) {
         console.error("Update password error:", error);
+        if (error.code === 'auth/wrong-password') {
+             toast({ title: t('account.passwordChange.toast.failedTitle', "Password Change Failed"), description: t('account.passwordChange.toast.failedDescriptionIncorrect', "Incorrect current password."), variant: "destructive" });
+        } else if (error.code === 'auth/weak-password') {
+             toast({ title: t('account.passwordChange.toast.failedTitle', "Password Change Failed"), description: t('account.passwordChange.toast.failedDescriptionWeak', "New password does not meet security requirements."), variant: "destructive" });
+        } else {
+            toast({ title: t('account.passwordChange.toast.failedTitle', "Password Change Failed"), description: error.message || t('account.passwordChange.toast.failedDescriptionGeneric', "Could not change password."), variant: "destructive" });
+        }
         throw error; 
       }
     } else {
-      throw new Error("No user currently signed in or email not available for re-authentication.");
+      const noUserError = new Error("No user currently signed in or email not available for re-authentication.");
+      toast({ title: t('account.passwordChange.toast.failedTitle', "Password Change Failed"), description: noUserError.message, variant: "destructive" });
+      throw noUserError;
     }
   };
 
@@ -258,12 +265,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
         await setDoc(userDocRef, newUserPayload);
       }
-      router.push('/dashboard');
+      // router.push('/dashboard'); // Let RootPage handle redirect
     } catch (error: any) {
       console.error("Social login error:", error);
        if (error.code === 'auth/api-key-not-valid') {
         toast({ title: t('firebase.config.errorTitle', 'Firebase Configuration Error'), description: t('firebase.config.apiKeyInvalid'), variant: 'destructive' });
-      } else {
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
+        toast({ title: t('login.toast.errorTitle', "Login Failed"), description: t('login.toast.errorDescriptionSocialConflict', "An account already exists with the same email address but different sign-in credentials. Sign in using a provider associated with this email address."), variant: "destructive" });
+      }
+      else {
         toast({ title: t('login.toast.errorTitle', "Login Failed"), description: error.message || t('login.toast.errorDescription', "An unknown error occurred."), variant: "destructive" });
       }
       throw error; 
@@ -366,10 +376,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     deleteUserPriceAlert: deleteUserPriceAlertHandler,
     deactivateUserPriceAlert: deactivateUserPriceAlertHandler,
   }), [
-    user, loading, isFirebaseConfigValid, t, // Ensure t is in deps
-    // Assuming other functions (signup, login etc.) are stable due to useCallback or their own memoization
-    // If they also use `t`, they need to be wrapped in useCallback with `t` in their deps too.
+    user, loading, isFirebaseConfigValid, t, language, // Added language to deps as t depends on it via languageHydrated
+    // Assuming other functions (signup, login etc.) are stable or correctly memoized
   ]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
+    
