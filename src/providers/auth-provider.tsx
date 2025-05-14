@@ -76,9 +76,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        console.log("AuthProvider: Usuario autenticado:", firebaseUser.uid); // User's requested log
+        console.log("AuthProvider: Usuario autenticado:", firebaseUser.uid);
       } else {
-        console.log("AuthProvider: No hay usuario autenticado."); // User's requested log
+        console.log("AuthProvider: No hay usuario autenticado.");
       }
 
       if (!isFirebaseConfigValid) { 
@@ -124,7 +124,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               description: t('firebase.offline.userDataError', 'Could not load user data. You appear to be offline. Some features may be limited.'),
               variant: 'warning',
             });
-            // Attempt to set a minimal user object if offline but authenticated
             setUser({ uid: firebaseUser.uid, email: firebaseUser.email, displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || t('app.name', 'SimulTradex')});
           } else if (err.code === 'permission-denied') {
             console.error("AuthProvider: PERMISSION DENIED fetching user document for UID:", firebaseUser.uid, "Error:", err);
@@ -152,7 +151,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     });
     return () => unsubscribe();
-  }, [isFirebaseConfigValid, t, toast]); // Ensure t and toast are in dependencies
+  }, [isFirebaseConfigValid, t, toast]);
 
   const signup = async (email: string, pass: string) => {
     if (!isFirebaseConfigValid) {
@@ -192,7 +191,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await setFbAuthPersistence(rememberMe);
     try {
       await signInWithEmailAndPassword(auth, email, pass);
-      // router.push('/dashboard'); // AuthProvider useEffect handles user state change and RootPage handles redirect
     } catch (error: any) {
        console.error("Login error:", error);
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
@@ -212,7 +210,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await signOut(auth);
       setUser(null); 
-      router.push('/login'); 
+       
       toast({title: t('login.toast.logoutSuccessTitle', "Logged Out"), description: t('login.toast.logoutSuccessDescription',"You have been successfully logged out.")})
     } catch (error: any) {
       console.error("Logout error:", error);
@@ -283,7 +281,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
         await setDoc(userDocRef, newUserPayload);
       }
-      // router.push('/dashboard'); // Let RootPage handle redirect
     } catch (error: any) {
       console.error("Social login error:", error);
        if (error.code === 'auth/api-key-not-valid') {
