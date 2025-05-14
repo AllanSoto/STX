@@ -75,6 +75,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsFirebaseConfigValid(isFirebaseProperlyConfigured);
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        console.log("AuthProvider: Usuario autenticado:", firebaseUser.uid); // User's requested log
+      } else {
+        console.log("AuthProvider: No hay usuario autenticado."); // User's requested log
+      }
+
       if (!isFirebaseConfigValid) { 
         setUser(null);
         setLoading(false);
@@ -126,9 +132,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               title: t('firebase.permissionDenied.title', 'Permission Denied'),
               description: t('firebase.permissionDenied.userDataError', "Could not load user data due to insufficient permissions. Please check your Firestore Security Rules. Refer to src/README.md for guidance."),
               variant: 'destructive',
-              duration: 9000, // Longer duration for important messages
+              duration: 9000, 
             });
-            setUser(null); // Critical error, assume user data cannot be trusted/loaded
+            setUser(null); 
           }
           else {
             console.error("AuthProvider: Non-offline error fetching user document for UID:", firebaseUser.uid, "Error:", err);
@@ -388,7 +394,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     deleteUserPriceAlert: deleteUserPriceAlertHandler,
     deactivateUserPriceAlert: deactivateUserPriceAlertHandler,
   }), [
-    user, loading, isFirebaseConfigValid, t, language, // Added language to deps as t depends on it via languageHydrated
+    user, loading, isFirebaseConfigValid, t, language, 
     // Assuming other functions (signup, login etc.) are stable or correctly memoized
   ]);
 

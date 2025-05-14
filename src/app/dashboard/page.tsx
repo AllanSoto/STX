@@ -1,6 +1,7 @@
 // src/app/dashboard/page.tsx
 'use client';
 
+
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { CryptoDisplayCard } from '@/components/dashboard/crypto-display-card';
@@ -122,6 +123,7 @@ export default function DashboardPage() {
   useEffect(() => {
     console.log('[DashboardPage] Auth State Update:', { authLoading, userEmail: user?.email });
   }, [authLoading, user]);
+  
 
   const fetchActiveAlerts = useCallback(async () => {
     if (!user) return; 
