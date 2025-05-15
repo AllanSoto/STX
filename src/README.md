@@ -13,7 +13,7 @@ This application requires Firebase credentials to function correctly.
 
 1.  **Create a Firebase Project:** If you haven't already, create a project on the [Firebase Console](https://console.firebase.google.com/).
 2.  **Add a Web App:** In your Firebase project, add a new Web application. If you already have one, ensure it's correctly configured.
-3.  **Enable Authentication:** In the Firebase console, navigate to "Authentication" (under Build), go to the "Sign-in method" tab, and **ENSURE AT LEAST ONE SIGN-IN PROVIDER (e.g., Email/Password) IS ENABLED.** This is a very common cause for the `auth/api-key-not-valid` error, especially if the API key itself is correct but no sign-in methods are active.
+3.  **Enable Authentication:** In the Firebase console, navigate to "Authentication" (under Build), go to the "Sign-in method" tab, and **ENSURE AT LEAST ONE SIGN-IN PROVIDER (e.g., Email/Password, Google) IS ENABLED.** This is a very common cause for the `auth/api-key-not-valid` error, especially if the API key itself is correct but no sign-in methods are active.
 4.  **Get Firebase Config:** After adding the web app (or selecting an existing one), Firebase will provide you with a `firebaseConfig` object. You can find this in your Project settings (click the gear icon next to "Project Overview", then scroll down to "Your apps", and select your web app). It looks something like this:
 
     ```javascript
@@ -50,6 +50,24 @@ GOOGLE_API_KEY=YOUR_GOOGLE_AI_STUDIO_API_KEY
 ```
 
 **Important:** Never commit your `.env.local` file (or any file containing sensitive credentials) to version control. The `.gitignore` file should already include `.env*.local`.
+
+### Adding Authorized Domains for OAuth (e.g., Google Sign-In)
+
+If you are using OAuth-based sign-in methods like Google Sign-In, Apple, Facebook, etc., you **must** add the domain from which your application is served to the list of "Authorized domains" in your Firebase Authentication settings. Failure to do so will result in an `auth/unauthorized-domain` error.
+
+1.  **Go to Firebase Console:** Navigate to your Firebase project.
+2.  **Authentication Section:** Go to "Authentication" (under Build).
+3.  **Sign-in Method Tab:** Click on the "Sign-in method" tab.
+4.  **Authorized Domains:** Scroll down to the "Authorized domains" section.
+5.  **Add Domain:**
+    *   Click "Add domain".
+    *   Enter the domain(s) from which your app will be making authentication requests.
+        *   For **local development**, this is usually `localhost`.
+        *   For your **deployed application**, this will be your custom domain (e.g., `your-app-name.com`) or your Firebase Hosting domain (e.g., `your-project-id.web.app` or `your-project-id.firebaseapp.com`).
+    *   If you are unsure which domain is causing the issue, the Firebase error message in your browser's console often includes the specific domain that was rejected.
+6.  **Save Changes.**
+
+After adding the necessary domains, the `auth/unauthorized-domain` error should be resolved.
 
 ## Firestore Security Rules
 
@@ -92,6 +110,12 @@ service cloud.firestore {
     // Allows a user to manage their own price alerts.
     match /userAlerts/{userId}/alerts/{alertId} {
       allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // User-specific daily balance snapshots:
+    // Allows a user to read and write their own daily balance snapshots.
+    match /userDailyBalances/{userId}/snapshots/{snapshotId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
     // Fallback rule: Deny all other access by default for security.
