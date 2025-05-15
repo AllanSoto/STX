@@ -1,7 +1,7 @@
 // src/components/auth/login-form.tsx
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react'; // Added useEffect
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -19,7 +19,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, AlertTriangle } from 'lucide-react'; 
+import { Loader2, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -32,16 +32,30 @@ const getLoginFormSchema = (t: (key: string, fallback?: string) => string) => z.
 type LoginFormValues = z.infer<ReturnType<typeof getLoginFormSchema>>;
 
 export function LoginForm() {
-  const { login, sendPasswordResetEmail, isFirebaseConfigValid } = useAuth(); 
-  const { translations, language } = useLanguage();
+  const { login, sendPasswordResetEmail, isFirebaseConfigValid } = useAuth();
+  const { translations, language, hydrated: languageHydrated } = useLanguage(); // Added languageHydrated
   const { toast } = useToast();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [displayTitle, setDisplayTitle] = useState('');
+
+  const t = (key: string, fallback?: string) => {
+    // Fallback to default if not hydrated or translation missing
+    if (!languageHydrated) return fallback || key;
+    return translations[key] || fallback || key;
+  };
+  
+  // Use useEffect to update the title after client-side render and t is initialized
+  useEffect(() => {
+    if (languageHydrated) { // Ensure translations are ready
+      setDisplayTitle(t('login.title', 'Login to SimulTradex'));
+    }
+  }, [languageHydrated, t]); // Depend on t or its dependencies (translations, language)
+
   const [isPasswordResetLoading, setIsPasswordResetLoading] = useState(false);
 
-  const t = (key: string, fallback?: string) => translations[key] || fallback || key;
-  const loginFormSchema = useMemo(() => getLoginFormSchema(t), [language, t]);
+  const loginFormSchema = useMemo(() => getLoginFormSchema(t), [language, t]); // language and t are correct here
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
@@ -139,7 +153,7 @@ export function LoginForm() {
           </div>
         </div>
       )}
-      <h1 className="text-3xl font-bold text-center text-foreground">{t('login.title', 'Login to SimulTradex')}</h1>
+      <h1 className="text-3xl font-bold text-center text-foreground">{displayTitle || t('login.title', 'Login to SimulTradex')}</h1> {/* Fallback added for initial render */}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
@@ -194,7 +208,7 @@ export function LoginForm() {
           <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isLoading || !isFirebaseConfigValid}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
              {isFirebaseConfigValid ? t('login.submitButton', 'Log In') : t('login.submitButton', 'Log In (disabled)')}
-          </Button>
+ </Button>
         </form>
       </Form>
       <div className="text-sm text-center text-muted-foreground">
