@@ -11,11 +11,11 @@ import {
   sendPasswordResetEmail as fbSendPasswordResetEmail,
   updatePassword,
   type User as FirebaseUser,
-  GoogleAuthProvider,
+  GoogleAuthProvider, // Ensure GoogleAuthProvider is imported
   signInWithPopup,
-  FacebookAuthProvider,
-  TwitterAuthProvider,
-  OAuthProvider,
+  FacebookAuthProvider, // Kept for completeness, but not used in this change
+  TwitterAuthProvider,  // Kept for completeness, but not used in this change
+  OAuthProvider,      // Kept for completeness, but not used in this change
   reauthenticateWithCredential,
   EmailAuthProvider
 } from 'firebase/auth';
@@ -38,9 +38,9 @@ export interface AuthContextType {
   sendPasswordResetEmail: (email: string) => Promise<void>;
   updateUserPassword: (currentPass: string, newPass: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
-  loginWithFacebook: () => Promise<void>;
-  loginWithTwitter: () => Promise<void>;
-  loginWithApple: () => Promise<void>;
+  loginWithFacebook: () => Promise<void>; // Kept for interface completeness
+  loginWithTwitter: () => Promise<void>;  // Kept for interface completeness
+  loginWithApple: () => Promise<void>;    // Kept for interface completeness
   saveUserPriceAlert: (symbol: CryptoSymbol, targetPrice: number, direction: AlertDirection) => Promise<string | null>;
   getUserPriceAlerts: () => Promise<PriceAlert[]>;
   updateUserPriceAlert: (alertId: string, updates: Partial<Omit<PriceAlert, 'id' | 'userId' | 'createdAt' | 'updatedAt'>>) => Promise<void>;
@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     console.log('AuthProvider: useEffect with onAuthStateChanged triggered');
-    setIsFirebaseConfigValid(isFirebaseProperlyConfigured);
+    setIsFirebaseConfigValid(isFirebaseProperlyConfigured); // Update based on config check
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       console.log('AuthProvider: onAuthStateChanged fired. firebaseUser:', firebaseUser ? firebaseUser.uid : null);
@@ -83,10 +83,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.log("AuthProvider: No hay usuario autenticado.");
       }
 
-      setLoading(true); // Set loading true while we determine the user state
+      setLoading(true); 
       if (!isFirebaseConfigValid) { 
         setUser(null);
         setLoading(false);
+        if (router.pathname !== '/login' && router.pathname !== '/signup') {
+           // Only redirect if not already on auth pages to avoid loops
+           // router.push('/login'); // Commented out: RootPage now handles redirects
+        }
         return;
       }
 
@@ -108,7 +112,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const newUserPayload = { 
               uid: firebaseUser.uid,
               email: firebaseUser.email,
-              displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'New User',
+              displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || t('app.name', 'SimulTradex'), // Default display name
               createdAt: serverTimestamp(),
             };
             console.log(`AuthProvider: No user document found for UID: ${firebaseUser.uid}. Creating new user document.`);
@@ -117,19 +121,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               uid: newUserPayload.uid, 
               email: newUserPayload.email, 
               displayName: newUserPayload.displayName, 
-              createdAt: new Date() 
+              createdAt: new Date() // Approximate, as serverTimestamp is not resolved yet
             });
           }
           console.log('AuthProvider: setUser called within onAuthStateChanged.');
         } catch (err: any) {
-          console.error('AuthProvider: Error during getDoc(userDocRef) or setDoc for user:', firebaseUser.uid, 'Error object:', err);
+          console.error("AuthProvider: Error during getDoc(userDocRef) for user:", firebaseUser.uid, "Error object:", err);
           const errMessage = typeof err.message === 'string' ? err.message.toLowerCase() : '';
           if (err.code === 'unavailable' || errMessage.includes('offline') || errMessage.includes('failed to get document because the client is offline')) {
             console.warn("AuthProvider: Detected offline state while fetching user document for UID:", firebaseUser.uid);
             toast({
               title: t('firebase.offline.title', 'Offline'),
               description: t('firebase.offline.userDataError', 'Could not load user data. You appear to be offline. Some features may be limited.'),
-              variant: 'warning',
+              variant: 'warning', // Changed from destructive to warning
             });
             // Keep user logged in according to Firebase auth state, but show potential data loading error
           } else if (err.code === 'permission-denied') {
@@ -140,7 +144,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               variant: 'destructive',
               duration: 9000, 
             });
-            setUser(null);
+            setUser(null); // Log out user if permission denied to access their own data
           } else {
             console.error("AuthProvider: Non-offline error fetching user document for UID:", firebaseUser.uid, "Error:", err);
              toast({
@@ -155,9 +159,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(null);
       }
       setLoading(false);
-    }); // Removed t, toast from dependency array as they are stable via useCallback/useMemo and cause excessive re-renders
+    });
     return () => unsubscribe();
-  }, [isFirebaseConfigValid, t, toast]);
+  }, [isFirebaseConfigValid, router, t, toast]); // Added router, t, toast. Consider stability.
 
   const signup = async (email: string, pass: string) => {
     if (!isFirebaseConfigValid) {
@@ -165,6 +169,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw new Error(t('firebase.config.errorMessageSignup', 'Account creation is unavailable...'));
     }
     try {
+      console.log('Trying to sign up'); 
       const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
       const firebaseUser = userCredential.user;
       const newUserPayload = {
@@ -174,6 +179,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         createdAt: serverTimestamp(),
       };
       await setDoc(doc(db, 'users', firebaseUser.uid), newUserPayload);
+      // onAuthStateChanged will handle setting user state and redirecting
     } catch (error: any) {
       console.error("Signup error:", error);
       if (error.code === 'auth/email-already-in-use') {
@@ -197,6 +203,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await setFbAuthPersistence(rememberMe);
     try {
       await signInWithEmailAndPassword(auth, email, pass);
+      // onAuthStateChanged will handle setting user state and redirecting
     } catch (error: any) {
        console.error("Login error:", error);
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
@@ -216,7 +223,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await signOut(auth);
       setUser(null); 
-       
+      // router.push('/login'); // RootPage will handle redirection as user state becomes null
       toast({title: t('login.toast.logoutSuccessTitle', "Logged Out"), description: t('login.toast.logoutSuccessDescription',"You have been successfully logged out.")})
     } catch (error: any) {
       console.error("Logout error:", error);
@@ -287,6 +294,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
         await setDoc(userDocRef, newUserPayload);
       }
+      // User is logged in, onAuthStateChanged will handle setting user state and RootPage will handle redirecting.
     } catch (error: any) {
       console.error("Social login error:", error);
        if (error.code === 'auth/api-key-not-valid') {
@@ -302,9 +310,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const loginWithGoogle = () => socialLogin(new GoogleAuthProvider());
-  const loginWithFacebook = () => socialLogin(new FacebookAuthProvider());
-  const loginWithTwitter = () => socialLogin(new TwitterAuthProvider());
-  const loginWithApple = () => socialLogin(new OAuthProvider('apple.com'));
+  const loginWithFacebook = () => socialLogin(new FacebookAuthProvider()); // Kept for completeness
+  const loginWithTwitter = () => socialLogin(new TwitterAuthProvider());   // Kept for completeness
+  const loginWithApple = () => socialLogin(new OAuthProvider('apple.com'));// Kept for completeness
 
   const saveUserPriceAlertHandler = async (symbol: CryptoSymbol, targetPrice: number, direction: AlertDirection): Promise<string | null> => {
     if (!user) { toast({ title: t('alertModal.toast.authErrorTitle',"Error"), description: t('alertModal.toast.authErrorDescription',"User not logged in."), variant: "destructive" }); return null; }
@@ -398,10 +406,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     deactivateUserPriceAlert: deactivateUserPriceAlertHandler,
   }), [
     user, loading, isFirebaseConfigValid, t, language, 
-    // Assuming other functions (signup, login etc.) are stable or correctly memoized
+    // Explicitly list other dependencies if they change,
+    // but assuming signup, login, logout etc. are stable themselves.
   ]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
-    

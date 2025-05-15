@@ -241,6 +241,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.passwordLabel': 'Password',
     'login.rememberMeLabel': 'Remember me',
     'login.submitButton': 'Log In',
+    'login.orContinueWith': 'Or continue with',
+    'login.signInWithGoogleButton': 'Sign in with Google',
     'login.forgotPasswordPrompt': 'Forgot your password?',
     'login.forgotPassword.sendResetLinkButton': 'Send Reset Link',
     'login.forgotPassword.toast.emailRequiredTitle': 'Email Required',
@@ -268,6 +270,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'signup.passwordLabel': 'Password',
     'signup.confirmPasswordLabel': 'Confirm Password',
     'signup.submitButton': 'Sign Up',
+    'signup.orContinueWith': 'Or continue with',
+    'signup.signUpWithGoogleButton': 'Sign up with Google',
     'signup.existingAccountPrompt': 'Already have an account?',
     'signup.loginLink': 'Log in',
     'signup.toast.successTitle': 'Signup Successful',
@@ -293,7 +297,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.orderOpportunity.selectPair': 'Please select a trading pair.',
     'zod.orderOpportunity.positiveInputAmount': 'Amount must be a positive number.',
     'zod.orderOpportunity.marketPricePositive': 'Market price must be a positive number.',
-    'zod.orderOpportunity.purchasePriceUsdtPositive': 'Purchase Price of Crypto must be a positive number.',
+    'zod.orderOpportunity.purchasePriceUsdtPositive': 'Price of Crypto must be a positive number.',
     'zod.orderOpportunity.targetPricePositive': 'Sell price must be a positive number.',
     'zod.alert.targetPricePositive': 'Target price must be a positive number.',
     'zod.alert.directionRequired': 'Please select a direction for the alert.',
@@ -303,7 +307,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'firebase.config.errorMessage': 'The application is not properly configured to connect to Firebase. Please check your .env.local file and ensure all NEXT_PUBLIC_FIREBASE_... variables are correctly set. Refer to README.md for setup instructions.',
     'firebase.config.errorMessageLogin': 'Login is unavailable because the application is not properly configured to connect to Firebase. Please ensure all NEXT_PUBLIC_FIREBASE_... variables are correctly set in your .env.local file. Refer to README.md for setup instructions.',
     'firebase.config.errorMessageSignup': 'Account creation is unavailable because the application is not properly configured to connect to Firebase. Please ensure all NEXT_PUBLIC_FIREBASE_... variables are correctly set in your .env.local file. Refer to README.md for setup instructions.',
-    'firebase.config.apiKeyInvalid': 'Firebase API Key invalid. Check .env.local. Also, in Firebase Console, ensure Email/Password sign-in is ENABLED &amp; API key has no restrictions for this app.',
+    'firebase.config.apiKeyInvalid': 'Firebase API Key invalid. Check .env.local. Also, in Firebase Console, ensure Email/Password sign-in is ENABLED & API key has no restrictions for this app.',
     'firebase.offline.title': 'Offline',
     'firebase.offline.userDataError': 'Could not load user data. You appear to be offline. Some features may be limited.',
     'firebase.offline.fetchError': 'Could not load data. You appear to be offline.',
@@ -542,6 +546,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.passwordLabel': 'Contraseña',
     'login.rememberMeLabel': 'Recuérdame',
     'login.submitButton': 'Iniciar Sesión',
+    'login.orContinueWith': 'O continuar con',
+    'login.signInWithGoogleButton': 'Iniciar sesión con Google',
     'login.forgotPasswordPrompt': '¿Olvidaste tu contraseña?',
     'login.forgotPassword.sendResetLinkButton': 'Enviar Enlace de Restablecimiento',
     'login.forgotPassword.toast.emailRequiredTitle': 'Correo Electrónico Requerido',
@@ -569,6 +575,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'signup.passwordLabel': 'Contraseña',
     'signup.confirmPasswordLabel': 'Confirmar Contraseña',
     'signup.submitButton': 'Registrarse',
+    'signup.orContinueWith': 'O continuar con',
+    'signup.signUpWithGoogleButton': 'Registrarse con Google',
     'signup.existingAccountPrompt': '¿Ya tienes una cuenta?',
     'signup.loginLink': 'Inicia sesión',
     'signup.toast.successTitle': 'Registro Exitoso',
@@ -843,6 +851,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.passwordLabel': 'Mot de Passe',
     'login.rememberMeLabel': 'Se souvenir de moi',
     'login.submitButton': 'Se Connecter',
+    'login.orContinueWith': 'Ou continuer avec',
+    'login.signInWithGoogleButton': 'Se connecter avec Google',
     'login.forgotPasswordPrompt': 'Mot de passe oublié ?',
     'login.forgotPassword.sendResetLinkButton': 'Envoyer Lien de Réinitialisation',
     'login.forgotPassword.toast.emailRequiredTitle': 'E-mail Requis',
@@ -870,6 +880,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'signup.passwordLabel': 'Mot de Passe',
     'signup.confirmPasswordLabel': 'Confirmer le Mot de Passe',
     'signup.submitButton': 'S\'inscrire',
+    'signup.orContinueWith': 'Ou continuer avec',
+    'signup.signUpWithGoogleButton': 'S\'inscrire avec Google',
     'signup.existingAccountPrompt': 'Déjà un compte ?',
     'signup.loginLink': 'Se connecter',
     'signup.toast.successTitle': 'Inscription Réussie',
@@ -1144,6 +1156,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.passwordLabel': 'पासवर्ड',
     'login.rememberMeLabel': 'मुझे याद रखें',
     'login.submitButton': 'लॉग इन करें',
+    'login.orContinueWith': 'या इसके साथ जारी रखें',
+    'login.signInWithGoogleButton': 'Google से साइन इन करें',
     'login.forgotPasswordPrompt': 'अपना पासवर्ड भूल गए?',
     'login.forgotPassword.sendResetLinkButton': 'रीसेट लिंक भेजें',
     'login.forgotPassword.toast.emailRequiredTitle': 'ईमेल आवश्यक',
@@ -1168,35 +1182,11 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'signup.title': 'अपना सिमुलट्रेडेक्स खाता बनाएँ',
     'signup.emailLabel': 'ईमेल पता',
     'signup.emailPlaceholder': 'आपका@उदाहरण.कॉम',
-    'login.passwordLabel': 'पासवर्ड',
-    'login.rememberMeLabel': 'मुझे याद रखें',
-    'login.submitButton': 'लॉग इन करें',
-    'login.forgotPasswordPrompt': 'अपना पासवर्ड भूल गए?',
-    'login.forgotPassword.sendResetLinkButton': 'रीसेट लिंक भेजें',
-    'login.forgotPassword.toast.emailRequiredTitle': 'ईमेल आवश्यक',
-    'login.forgotPassword.toast.emailRequiredDescription': 'पासवर्ड रीसेट करने के लिए कृपया अपना ईमेल दर्ज करें।',
-    'login.forgotPassword.toast.emailSentTitle': 'पासवर्ड रीसेट ईमेल भेजा गया',
-    'login.forgotPassword.toast.emailSentDescription': 'पासवर्ड रीसेट निर्देशों के लिए अपना इनबॉक्स जांचें।',
-    'login.forgotPassword.toast.emailErrorTitle': 'ईमेल भेजने में त्रुटि',
-    'login.forgotPassword.toast.emailErrorDescription': 'पासवर्ड रीसेट ईमेल नहीं भेजा जा सका।',
-    'login.noAccountPrompt': "खाता नहीं है?",
-    'login.signUpLink': 'साइन अप करें',
-    'login.toast.successTitle': 'लॉगिन सफल',
-    'login.toast.successDescription': 'वापसी पर स्वागत है!',
-    'login.toast.errorTitle': 'लॉगिन विफल',
-    'login.toast.errorDescription': 'क्रेडेंशियल अमान्य या सर्वर त्रुटि।',
-    'login.toast.errorDescriptionInvalid': 'अमान्य ईमेल या पासवर्ड।',
-    'login.toast.errorDescriptionTooManyRequests': 'कई असफल लॉगिन प्रयासों के कारण इस खाते तक पहुंच अस्थायी रूप से अक्षम कर दी गई है। आप अपना पासवर्ड रीसेट करके इसे तुरंत पुनर्स्थापित कर सकते हैं या आप बाद में पुनः प्रयास कर सकते हैं।',
-    'login.toast.logoutSuccessTitle': 'लॉग आउट किया गया',
-    'login.toast.logoutSuccessDescription': 'आप सफलतापूर्वक लॉग आउट हो गए हैं।',
-    'login.toast.logoutErrorTitle': 'लॉगआउट विफल',
-    'login.toast.logoutErrorDescription': 'लॉग आउट नहीं किया जा सका। कृपया पुनः प्रयास करें।',
-    'signup.title': 'अपना सिमुलट्रेडेक्स खाता बनाएँ',
-    'signup.emailLabel': 'ईमेल पता',
-    'signup.emailPlaceholder': 'आपका@उदाहरण.कॉम',
     'signup.passwordLabel': 'पासवर्ड',
     'signup.confirmPasswordLabel': 'पासवर्ड की पुष्टि करें',
     'signup.submitButton': 'साइन अप करें',
+    'signup.orContinueWith': 'या इसके साथ जारी रखें',
+    'signup.signUpWithGoogleButton': 'Google से साइन अप करें',
     'signup.existingAccountPrompt': 'पहले से खाता है?',
     'signup.loginLink': 'लॉग इन करें',
     'signup.toast.successTitle': 'साइनअप सफल',
@@ -1230,8 +1220,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'toaster.notificationsLabel': 'सूचनाएं (F8)',
     'firebase.config.errorTitle': 'फायरबेस कॉन्फ़िगरेशन त्रुटि',
     'firebase.config.errorMessage': 'एप्लिकेशन फायरबेस से कनेक्ट करने के लिए ठीक से कॉन्फ़िगर नहीं है। कृपया अपनी .env.local फ़ाइल जांचें और सुनिश्चित करें कि सभी NEXT_PUBLIC_FIREBASE_... متغیرات درست طریقے سے سیٹ ہیں۔ سیٹ اپ ہدایات کے لیے README.md देखیں۔',
-    'firebase.config.errorMessageLogin': 'लॉगिन अनुपलब्ध है क्योंकि एप्लिकेशन फायरबेस से कनेक्ट करने के लिए ठीक से कॉन्फ़िगर नहीं है। कृपया सुनिश्चित करें कि सभी NEXT_PUBLIC_FIREBASE_... متغیرات آپ کی .env.local फ़ाइल में درست तरीके से سیٹ ہیں۔ سیٹ اپ ہدایات کے لیے README.md देखیں۔',
-    'firebase.config.errorMessageSignup': 'खाता निर्माण अनुपलब्ध है क्योंकि एप्लिकेशन फायरबेस से कनेक्ट करने के लिए ठीक से कॉन्फ़िगर नहीं है। कृपया सुनिश्चित करें कि सभी NEXT_PUBLIC_FIREBASE_... متغیرات آپ کی .env.local फ़ाइल में درست तरीके से سیٹ ہیں۔ سیٹ اپ ہدایات کے لیے README.md देखیں۔',
+    'firebase.config.errorMessageLogin': 'लॉगिन अनुपलब्ध है क्योंकि एप्लिकेशन फायरबेस से कनेक्ट करने के लिए ठीक से कॉन्फ़िगर नहीं है। कृपया सुनिश्चित करें कि सभी NEXT_PUBLIC_FIREBASE_... متغیرات آپ کی .env.local फ़ाइल में درست طریقے से سیٹ ہیں۔ سیٹ اپ ہدایات کے لیے README.md देखیں۔',
+    'firebase.config.errorMessageSignup': 'खाता निर्माण अनुपलब्ध है क्योंकि एप्लिकेशन फायरबेस से कनेक्ट करने के लिए ठीक से कॉन्फ़िगर नहीं है। कृपया सुनिश्चित करें कि सभी NEXT_PUBLIC_FIREBASE_... متغیرات آپ کی .env.local फ़ाइल में درست طریقے से سیٹ ہیں۔ سیٹ اپ ہدایات کے لیے README.md देखیں۔',
     'firebase.config.apiKeyInvalid': 'फायरबेस एपीआई कुंजी अमान्य। .env.local जांचें। इसके अतिरिक्त, फायरबेस कंसोल में, सुनिश्चित करें कि ईमेल/पासवर्ड साइन-इन सक्षम है और एपीआई कुंजी में इस ऐप के लिए कोई प्रतिबंध नहीं है।',
     'firebase.offline.title': 'ऑफलाइन',
     'firebase.offline.userDataError': 'उपयोगकर्ता डेटा लोड नहीं किया जा सका। आप ऑफ़लाइन प्रतीत होते हैं। कुछ सुविधाएँ सीमित हो सकती हैं।',
@@ -1471,6 +1461,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'login.passwordLabel': '密码',
     'login.rememberMeLabel': '记住我',
     'login.submitButton': '登录',
+    'login.orContinueWith': '或继续',
+    'login.signInWithGoogleButton': '用Google登录',
     'login.forgotPasswordPrompt': '忘记密码？',
     'login.forgotPassword.sendResetLinkButton': '发送重置链接',
     'login.forgotPassword.toast.emailRequiredTitle': '需要电子邮件',
@@ -1495,35 +1487,11 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'signup.title': '创建您的SimulTradex账户',
     'signup.emailLabel': '电子邮件地址',
     'signup.emailPlaceholder': 'you@example.com',
-    'login.passwordLabel': '密码',
-    'login.rememberMeLabel': '记住我',
-    'login.submitButton': '登录',
-    'login.forgotPasswordPrompt': '忘记密码？',
-    'login.forgotPassword.sendResetLinkButton': '发送重置链接',
-    'login.forgotPassword.toast.emailRequiredTitle': '需要电子邮件',
-    'login.forgotPassword.toast.emailRequiredDescription': '请输入您的电子邮件以重置密码。',
-    'login.forgotPassword.toast.emailSentTitle': '密码重置邮件已发送',
-    'login.forgotPassword.toast.emailSentDescription': '请检查您的收件箱以获取密码重置说明。',
-    'login.forgotPassword.toast.emailErrorTitle': '发送邮件时出错',
-    'login.forgotPassword.toast.emailErrorDescription': '无法发送密码重置邮件。',
-    'login.noAccountPrompt': "没有账户？",
-    'login.signUpLink': '注册',
-    'login.toast.successTitle': '登录成功',
-    'login.toast.successDescription': '欢迎回来！',
-    'login.toast.errorTitle': '登录失败',
-    'login.toast.errorDescription': '凭据无效或服务器错误。',
-    'login.toast.errorDescriptionInvalid': '无效的电子邮件或密码。',
-    'login.toast.errorDescriptionTooManyRequests': '由于多次登录尝试失败，此帐户的访问权限已暂时禁用。您可以通过重置密码立即恢复，或者稍后再试。',
-    'login.toast.logoutSuccessTitle': '已登出',
-    'login.toast.logoutSuccessDescription': '您已成功登出。',
-    'login.toast.logoutErrorTitle': '登出失败',
-    'login.toast.logoutErrorDescription': '无法登出。请再试一次。',
-    'signup.title': '创建您的SimulTradex账户',
-    'signup.emailLabel': '电子邮件地址',
-    'signup.emailPlaceholder': 'you@example.com',
     'signup.passwordLabel': '密码',
     'signup.confirmPasswordLabel': '确认密码',
     'signup.submitButton': '注册',
+    'signup.orContinueWith': '或继续',
+    'signup.signUpWithGoogleButton': '用Google注册',
     'signup.existingAccountPrompt': '已经有账户了？',
     'signup.loginLink': '登录',
     'signup.toast.successTitle': '注册成功',
@@ -1591,12 +1559,9 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [translations, setTranslationsState] = useState<Record<string, string>>(
     translationsData[DEFAULT_LANGUAGE]
   );
-  // Initialize hydrated to false. Client-side useEffect will set it to true.
-  // For SSR, it effectively remains false for the initial render pass.
   const [hydrated, setHydrated] = useState(false); 
 
   useEffect(() => {
-    // This effect runs only on the client.
     const storedLanguage = localStorage.getItem('simultradex_language') as LanguageCode | null;
     let initialLang = DEFAULT_LANGUAGE;
     if (storedLanguage && translationsData[storedLanguage]) {
@@ -1605,10 +1570,12 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     
     setCurrentLanguage(initialLang);
     setTranslationsState(translationsData[initialLang]);
-    document.documentElement.lang = initialLang;
+    if (!isServer) {
+      document.documentElement.lang = initialLang;
+    }
     
-    setHydrated(true); // Set hydrated to true once client-side setup is complete
-  }, []);
+    setHydrated(true);
+  }, [isServer]);
 
 
   const setLanguageCallback = useCallback((langCode: LanguageCode) => {
@@ -1634,12 +1601,9 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     let effectiveHydrated;
 
     if (isServer) {
-      // During SSR, always use default language and consider it "not hydrated" for translation purposes
-      // This ensures server renders fallbacks, matching initial client render before hydration.
       effectiveTranslations = translationsData[DEFAULT_LANGUAGE];
       effectiveHydrated = false;
     } else {
-      // On the client, use the current state
       effectiveTranslations = translations;
       effectiveHydrated = hydrated;
     }
@@ -1652,14 +1616,14 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
       });
     }
     return String(msg || key);
-  }, [translations, language, hydrated, isServer]); // Added language and isServer for completeness, though primary drivers are translations & hydrated
+  }, [translations, hydrated, isServer]); 
 
   const contextValue = useMemo(() => ({
     language,
     setLanguage: setLanguageCallback,
-    translations, // This is the current, potentially client-updated, translations
+    translations,
     t,
-    hydrated // This signals if client-side language determination has completed
+    hydrated
   }), [language, setLanguageCallback, translations, t, hydrated]);
 
   return (
@@ -1668,5 +1632,3 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     </LanguageContext.Provider>
   );
 };
-
-    
