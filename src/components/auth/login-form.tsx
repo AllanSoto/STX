@@ -79,13 +79,15 @@ export function LoginForm() {
     try {
       console.log('[LoginForm] Attempting login...');
       await login(values.email, values.password, values.rememberMe);
+      console.log('[LoginForm] Login function completed successfully');
       console.log('[LoginForm] Login successful in AuthProvider.');
       toast({
         title: t('login.toast.successTitle', 'Login Successful'),
         description: t('login.toast.successDescription', 'Welcome back!'),
       });
-      console.log('[LoginForm] Pushing to /dashboard...');
+      console.log('[LoginForm] Calling router.push to /dashboard...');
       router.push('/dashboard');
+      console.log('[LoginForm] Pushing to /dashboard...');
       console.log('[LoginForm] router.push(\'/dashboard\') called.');
     } catch (error: any) {
       console.error('[LoginForm] Login failed:', error);

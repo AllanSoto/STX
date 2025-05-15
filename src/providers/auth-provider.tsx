@@ -72,15 +72,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   useEffect(() => {
+    console.log('AuthProvider: useEffect with onAuthStateChanged triggered');
     setIsFirebaseConfigValid(isFirebaseProperlyConfigured);
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log('AuthProvider: onAuthStateChanged fired. firebaseUser:', firebaseUser ? firebaseUser.uid : null);
       if (firebaseUser) {
         console.log("AuthProvider: Usuario autenticado:", firebaseUser.uid);
       } else {
         console.log("AuthProvider: No hay usuario autenticado.");
       }
 
+      setLoading(true); // Set loading true while we determine the user state
       if (!isFirebaseConfigValid) { 
         setUser(null);
         setLoading(false);
@@ -89,10 +92,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (firebaseUser) {
         const userDocRef = doc(db, 'users', firebaseUser.uid);
+        console.log(`AuthProvider: Attempting to fetch user document for UID: ${firebaseUser.uid}`);
         try {
           const userDoc = await getDoc(userDocRef);
           if (userDoc.exists()) {
             const userData = userDoc.data();
+            console.log(`AuthProvider: User document found for UID: ${firebaseUser.uid}. Setting user state.`);
             setUser({
               uid: firebaseUser.uid,
               email: firebaseUser.email,
@@ -106,6 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'New User',
               createdAt: serverTimestamp(),
             };
+            console.log(`AuthProvider: No user document found for UID: ${firebaseUser.uid}. Creating new user document.`);
             await setDoc(userDocRef, newUserPayload);
             setUser({ 
               uid: newUserPayload.uid, 
@@ -114,8 +120,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               createdAt: new Date() 
             });
           }
+          console.log('AuthProvider: setUser called within onAuthStateChanged.');
         } catch (err: any) {
-          console.error("AuthProvider: Error during getDoc(userDocRef) for user:", firebaseUser.uid, "Error object:", err);
+          console.error('AuthProvider: Error during getDoc(userDocRef) or setDoc for user:', firebaseUser.uid, 'Error object:', err);
           const errMessage = typeof err.message === 'string' ? err.message.toLowerCase() : '';
           if (err.code === 'unavailable' || errMessage.includes('offline') || errMessage.includes('failed to get document because the client is offline')) {
             console.warn("AuthProvider: Detected offline state while fetching user document for UID:", firebaseUser.uid);
@@ -124,7 +131,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               description: t('firebase.offline.userDataError', 'Could not load user data. You appear to be offline. Some features may be limited.'),
               variant: 'warning',
             });
-            setUser({ uid: firebaseUser.uid, email: firebaseUser.email, displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || t('app.name', 'SimulTradex')});
+            // Keep user logged in according to Firebase auth state, but show potential data loading error
           } else if (err.code === 'permission-denied') {
             console.error("AuthProvider: PERMISSION DENIED fetching user document for UID:", firebaseUser.uid, "Error:", err);
              toast({
@@ -133,15 +140,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               variant: 'destructive',
               duration: 9000, 
             });
-            setUser(null); 
-          }
-          else {
+            setUser(null);
+          } else {
             console.error("AuthProvider: Non-offline error fetching user document for UID:", firebaseUser.uid, "Error:", err);
              toast({
               title: t('firebase.generalError.title', 'Error'),
               description: t('firebase.generalError.userDataError', 'An error occurred while loading user data.'),
               variant: 'destructive',
-            });
+            }); // Keep user logged in according to Firebase auth state, but show potential data loading error
             setUser(null); 
           }
         }
@@ -149,7 +155,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(null);
       }
       setLoading(false);
-    });
+    }); // Removed t, toast from dependency array as they are stable via useCallback/useMemo and cause excessive re-renders
     return () => unsubscribe();
   }, [isFirebaseConfigValid, t, toast]);
 

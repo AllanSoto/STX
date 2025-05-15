@@ -1,3 +1,4 @@
+
 // src/lib/firebase/config.ts
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, setPersistence, browserLocalPersistence, browserSessionPersistence, inMemoryPersistence, type Auth } from 'firebase/auth';
@@ -30,7 +31,7 @@ let missingVars: string[] = [];
 
 for (const key of requiredEnvVars) {
   if (!firebaseConfig[key]) {
-    isFirebaseProperlyConfigured = false; 
+    isFirebaseProperlyConfigured = false;
     missingVars.push(`NEXT_PUBLIC_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`);
   }
 }
@@ -50,39 +51,58 @@ if (!isFirebaseProperlyConfigured) {
 }
 
 
-if (!getApps().length) {
-  try {
-    app = initializeApp(firebaseConfig);
-  } catch (e: any) {
-    console.error(
-     "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" +
-      "CRITICAL FIREBASE INITIALIZATION ERROR:", e.message + "\n" +
-      "This usually means your Firebase configuration in '.env.local' is incorrect, incomplete, or the Firebase services (like Authentication) are not enabled in your Firebase project console.\n" +
-      "Please verify ALL your NEXT_PUBLIC_FIREBASE_... variables in the .env.local file and ensure that Authentication (e.g., Email/Password sign-in) is ENABLED in the Firebase console.\n" +
-      "Refer to the README.md for setup instructions.\n" +
-      "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    );
-    isFirebaseProperlyConfigured = false; 
-    throw new Error("Firebase initialization failed due to missing or invalid configuration. App cannot start. Check .env.local and your Firebase project settings. See server console for details.");
+if (isFirebaseProperlyConfigured) { // Only attempt to initialize if basic config seems present
+  if (!getApps().length) {
+    try {
+      app = initializeApp(firebaseConfig);
+    } catch (e: any) {
+      console.error(
+       "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" +
+        "CRITICAL FIREBASE INITIALIZATION ERROR:", e.message + "\n" +
+        "This usually means your Firebase configuration in '.env.local' is incorrect, incomplete, or the Firebase services (like Authentication) are not enabled in your Firebase project console.\n" +
+        "Please verify ALL your NEXT_PUBLIC_FIREBASE_... variables in the .env.local file and ensure that Authentication (e.g., Email/Password sign-in) is ENABLED in the Firebase console.\n" +
+        "Refer to the README.md for setup instructions.\n" +
+        "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+      );
+      isFirebaseProperlyConfigured = false;
+      // Do NOT throw an error here to prevent server crash.
+      // The application will rely on isFirebaseProperlyConfigured being false.
+    }
+  } else {
+    app = getApp();
   }
-} else {
-  app = getApp();
+
+  if (isFirebaseProperlyConfigured && app!) { // Ensure app was initialized
+    auth = getAuth(app);
+    try {
+      db = initializeFirestore(app, {
+        localCache: persistentLocalCache()
+      });
+      console.log("Firestore initialized with persistent local cache.");
+    } catch (e: any) {
+      console.warn("Error initializing Firestore with persistence, falling back to default:", e);
+      isFirebaseProperlyConfigured = false; // Mark as not fully configured if Firestore init fails
+      // Attempt to get a non-persistent instance if persistent fails but app is valid
+      try {
+        db = getFirestore(app);
+      } catch (dbError) {
+        console.error("CRITICAL: Failed to initialize Firestore even without persistence:", dbError);
+        // At this point, db might be undefined, components should handle this.
+      }
+    }
+  }
 }
 
-auth = getAuth(app);
-
-try {
-  db = initializeFirestore(app, {
-    localCache: persistentLocalCache()
-  });
-  console.log("Firestore initialized with persistent local cache.");
-} catch (e: any) {
-  console.warn("Error initializing Firestore with persistence, falling back to default:", e);
-  db = getFirestore(app); 
+// Ensure auth and db are assigned default/null values if not configured
+if (!isFirebaseProperlyConfigured) {
+  // @ts-ignore
+  if (!auth) auth = null;
+  // @ts-ignore
+  if (!db) db = null;
 }
 
 
-if (typeof window !== 'undefined') { 
+if (typeof window !== 'undefined' && auth) {
   setPersistence(auth, browserLocalPersistence)
     .catch((error) => {
       console.error("Error setting auth persistence to browserLocalPersistence:", error);
@@ -90,7 +110,7 @@ if (typeof window !== 'undefined') {
 }
 
 export const setAuthPersistence = async (rememberMe: boolean) => {
-  if (typeof window !== 'undefined') { 
+  if (typeof window !== 'undefined' && auth) {
     const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
     try {
       await setPersistence(auth, persistenceType);
@@ -150,6 +170,12 @@ service cloud.firestore {
     // Allows a user to manage their own price alerts.
     match /userAlerts/{userId}/alerts/{alertId} {
       allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // User-specific daily balance snapshots:
+    // Allows a user to read and write their own daily balance snapshots.
+    match /userDailyBalances/{userId}/snapshots/{snapshotId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
     // Fallback rule: Deny all other access by default for security.
