@@ -4,7 +4,7 @@
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { LanguageProvider } from '@/providers/language-provider';
-// import { AuthProvider } from '@/providers/auth-provider'; // AuthProvider removed
+import { AuthProvider } from '@/providers/auth-provider'; // Re-import AuthProvider
 import dynamic from 'next/dynamic'; 
 
 const geistSans = Geist({
@@ -35,10 +35,10 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <LanguageProvider>
-          {/* <AuthProvider> */} {/* AuthProvider removed */}
+          <AuthProvider> {/* Reinstate AuthProvider */}
             {children}
             <DynamicToaster />
-          {/* </AuthProvider> */}
+          </AuthProvider>
         </LanguageProvider>
       </body>
     </html>
