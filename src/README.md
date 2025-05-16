@@ -7,13 +7,13 @@ To get started, take a look at src/app/page.tsx.
 
 ## Environment Setup
 
-This application requires Firebase credentials to function correctly.
+This application requires Firebase credentials to function correctly for features like Firestore. **User authentication has been removed from this application.**
 
-**VERY IMPORTANT: The `auth/api-key-not-valid` error almost always means that your `NEXT_PUBLIC_FIREBASE_API_KEY` or `NEXT_PUBLIC_FIREBASE_PROJECT_ID` (or other Firebase config values) are missing or incorrect in your `.env.local` file, OR your Firebase project is not correctly configured for web app usage (e.g., the API key is restricted or the Authentication service is not enabled/configured with sign-in methods). Please double-check the following steps carefully.**
+**VERY IMPORTANT: The `auth/api-key-not-valid` error (if encountered due to other Firebase services still using auth under the hood, though user-facing auth is removed) almost always means that your `NEXT_PUBLIC_FIREBASE_API_KEY` or `NEXT_PUBLIC_FIREBASE_PROJECT_ID` (or other Firebase config values) are missing or incorrect in your `.env.local` file, OR your Firebase project is not correctly configured for web app usage (e.g., the API key is restricted). Please double-check the following steps carefully.**
 
 1.  **Create a Firebase Project:** If you haven't already, create a project on the [Firebase Console](https://console.firebase.google.com/).
 2.  **Add a Web App:** In your Firebase project, add a new Web application. If you already have one, ensure it's correctly configured.
-3.  **Enable Authentication:** In the Firebase console, navigate to "Authentication" (under Build), go to the "Sign-in method" tab, and **ENSURE AT LEAST ONE SIGN-IN PROVIDER (e.g., Email/Password, Google) IS ENABLED.** This is a very common cause for the `auth/api-key-not-valid` error, especially if the API key itself is correct but no sign-in methods are active.
+3.  **Enable Firestore (if used):** In the Firebase console, navigate to "Firestore Database" (under Build) and enable it.
 4.  **Get Firebase Config:** After adding the web app (or selecting an existing one), Firebase will provide you with a `firebaseConfig` object. You can find this in your Project settings (click the gear icon next to "Project Overview", then scroll down to "Your apps", and select your web app). It looks something like this:
 
     ```javascript
@@ -51,71 +51,47 @@ GOOGLE_API_KEY=YOUR_GOOGLE_AI_STUDIO_API_KEY
 
 **Important:** Never commit your `.env.local` file (or any file containing sensitive credentials) to version control. The `.gitignore` file should already include `.env*.local`.
 
-### Adding Authorized Domains for OAuth (e.g., Google Sign-In)
+### Authorized Domains (Less Relevant Without OAuth)
 
-If you are using OAuth-based sign-in methods like Google Sign-In, Apple, Facebook, etc., you **must** add the domain from which your application is served to the list of "Authorized domains" in your Firebase Authentication settings. Failure to do so will result in an `auth/unauthorized-domain` error.
+Since user-facing authentication (especially OAuth like Google Sign-In) has been removed, the "Authorized domains" section in Firebase Authentication settings is less critical for the app's core functionality. However, if any underlying Firebase services still perform checks based on domain for API key usage, you might need to ensure your development (`localhost`) and deployment domains are listed.
 
-1.  **Go to Firebase Console:** Navigate to your Firebase project.
-2.  **Authentication Section:** Go to "Authentication" (under Build).
-3.  **Sign-in Method Tab:** Click on the "Sign-in method" tab.
-4.  **Authorized Domains:** Scroll down to the "Authorized domains" section.
-5.  **Add Domain:**
-    *   Click "Add domain".
-    *   Enter the domain(s) from which your app will be making authentication requests.
-        *   For **local development**, this is usually `localhost`.
-        *   For your **deployed application**, this will be your custom domain (e.g., `your-app-name.com`) or your Firebase Hosting domain (e.g., `your-project-id.web.app` or `your-project-id.firebaseapp.com`).
-    *   If you are unsure which domain is causing the issue, the Firebase error message in your browser's console often includes the specific domain that was rejected.
-6.  **Save Changes.**
+## Firestore Security Rules (If Data Is Still User-Specific or Public)
 
-After adding the necessary domains, the `auth/unauthorized-domain` error should be resolved.
+**CRITICAL FOR OPERATION (if using Firestore): If you see "permission-denied" errors in your application, it means your Firestore Security Rules are not correctly set up in the Firebase Console.**
 
-## Firestore Security Rules
+Even without user authentication, if you are storing data in Firestore (e.g., shared simulations, public alerts), you'll need appropriate security rules.
+If data was previously user-specific, you'll need to decide how to manage access now.
 
-**CRITICAL FOR OPERATION: If you see "permission-denied" errors in your application (e.g., when trying to load user data, save orders, or manage alerts), it almost certainly means your Firestore Security Rules are not correctly set up in the Firebase Console.**
-
-The application relies on specific Firestore security rules to ensure that users can only access and modify their own data.
-
-**You MUST deploy the following rules to your Firestore database:**
-
-1.  Go to your Firebase project in the Firebase Console.
-2.  Navigate to "Firestore Database" (under Build).
-3.  Click on the "Rules" tab.
-4.  Replace the **entire** content of the rules editor with the following:
-
+**Example: Public Read, Admin Write (Adjust as needed)**
+If you want to make all data publicly readable and only allow writes from a specific admin UID (or disable writes entirely from client):
 ```
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // User profile data:
-    // Allows a user to read and write to their own document in the 'users' collection.
-    // This is crucial for fetching user details after login and for updating profile information.
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    // Example: Make 'orders' collection publicly readable
+    match /userOrders/{userId}/orders/{orderId} { // Path might need to be restructured if not user-specific
+      allow read: if true; // Everyone can read
+      allow write: if false; // No one can write from client (manage via backend/admin SDK)
     }
-
-    // User-specific orders:
-    // Allows a user to manage (read, write, delete) their own orders.
-    match /userOrders/{userId}/orders/{orderId} {
-      allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+    // Example: Make 'simulations' publicly readable
+    match /userSimulations/{userId}/simulations/{simulationId} { // Path might need to be restructured
+      allow read: if true;
+      allow write: if false;
     }
-
-    // User-specific simulations:
-    // Allows a user to manage their own simulations.
-    match /userSimulations/{userId}/simulations/{simulationId} {
-      allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+    // Example: Make 'alerts' publicly readable
+    match /userAlerts/{userId}/alerts/{alertId} { // Path might need to be restructured
+      allow read: if true;
+      allow write: if false;
     }
-
-    // User-specific alerts:
-    // Allows a user to manage their own price alerts.
-    match /userAlerts/{userId}/alerts/{alertId} {
-      allow read, write, delete: if request.auth != null && request.auth.uid == userId;
-    }
+    // User profiles are no longer relevant with auth removed.
+    // match /users/{userId} {
+    //   allow read, write: if request.auth != null && request.auth.uid == userId;
+    // }
     
-    // User-specific daily balance snapshots:
-    // Allows a user to read and write their own daily balance snapshots.
-    match /userDailyBalances/{userId}/snapshots/{snapshotId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    // Daily balances might still be relevant if stored generically
+    match /userDailyBalances/{userId}/snapshots/{snapshotId} { // Path might need to be restructured
+       allow read: if true;
+       allow write: if false; 
     }
 
     // Fallback rule: Deny all other access by default for security.
@@ -125,12 +101,13 @@ service cloud.firestore {
   }
 }
 ```
+**You MUST deploy appropriate rules to your Firestore database based on your new data access model.**
 
+1.  Go to your Firebase project in the Firebase Console.
+2.  Navigate to "Firestore Database" (under Build).
+3.  Click on the "Rules" tab.
+4.  Replace the **entire** content of the rules editor with your new rules.
 5.  Click **"Publish"**.
 
-If you skip this step, Firestore will block your application's attempts to read or write data, leading to errors and a non-functional application.
-If you still encounter "permission-denied" errors after deploying these rules, ensure:
-- You are correctly logged in within the application.
-- The `userId` in your Firestore paths matches the `request.auth.uid` of the logged-in user.
-- There are no typos in collection or document paths in your code or rules.
-- You have refreshed your application or cleared any local cache that might be holding onto old data or auth state.
+If you skip this step and are using Firestore, Firestore will likely block your application's attempts to read or write data.
+If you still encounter "permission-denied" errors after deploying these rules, ensure your Firestore paths in your code match the rules and that you're not attempting client-side writes where `allow write: if false;` is set.

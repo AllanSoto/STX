@@ -1,28 +1,29 @@
+
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLanguage } from '@/hooks/use-language';
-import { useAuth } from '@/hooks/use-auth'; // Import useAuth
+// import { useAuth } from '@/hooks/use-auth'; // Auth removed
 import { getOrdersForUser } from '@/lib/firebase/orders';
 import type { SavedOrder } from '@/lib/types';
 import { OrderFilters } from './order-filters';
 import { OrderHistoryTable } from './order-history-table';
 import { Button } from '@/components/ui/button';
-import { Download, Printer, Loader2, WifiOff } from 'lucide-react'; // Added WifiOff
+import { Download, Printer, Loader2, WifiOff } from 'lucide-react'; 
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import Link from 'next/link';
-import { MainLayout } from '../layout/main-layout'; // Ensure MainLayout is imported if used
+// import Link from 'next/link'; // No longer needed for login redirect
+import { MainLayout } from '../layout/main-layout'; 
 
 
 export function OrderHistoryClient() {
   const { translations, language } = useLanguage();
-  const { user, loading: authLoading } = useAuth(); // Get user from useAuth
+  // const { user, loading: authLoading } = useAuth(); // Auth removed
   const { toast } = useToast();
   const t = useCallback((key: string, fallback?: string) => translations[key] || fallback || key, [translations]);
 
   const [allOrders, setAllOrders] = useState<SavedOrder[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // Still true initially, but won't wait for auth
   const [error, setError] = useState<string | null>(null);
   const [isOfflineError, setIsOfflineError] = useState(false);
 
@@ -32,16 +33,26 @@ export function OrderHistoryClient() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    if (authLoading) return; 
+    // if (authLoading) return; // Auth removed
 
-    if (user) {
+    // if (user) { // User check removed; fetch all orders or adapt based on no-auth scenario
       setIsLoading(true);
       setError(null);
       setIsOfflineError(false);
-      getOrdersForUser(user.uid) 
-        .then(setAllOrders)
+      // Since user is null, getOrdersForUser(null) will return [], as per its implementation.
+      // Or, you might want to fetch public/all orders if that's the new desired behavior.
+      // For now, assuming it fetches no orders if no user.
+      getOrdersForUser(null) 
+        .then(fetchedOrders => {
+            if (fetchedOrders.length === 0) {
+                // If no orders are fetched (which will be the case without a user for user-specific orders)
+                // show a message indicating that this feature is now general or disabled.
+                setError(t('history.table.noAuthInfo', 'Order history is now general, not tied to specific user accounts.'));
+            }
+            setAllOrders(fetchedOrders);
+        })
         .catch(err => {
-          console.error("Error fetching orders for user:", err);
+          console.error("Error fetching orders (auth disabled):", err);
           const errorMessage = err.message || t('history.table.loadingError', 'Failed to load order history.');
           setError(errorMessage);
           if (err.message && err.message.includes('offline')) {
@@ -60,13 +71,13 @@ export function OrderHistoryClient() {
           }
         })
         .finally(() => setIsLoading(false));
-    } else {
-      setAllOrders([]);
-      setIsLoading(false);
-      setError(null);
-      setIsOfflineError(false);
-    }
-  }, [user, authLoading, t, toast]);
+    // } else {
+    //   setAllOrders([]);
+    //   setIsLoading(false);
+    //   setError(null);
+    //   setIsOfflineError(false);
+    // }
+  }, [/*user, authLoading,*/ t, toast]); // user, authLoading removed
 
   const filteredOrders = useMemo(() => {
     return allOrders
@@ -159,7 +170,7 @@ export function OrderHistoryClient() {
     window.print();
   };
 
-  if (authLoading || isLoading) {
+  if (isLoading) { // isLoading can still be true while fetching general data
     return (
       <MainLayout>
         <div className="container mx-auto py-8 px-4 flex justify-center items-center min-h-[calc(100vh-10rem)]">
@@ -169,19 +180,20 @@ export function OrderHistoryClient() {
     );
   }
 
-  if (!user) {
-    return (
-      <MainLayout>
-        <div className="container mx-auto py-8 px-4 text-center">
-          <h1 className="text-3xl font-bold mb-8 text-foreground">{t('history.page.title', 'Order History')}</h1>
-          <p className="text-lg text-muted-foreground mb-6">{t('history.page.loginPrompt', 'Please log in to view your order history.')}</p>
-          <Button asChild>
-            <Link href="/login">{t('login.title', 'Login')}</Link>
-          </Button>
-        </div>
-      </MainLayout>
-    );
-  }
+  // Login prompt removed as auth is disabled
+  // if (!user) {
+  //   return (
+  //     <MainLayout>
+  //       <div className="container mx-auto py-8 px-4 text-center">
+  //         <h1 className="text-3xl font-bold mb-8 text-foreground">{t('history.page.title', 'Order History')}</h1>
+  //         <p className="text-lg text-muted-foreground mb-6">{t('history.page.loginPrompt', 'Please log in to view your order history.')}</p>
+  //         <Button asChild>
+  //           <Link href="/login">{t('login.title', 'Login')}</Link>
+  //         </Button>
+  //       </div>
+  //     </MainLayout>
+  //   );
+  // }
 
 
   return (
@@ -213,7 +225,7 @@ export function OrderHistoryClient() {
       {error ? (
         <div className="text-center py-10 flex flex-col items-center justify-center">
           {isOfflineError && <WifiOff className="h-12 w-12 text-destructive mb-4" />}
-          <p className="text-destructive">{error}</p>
+          <p className={isOfflineError ? "text-destructive" : "text-muted-foreground"}>{error}</p>
         </div>
       ) : (
         <OrderHistoryTable orders={filteredOrders} t={t} currentLanguage={language} />

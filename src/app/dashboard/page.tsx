@@ -1,7 +1,6 @@
 // src/app/dashboard/page.tsx
 'use client';
 
-
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { CryptoDisplayCard } from '@/components/dashboard/crypto-display-card';
@@ -13,14 +12,17 @@ import type { CryptoSymbol, PriceAlert } from '@/lib/types';
 import { CRYPTO_SYMBOLS, COIN_DATA, QUOTE_CURRENCY } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/use-auth'; 
+// useAuth import removed as auth is disabled
+// import { useAuth } from '@/hooks/use-auth'; 
+// Firebase alert functions might be affected as they require userId.
+// UI elements calling these will be disabled if they require a user.
 import { getActivePriceAlertsForUser, deactivatePriceAlert, savePriceAlert, updatePriceAlert, deletePriceAlert } from '@/lib/firebase/alerts';
 import { AlertModal } from '@/components/dashboard/alert-modal';
 import type { TrendAnalysis } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { fetchCoinGeckoHistoricalPrices } from '@/services/coingecko';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+// import { Button } from '@/components/ui/button'; // Not used directly after auth removal for redirection
+// import Link from 'next/link'; // Not used directly after auth removal for redirection
 import { Loader2, WifiOff } from 'lucide-react'; 
 
 
@@ -84,7 +86,7 @@ export default function DashboardPage() {
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
   const { translations, language } = useLanguage();
   const { toast } = useToast();
-  const { user, loading: authLoading } = useAuth(); 
+  // const { user, loading: authLoading } = useAuth(); // Auth removed
 
   const webSocketRef = useRef<WebSocket | null>(null);
   const binanceFallbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -119,22 +121,28 @@ export default function DashboardPage() {
     }
     return String(msg);
   }, [translations]);
-
-  useEffect(() => {
-    console.log('[DashboardPage] Auth State Update:', { authLoading, userEmail: user?.email });
-  }, [authLoading, user]);
+  
+  // Auth state update log removed
+  // useEffect(() => {
+  //   console.log('[DashboardPage] Auth State Update:', { authLoading, userEmail: user?.email });
+  // }, [authLoading, user]);
   
 
   const fetchActiveAlerts = useCallback(async () => {
-    if (!user) return; 
+    // if (!user) return; // User check removed
     setAlertsError(null); 
     try {
-      const alerts = await getActivePriceAlertsForUser(user.uid);
-      setActiveAlerts(alerts);
+      // Fetching user-specific alerts is disabled without auth.
+      // const alerts = await getActivePriceAlertsForUser(user.uid);
+      // setActiveAlerts(alerts);
+      setActiveAlerts([]); // Default to no alerts
+      setAlertsError(t('auth.disabled.alertsUnavailable', 'Price alerts are unavailable without user accounts.'));
+      console.warn("Alert fetching disabled: User authentication removed.");
     } catch (error: any) {
-      console.error("Error fetching active alerts:", error);
+      console.error("Error fetching active alerts (would be disabled):", error);
       const errorMessage = error.message || t('dashboard.alerts.fetchErrorDescription', 'Could not load your active price alerts.');
       setAlertsError(errorMessage);
+      // Toast for offline remains relevant
       if (error.message && error.message.includes('offline')) {
         toast({
             title: t('firebase.offline.title', 'Offline'),
@@ -142,34 +150,39 @@ export default function DashboardPage() {
             variant: 'destructive',
         });
       } else {
-        toast({
-            title: t('dashboard.alerts.fetchErrorTitle', 'Alerts Error'),
-            description: errorMessage,
-            variant: 'destructive',
-        });
+        // This toast might not be relevant if the feature is disabled
+        // toast({
+        //     title: t('dashboard.alerts.fetchErrorTitle', 'Alerts Error'),
+        //     description: errorMessage,
+        //     variant: 'destructive',
+        // });
       }
     }
-  }, [user, t, toast]);
+  }, [/*user,*/ t, toast]); // user removed from dependencies
 
   useEffect(() => {
-    if(user) {
-      fetchActiveAlerts();
-    } else {
-      setActiveAlerts([]); 
-      setAlertsError(null);
-    }
-  }, [user, fetchActiveAlerts]);
+    // if(user) { // User check removed
+    fetchActiveAlerts();
+    // } else {
+    //   setActiveAlerts([]); 
+    //   setAlertsError(null);
+    // }
+  }, [/*user,*/ fetchActiveAlerts]); // user removed
 
 
   const handleOpenAlertModal = (symbol: CryptoSymbol, price: number, alertToEdit?: PriceAlert) => {
-    if (!user) {
-      toast({ title: t('alertModal.toast.authErrorTitle', 'Authentication Required'), description: t('alertModal.toast.authErrorDescriptionLoginToSet', 'Please log in to set price alerts.'), variant: 'warning'});
-      return;
-    }
-    setAlertCryptoSymbol(symbol);
-    setAlertCurrentPrice(price);
-    setEditingAlert(alertToEdit || null);
-    setIsAlertModalOpen(true);
+    // if (!user) { // User check removed
+    //   toast({ title: t('alertModal.toast.authErrorTitle', 'Authentication Required'), description: t('alertModal.toast.authErrorDescriptionLoginToSet', 'Please log in to set price alerts.'), variant: 'warning'});
+    //   return;
+    // }
+    toast({ title: t('auth.disabled.title', 'Feature Disabled'), description: t('auth.disabled.alertsUnavailableShort', 'Price alerts are unavailable without user accounts.'), variant: 'warning'});
+    // Optionally, still open modal in a read-only or informational mode if desired.
+    // For now, just show toast and don't open.
+    return; 
+    // setAlertCryptoSymbol(symbol);
+    // setAlertCurrentPrice(price);
+    // setEditingAlert(alertToEdit || null);
+    // setIsAlertModalOpen(true);
   };
 
   const handleCloseAlertModal = () => {
@@ -437,7 +450,8 @@ export default function DashboardPage() {
     let alertIntervalId: NodeJS.Timeout | null = null;
 
     const checkAlerts = () => {
-      if (!user || activeAlertsRef.current.length === 0 || cryptoDataRef.current.every(c => c.value === 0)) {
+      // if (!user || activeAlertsRef.current.length === 0 || cryptoDataRef.current.every(c => c.value === 0)) { // User check removed
+      if (activeAlertsRef.current.length === 0 || cryptoDataRef.current.every(c => c.value === 0)) {
         return;
       }
 
@@ -464,22 +478,23 @@ export default function DashboardPage() {
             }),
             duration: 10000, 
           });
-          await deactivatePriceAlert(user.uid, alert.id); 
+          // await deactivatePriceAlert(user.uid, alert.id); // User-specific action disabled
+          console.warn("Alert triggered, but deactivation is disabled without user auth:", alert.id);
           fetchActiveAlerts(); 
         }
       });
     };
 
-    if (user) { 
+    // if (user) { // User check removed
       alertIntervalId = setInterval(checkAlerts, ALERT_CHECK_INTERVAL);
-    } else if (alertIntervalId) {
-      clearInterval(alertIntervalId); 
-    }
+    // } else if (alertIntervalId) {
+    //   clearInterval(alertIntervalId); 
+    // }
     
     return () => {
       if (alertIntervalId) clearInterval(alertIntervalId);
     };
-  }, [user, t, toast, fetchActiveAlerts]);
+  }, [/*user,*/ t, toast, fetchActiveAlerts]); // user removed
 
 
   const cryptoPricesForSimulator = useMemo(() => 
@@ -496,32 +511,34 @@ export default function DashboardPage() {
   }, [cryptoData]);
 
 
-  if (authLoading) {
-    console.log('[DashboardPage] Rendering loader due to authLoading=true');
-    return (
-      <MainLayout>
-        <div className="container mx-auto py-8 px-4 flex justify-center items-center min-h-[calc(100vh-10rem)]">
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          <p className="mt-2 text-muted-foreground">{t('dashboard.loadingAuth', 'Verifying session...')}</p>
-        </div>
-      </MainLayout>
-    );
-  }
+  // Auth loading check removed as auth is disabled
+  // if (authLoading) {
+  //   console.log('[DashboardPage] Rendering loader due to authLoading=true');
+  //   return (
+  //     <MainLayout>
+  //       <div className="container mx-auto py-8 px-4 flex justify-center items-center min-h-[calc(100vh-10rem)]">
+  //         <Loader2 className="h-12 w-12 animate-spin text-primary" />
+  //         <p className="mt-2 text-muted-foreground">{t('dashboard.loadingAuth', 'Verifying session...')}</p>
+  //       </div>
+  //     </MainLayout>
+  //   );
+  // }
 
-  if (!user && !authLoading) {
-    console.log('[DashboardPage] No user and not authLoading, redirecting to login');
-    return (
-      <MainLayout>
-        <div className="container mx-auto py-8 px-4 text-center">
-          <h1 className="text-3xl font-bold mb-8 text-foreground">{t('dashboard.title', 'Dashboard')}</h1>
-          <p className="text-lg text-muted-foreground mb-6">{t('dashboard.loginPrompt', 'Please log in to view the dashboard and use SimulTradex features.')}</p>
-          <Button asChild>
-            <Link href="/login">{t('login.title', 'Login')}</Link>
-          </Button>
-        </div>
-      </MainLayout>
-    );
-  }
+  // Login prompt removed as auth is disabled
+  // if (!user && !authLoading) {
+  //   console.log('[DashboardPage] No user and not authLoading, redirecting to login');
+  //   return (
+  //     <MainLayout>
+  //       <div className="container mx-auto py-8 px-4 text-center">
+  //         <h1 className="text-3xl font-bold mb-8 text-foreground">{t('dashboard.title', 'Dashboard')}</h1>
+  //         <p className="text-lg text-muted-foreground mb-6">{t('dashboard.loginPrompt', 'Please log in to view the dashboard and use SimulTradex features.')}</p>
+  //         <Button asChild>
+  //           <Link href="/login">{t('login.title', 'Login')}</Link>
+  //         </Button>
+  //       </div>
+  //     </MainLayout>
+  //   );
+  // }
 
 
   return (
@@ -560,7 +577,8 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
                 <p className="text-muted-foreground">
-                   {t('dashboard.portfolioBalance.loggedInMessage', "Portfolio balance features will be available if you connect your Binance API keys in Account Settings.")}
+                   {/* Updated message as Binance API keys are no longer a planned feature */}
+                   {t('dashboard.portfolioBalance.publicSourceMessage', "Displaying market data from public source.")}
                 </p>
                  {alertsError && (
                     <div className="mt-4 p-3 text-sm text-destructive-foreground bg-destructive/20 rounded-md flex items-start">
@@ -608,4 +626,3 @@ export default function DashboardPage() {
     </MainLayout>
   );
 }
-
