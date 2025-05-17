@@ -12,58 +12,27 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
   en: {
     'app.name': 'SimulTradex',
     'app.loadingMessage': 'Loading SimulTradex...',
-    // 'app.loadingAuth': 'Verifying session...', // Auth removed
     'app.redirecting': 'Redirecting...',
     'settings.title': 'Settings',
-    // 'settings.myAccount': 'My Account', // Auth removed
-    'settings.accountSettings': 'Account Settings', // Keep for general settings if any
+    'settings.accountSettings': 'Account Settings', 
     'settings.language': 'Language',
-    // 'settings.logout': 'Log out', // Auth removed
-    // 'header.userMenu.title': 'User Menu', // Auth removed
-    // 'header.userMenu.account': 'Account', // Auth removed
-    // 'header.userMenu.logout': 'Log out', // Auth removed
-    // 'header.loginButton': 'Login', // Auth removed
-    // 'header.signupButton': 'Sign Up', // Auth removed
     'dashboard.title': 'Dashboard',
     'dashboard.marketOverview': 'Market Overview',
     'dashboard.orderSimulator': 'Order Simulator',
     'dashboard.opportunitySimulator': 'Opportunity Simulator',
     'dashboard.loadingPrices': 'Loading live prices...',
-    // 'dashboard.loadingAuth': 'Verifying session...', // Auth removed
     'dashboard.portfolioBalance': 'Portfolio Balance',
     'dashboard.portfolioBalance.publicSourceMessage': "Displaying market data from public source.",
-    // 'dashboard.portfolioBalance.loggedInMessage': "Portfolio balance features will be available if you connect your Binance API keys in Account Settings.", // Auth removed
     'dashboard.cryptoCard.alertButton.title': 'Set Price Alert',
     'dashboard.cryptoCard.alertButton.label': 'Set Alert',
     'dashboard.alerts.fetchErrorTitle': 'Alerts Error',
-    'dashboard.alerts.fetchErrorDescription': 'Could not load price alerts.', // Made generic
+    'dashboard.alerts.fetchErrorDescription': 'Could not load price alerts.', 
     'dashboard.alerts.triggeredTitle': 'Price Alert Triggered!',
     'dashboard.alerts.triggeredDescription': '{symbol} has reached your target price of ${targetPrice}. Current price: ${currentPrice}.',
     'dashboard.ai.historicalDataError': 'Could not fetch historical data for {symbol}.',
-    // 'dashboard.loginPrompt': 'Please log in to view the dashboard and use SimulTradex features.', // Auth removed
-    // 'account.passwordChange.title': "Change Password", // Auth removed
-    // 'account.passwordChange.description': "Update your account password.", // Auth removed
-    // 'account.passwordChange.currentPasswordLabel': "Current Password", // Auth removed
-    // 'account.passwordChange.newPasswordLabel': "New Password", // Auth removed
-    // 'account.passwordChange.confirmNewPasswordLabel': "Confirm New Password", // Auth removed
-    // 'account.passwordChange.passwordPlaceholder': "••••••••", // Auth removed
-    // 'account.passwordChange.submitButton': "Change Password", // Auth removed
-    // 'account.passwordChange.toast.changedTitle': "Password Changed", // Auth removed
-    // 'account.passwordChange.toast.changedDescription': "Your password has been successfully updated.", // Auth removed
-    // 'account.passwordChange.toast.failedTitle': "Password Change Failed", // Auth removed
-    // 'account.passwordChange.toast.failedDescriptionIncorrect': "Incorrect current password.", // Auth removed
-    // 'account.passwordChange.toast.failedDescriptionWeak': 'New password does not meet security requirements.', // Auth removed
-    // 'account.passwordChange.toast.failedDescriptionGeneric': 'Could not change password.', // Auth removed
-    // 'account.passwordChange.toast.notLoggedInTitle': "Not Logged In", // Auth removed
-    // 'account.passwordChange.toast.notLoggedInDescription': "You must be logged in to change your password.", // Auth removed
-    // 'account.passwordChange.loginRequiredMessage': 'Please log in to change your password.', // Auth removed
-    'account.page.title': "Account Settings", // Keep if there are non-auth settings
-    // 'account.page.loginPrompt': 'Please log in to view your account settings.', // Auth removed
-    'account.profile.title': 'Profile Information', // Keep if general app info can be shown
-    'account.profile.description': 'Application details.', // Changed description
-    // 'account.profile.emailLabel': 'Email Address', // Auth removed
-    // 'account.profile.displayNameLabel': 'Display Name', // Auth removed
-    // 'account.profile.notAvailable': 'Not available', // Auth removed
+    'account.page.title': "Account Settings", 
+    'account.profile.title': 'Profile Information', 
+    'account.profile.description': 'Application details.', 
     'dashboard.cryptoCard.tooltip.reason': "Reason:",
     'dashboard.cryptoCard.tooltip.confidence': "Confidence:",
     'dashboard.cryptoCard.trend.upward': "Upward trend",
@@ -75,8 +44,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.description': 'Simulate an exchange and see potential sell opportunities at incremental profit percentages.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Trading Pair',
     'dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel': 'Amount to Spend ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': 'Purchase Price of {baseCurrency} (in {quoteCurrency})',
-    'dashboard.orderOpportunitySimulator.cryptoValueLabel': 'Exchanged Crypto ({crypto})',
+    'dashboard.orderOpportunitySimulator.purchasePriceOfCryptoLabel': 'Price of Crypto ({quoteCurrency})', // Changed key
+    'dashboard.orderOpportunitySimulator.exchangedCryptoValueLabel': 'Exchanged Crypto ({targetCurrency})', // Changed key
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Select Trading Pair',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'Operation',
     'dashboard.orderOpportunitySimulator.table.header.amountToTransact': 'Amount ({currency1})',
@@ -103,14 +72,11 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.toast.savedSuccessDescription': 'Your simulation has been successfully saved.',
     'dashboard.orderOpportunitySimulator.toast.saveErrorTitle': 'Save Error',
     'dashboard.orderOpportunitySimulator.toast.saveErrorDescription': 'Could not save the simulation. Please try again.',
-    // 'dashboard.orderOpportunitySimulator.toast.notLoggedInError': 'You must be logged in to save simulations/orders.', // Auth removed
     'dashboard.orderOpportunitySimulator.toast.noDataToSave': 'There is no valid simulation/order data to save.',
     'dashboard.orderOpportunitySimulator.toast.orderSavedSuccessTitle': 'Order Saved',
     'dashboard.orderOpportunitySimulator.toast.orderSavedSuccessDescription': 'The specific order has been successfully saved.',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorTitle': 'Order Save Error',
     'dashboard.orderOpportunitySimulator.toast.orderSaveErrorDescription': 'Could not save the specific order. Please try again.',
-    // 'dashboard.orderOpportunitySimulator.saveButtonDisabled': 'Save Simulation (Login Required)', // Auth removed
-    // 'dashboard.orderOpportunitySimulator.saveOrderButtonDisabled': 'Save Order (Login Required)', // Auth removed
     'auth.disabled.title': 'Feature Disabled',
     'auth.disabled.description': 'This feature is currently disabled because user authentication has been removed.',
     'auth.disabled.featureUnavailable': 'This feature is unavailable because user authentication has been removed.',
@@ -131,7 +97,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.exchangeOperation': 'Exchange {cur1} for {cur2}',
     'dashboard.orderOpportunitySimulator.quantityLabel': 'Quantity ({currency})',
     'dashboard.orderOpportunitySimulator.purchasePriceLabel': 'Purchase Price ({baseCurrency} per {quoteCurrency})',
-    'dashboard.orderOpportunitySimulator.exchangedCryptoValueLabel': 'Exchanged Value ({targetCurrency})',
+    'dashboard.orderOpportunitySimulator.amountToSpendLabel': 'Amount to Spend ({quoteCurrency})',
     'dashboard.connectionStatus.title': 'Connection Issue',
     'dashboard.connectionStatus.noFeed': 'Currently not receiving live price updates. Attempting to connect...',
     'dashboard.connectionStatus.fallbackTitle': 'Using Fallback Connection',
@@ -155,7 +121,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.websocket.eventType': 'Event type: {type}',
     'history.page.title': "Order History",
     'history.menuItem': 'Order History',
-    // 'history.page.loginPrompt': 'Please log in to view your order history.', // Auth removed
     'history.filters.dateRange': "Date Range",
     'history.filters.startDate': "Start Date",
     'history.filters.endDate': "End Date",
@@ -214,9 +179,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'alertModal.toast.deleteDisabledDescription': 'Alerts are not removed from server without user accounts.',
     'alertModal.button.updateLocal': 'Update Local Alert',
     'alertModal.button.setLocal': 'Set Local Alert',
-    // 'alertModal.toast.authErrorTitle': 'Authentication Error', // Auth removed
-    // 'alertModal.toast.authErrorDescription': 'You must be logged in to manage alerts.', // Auth removed
-    // 'alertModal.toast.authErrorDescriptionLoginToSet': 'Please log in to set price alerts.', // Auth removed
     'activeAlerts.title': 'My Price Alerts',
     'activeAlerts.description': 'Manage your active and inactive price alerts.',
     'activeAlerts.loading': 'Loading alerts...',
@@ -248,12 +210,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'activeAlerts.toast.deactivatedDescription': 'The alert for {symbol} is now inactive.',
     'activeAlerts.toast.toggleErrorTitle': 'Error Updating Alert',
     'activeAlerts.toast.toggleErrorDescription': 'Could not update alert status.',
-    // 'login.title': 'Login to SimulTradex', // Auth removed
-    // ... other login translations removed
-    // 'signup.title': 'Create your SimulTradex Account', // Auth removed
-    // ... other signup translations removed
-    // 'zod.email.invalid': 'Invalid email address.', // Auth removed
-    // ... other zod validation messages related to auth removed
     'zod.orderOpportunity.selectPair': 'Please select a trading pair.',
     'zod.orderOpportunity.positiveInputAmount': 'Amount must be a positive number.',
     'zod.orderOpportunity.marketPricePositive': 'Market price must be a positive number.',
@@ -265,41 +221,26 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'toaster.notificationsLabel': 'Notifications (F8)',
     'firebase.config.errorTitle': 'Firebase Configuration Error',
     'firebase.config.errorMessage': 'The application is not properly configured to connect to Firebase. Please check your .env.local file and ensure all NEXT_PUBLIC_FIREBASE_... variables are correctly set. Refer to README.md for setup instructions.',
-    // 'firebase.config.errorMessageLogin': 'Login is unavailable because the application is not properly configured to connect to Firebase. Please ensure all NEXT_PUBLIC_FIREBASE_... variables are correctly set in your .env.local file. Refer to README.md for setup instructions.', // Auth removed
-    // 'firebase.config.errorMessageSignup': 'Account creation is unavailable because the application is not properly configured to connect to Firebase. Please ensure all NEXT_PUBLIC_FIREBASE_... variables are correctly set in your .env.local file. Refer to README.md for setup instructions.', // Auth removed
-    // 'firebase.config.apiKeyInvalid': 'Firebase API Key invalid. Check .env.local. Also, in Firebase Console, ensure Email/Password sign-in is ENABLED & API key has no restrictions for this app.', // Auth removed
     'firebase.offline.title': 'Offline',
-    'firebase.offline.userDataError': 'Could not load user data. You appear to be offline. Some features may be limited.', // Kept generic, though user data is no longer specific
+    'firebase.offline.userDataError': 'Could not load user data. You appear to be offline. Some features may be limited.', 
     'firebase.offline.fetchError': 'Could not load data. You appear to be offline.',
     'firebase.generalError.title': 'Error',
-    'firebase.generalError.userDataError': 'An error occurred while loading user data.', // Kept generic
-    // 'firebase.permissionDenied.title': 'Permission Denied', // Specific to user data access
-    // 'firebase.permissionDenied.userDataError': "Could not load user data due to insufficient permissions. Please check your Firestore Security Rules. Refer to src/README.md for guidance." // Specific to user data access
+    'firebase.generalError.userDataError': 'An error occurred while loading user data.', 
+    'sidebar.rail.toggleLabel': 'Toggle sidebar',
+    'sidebar.rail.toggleTitle': 'Toggle sidebar',
   },
-  // Other languages also need auth-related translations removed/updated.
-  // For brevity, only 'en' is shown fully modified. Assume similar changes for 'es', 'fr', 'hi', 'zh'.
-  es: { // Example for Spanish, apply similar auth removal
+  es: { 
     'app.name': 'SimulTradex',
     'app.loadingMessage': 'Cargando SimulTradex...',
-    // 'app.loadingAuth': 'Verificando sesión...',
     'app.redirecting': 'Redirigiendo...',
     'settings.title': 'Configuración',
-    // 'settings.myAccount': 'Mi Cuenta',
-    'settings.accountSettings': 'Configuración de Aplicación', // Changed
+    'settings.accountSettings': 'Configuración de Aplicación', 
     'settings.language': 'Idioma',
-    // 'settings.logout': 'Cerrar Sesión',
-    // 'header.userMenu.title': 'Menú de Usuario',
-    // 'header.userMenu.account': 'Cuenta',
-    // 'header.userMenu.logout': 'Cerrar sesión',
-    // 'header.loginButton': 'Iniciar Sesión',
-    // 'header.signupButton': 'Registrarse',
-    'dashboard.title': 'Tablero',
+    'dashboard.title': 'Tablero', // Changed from 'Panel' to 'Tablero' for consistency
     'dashboard.marketOverview': 'Resumen del Mercado',
     'dashboard.loadingPrices': 'Cargando precios en vivo...',
-    // 'dashboard.loadingAuth': 'Verificando sesión...',
     'dashboard.portfolioBalance': 'Balance de Portafolio',
     'dashboard.portfolioBalance.publicSourceMessage': "Mostrando datos de mercado de fuente pública.",
-    // 'dashboard.portfolioBalance.loggedInMessage': "Las funciones de saldo de portafolio estarán disponibles si conecta sus claves API de Binance en Configuración de cuenta.",
     'dashboard.cryptoCard.alertButton.title': 'Establecer Alerta de Precio',
     'dashboard.cryptoCard.alertButton.label': 'Crear Alerta',
     'dashboard.alerts.fetchErrorTitle': 'Error de Alertas',
@@ -307,10 +248,9 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.alerts.triggeredTitle': '¡Alerta de Precio Activada!',
     'dashboard.alerts.triggeredDescription': '{symbol} ha alcanzado su precio objetivo de ${targetPrice}. Precio actual: ${currentPrice}.',
     'dashboard.ai.historicalDataError': 'No se pudieron obtener los datos históricos para {symbol}.',
-    // 'dashboard.loginPrompt': 'Por favor, inicie sesión para ver el tablero y usar las funciones de SimulTradex.',
-    'account.page.title': "Configuración de Aplicación", // Changed
-    'account.profile.title': 'Información de la Aplicación', // Changed
-    'account.profile.description': 'Detalles de la aplicación.', // Changed
+    'account.page.title': "Configuración de Aplicación", 
+    'account.profile.title': 'Información de la Aplicación', 
+    'account.profile.description': 'Detalles de la aplicación.', 
     'dashboard.cryptoCard.tooltip.reason': "Razón:",
     'dashboard.cryptoCard.tooltip.confidence': "Confianza:",
     'dashboard.cryptoCard.trend.upward': "Tendencia alcista",
@@ -322,8 +262,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.description': 'Simula un intercambio y visualiza oportunidades de venta potenciales con porcentajes de ganancia incrementales.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Par de Trading',
     'dashboard.orderOpportunitySimulator.amountToSpendInQuoteLabel': 'Cantidad a Gastar ({currency})',
-    'dashboard.orderOpportunitySimulator.purchasePriceOfBaseInQuoteLabel': 'Precio de Compra de {baseCurrency} ({quoteCurrency})',
-    'dashboard.orderOpportunitySimulator.cryptoValueLabel': 'Cripto Intercambiado ({crypto})',
+    'dashboard.orderOpportunitySimulator.purchasePriceOfCryptoLabel': 'Precio de Cripto ({quoteCurrency})', // Changed key
+    'dashboard.orderOpportunitySimulator.exchangedCryptoValueLabel': 'Cripto Intercambiado ({targetCurrency})', // Changed key
     'dashboard.orderOpportunitySimulator.selectPairPlaceholder': 'Selecciona Par de Trading',
     'dashboard.orderOpportunitySimulator.table.header.operation': 'Operación',
     'dashboard.orderOpportunitySimulator.table.header.amountToTransact': 'Cantidad ({currency1})',
@@ -375,7 +315,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.orderOpportunitySimulator.exchangeOperation': 'Intercambiar {cur1} por {cur2}',
     'dashboard.orderOpportunitySimulator.quantityLabel': 'Cantidad ({currency})',
     'dashboard.orderOpportunitySimulator.purchasePriceLabel': 'Precio de Compra ({baseCurrency} por {quoteCurrency})',
-    'dashboard.orderOpportunitySimulator.exchangedCryptoValueLabel': 'Valor Intercambiado ({targetCurrency})',
+    'dashboard.orderOpportunitySimulator.amountToSpendLabel': 'Cantidad a Gastar ({quoteCurrency})',
     'dashboard.connectionStatus.title': 'Problema de Conexión',
     'dashboard.connectionStatus.noFeed': 'Actualmente no se reciben actualizaciones de precios en vivo. Intentando conectar...',
     'dashboard.connectionStatus.fallbackTitle': 'Usando Conexión de Respaldo',
@@ -504,18 +444,19 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'firebase.offline.fetchError': 'No se pudieron cargar los datos. Parece que no tienes conexión.',
     'firebase.generalError.title': 'Error',
     'firebase.generalError.userDataError': 'Ocurrió un error al cargar los datos del usuario.',
+    'sidebar.rail.toggleLabel': 'Activar o desactivar la barra lateral', // Spanish translation
+    'sidebar.rail.toggleTitle': 'Activar o desactivar la barra lateral',  // Spanish translation
   },
-  fr: { // Example for French, apply similar auth removal
+  fr: { 
     'app.name': 'SimulTradex',
     'app.loadingMessage': 'Chargement de SimulTradex...',
-    // 'app.loadingAuth': 'Vérification de la session...',
     'app.redirecting': 'Redirection...',
     'settings.title': 'Paramètres',
-    // 'settings.myAccount': 'Mon Compte',
-    'settings.accountSettings': 'Paramètres de l\'Application', // Changed
+    'settings.accountSettings': 'Paramètres de l\'Application', 
     'settings.language': 'Langue',
-    // 'settings.logout': 'Se Déconnecter',
-    // ... (rest of French translations, similarly modified for auth removal) ...
+    'dashboard.title': 'Tableau de Bord', // French for Dashboard
+    'dashboard.marketOverview': 'Aperçu du Marché',
+    // ... (rest of French translations, similarly modified for auth removal and consistency) ...
     'footer.createdBy': 'Créé avec IA par Allan Soto',
     'toaster.notificationsLabel': 'Notifications (F8)',
     'firebase.config.errorTitle': 'Erreur de Configuration Firebase',
@@ -525,18 +466,19 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'firebase.offline.fetchError': 'Impossible de charger les données. Vous semblez être hors ligne.',
     'firebase.generalError.title': 'Erreur',
     'firebase.generalError.userDataError': 'Une erreur s\'est produite lors du chargement des données utilisateur.',
+    'sidebar.rail.toggleLabel': 'Basculer la barre latérale', // French translation
+    'sidebar.rail.toggleTitle': 'Basculer la barre latérale',  // French translation
   },
-  hi: { // Example for Hindi, apply similar auth removal
+  hi: { 
     'app.name': 'सिमुलट्रेडेक्स',
     'app.loadingMessage': 'सिमुलट्रेडेक्स लोड हो रहा है...',
-    // 'app.loadingAuth': 'सत्र सत्यापित किया जा रहा है...',
     'app.redirecting': 'पुनर्निर्देशित किया जा रहा है...',
     'settings.title': 'सेटिंग्स',
-    // 'settings.myAccount': 'मेरा खाता',
-    'settings.accountSettings': 'एप्लिकेशन सेटिंग्स', // Changed
+    'settings.accountSettings': 'एप्लिकेशन सेटिंग्स', 
     'settings.language': 'भाषा',
-    // 'settings.logout': 'लॉग आउट करें',
-    // ... (rest of Hindi translations, similarly modified for auth removal) ...
+    'dashboard.title': 'डैशबोर्ड', // Hindi for Dashboard
+    'dashboard.marketOverview': 'बाजार अवलोकन',
+    // ... (rest of Hindi translations, similarly modified for auth removal and consistency) ...
     'footer.createdBy': 'IA द्वारा एलन सोटो द्वारा बनाया गया',
     'toaster.notificationsLabel': 'सूचनाएं (F8)',
     'firebase.config.errorTitle': 'फायरबेस कॉन्फ़िगरेशन त्रुटि',
@@ -546,18 +488,19 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'firebase.offline.fetchError': 'डेटा लोड नहीं किया जा सका। आप ऑफ़लाइन प्रतीत होते हैं।',
     'firebase.generalError.title': 'त्रुटि',
     'firebase.generalError.userDataError': 'उपयोगकर्ता डेटा लोड करते समय एक त्रुटि हुई।',
+    'sidebar.rail.toggleLabel': 'साइडबार टॉगल करें', // Hindi translation
+    'sidebar.rail.toggleTitle': 'साइडबार टॉगल करें',  // Hindi translation
   },
-  zh: { // Example for Chinese, apply similar auth removal
+  zh: { 
     'app.name': 'SimulTradex',
     'app.loadingMessage': '正在加载SimulTradex...',
-    // 'app.loadingAuth': '正在验证会话...',
     'app.redirecting': '正在重定向...',
     'settings.title': '设置',
-    // 'settings.myAccount': '我的账户',
-    'settings.accountSettings': '应用程序设置', // Changed
+    'settings.accountSettings': '应用程序设置', 
     'settings.language': '语言',
-    // 'settings.logout': '登出',
-    // ... (rest of Chinese translations, similarly modified for auth removal) ...
+    'dashboard.title': '仪表板', // Chinese for Dashboard
+    'dashboard.marketOverview': '市场概览',
+    // ... (rest of Chinese translations, similarly modified for auth removal and consistency) ...
     'footer.createdBy': '由Allan Soto使用AI创建',
     'toaster.notificationsLabel': '通知 (F8)',
     'firebase.config.errorTitle': 'Firebase 配置错误',
@@ -567,6 +510,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'firebase.offline.fetchError': '无法加载数据。您似乎处于离线状态。',
     'firebase.generalError.title': '错误',
     'firebase.generalError.userDataError': '加载用户数据时出错。',
+    'sidebar.rail.toggleLabel': '切换侧边栏', // Chinese translation
+    'sidebar.rail.toggleTitle': '切换侧边栏',  // Chinese translation
   }
 };
 
@@ -634,10 +579,10 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
     if (isServer) {
       effectiveTranslations = translationsData[DEFAULT_LANGUAGE];
-      effectiveHydrated = false;
+      effectiveHydrated = false; 
     } else {
-      effectiveTranslations = translations;
-      effectiveHydrated = hydrated;
+      effectiveTranslations = translations; 
+      effectiveHydrated = hydrated; 
     }
 
     let msg = effectiveHydrated ? (effectiveTranslations[key] || fallback || key) : (fallback || key);
@@ -664,3 +609,4 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     </LanguageContext.Provider>
   );
 };
+

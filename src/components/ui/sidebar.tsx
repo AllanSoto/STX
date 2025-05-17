@@ -76,42 +76,55 @@ const SidebarProvider = React.forwardRef<
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
 
-    const [_open, _setOpen] = React.useState(() => {
-      if (typeof window !== "undefined") {
+    // Always initialize with defaultOpen for SSR and initial client render consistency
+    const [_open, _setOpen] = React.useState(defaultOpen);
+
+    // Determine the effective open state (controlled or uncontrolled)
+    const open = openProp !== undefined ? openProp : _open;
+
+    // Effect to synchronize with cookie on the client after mount (for uncontrolled component)
+    React.useEffect(() => {
+      if (typeof window !== "undefined" && openProp === undefined) { // Only if uncontrolled
         const cookieValue = document.cookie
-          .split("; ")
+          .split('; ')
           .find((row) => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
-          ?.split("=")[1]
+          ?.split('=')[1];
         if (cookieValue) {
-          return cookieValue === "true"
+          const cookieOpenState = cookieValue === 'true';
+          if (cookieOpenState !== _open) { // Compare with internal state _open
+            _setOpen(cookieOpenState); // Update internal state without re-writing cookie here
+          }
         }
       }
-      return defaultOpen
-    })
+    // Rerun if it switches between controlled/uncontrolled or defaultOpen changes
+    }, [openProp, defaultOpen]);
 
-    const open = openProp ?? _open
-    
+
     const setOpen = React.useCallback(
-      (value: boolean | ((value: boolean) => boolean)) => {
-        const openState = typeof value === "function" ? value(open) : value
+      (value: boolean | ((currentOpen: boolean) => boolean)) => {
+        const newOpenState = typeof value === 'function' ? value(open) : value;
         if (setOpenProp) {
-          setOpenProp(openState)
+          setOpenProp(newOpenState);
         } else {
-          _setOpen(openState)
+          _setOpen(newOpenState); // Update internal state for uncontrolled
         }
-
-        if (typeof window !== "undefined") {
-          document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+        // Always update cookie when setOpen is called
+        if (typeof window !== 'undefined') {
+          document.cookie = `${SIDEBAR_COOKIE_NAME}=${newOpenState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
         }
       },
-      [setOpenProp, open]
-    )
-
+      [open, setOpenProp] 
+    );
+    
     const toggleSidebar = React.useCallback(() => {
-      return isMobile
-        ? setOpenMobile((currentOpenMobile) => !currentOpenMobile)
-        : setOpen((currentOpen) => !currentOpen)
-    }, [isMobile, setOpen, setOpenMobile])
+      if (isMobile) {
+        setOpenMobile((currentOpenMobile) => !currentOpenMobile);
+      } else {
+        // For desktop, use the setOpen function which handles cookie persistence
+        setOpen((currentOpen) => !currentOpen);
+      }
+    }, [isMobile, setOpen, setOpenMobile]);
+
 
     React.useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
@@ -238,7 +251,7 @@ const Sidebar = React.forwardRef<
         data-variant={variant}
         data-side={side} 
         style={{
-          width: open ? 'var(--sidebar-width)' : 'var(--sidebar-width-icon)', // Use open directly
+          width: open ? 'var(--sidebar-width)' : 'var(--sidebar-width-icon)', 
           transition: 'width 0.2s ease-linear',
           position: 'relative' 
         }}
@@ -292,11 +305,14 @@ const SidebarRail = React.forwardRef<
   React.ComponentProps<"button"> & { "data-sidebar-host-side": "left" | "right"}
 >(({ className, ...props }, ref) => {
   const { open, toggleSidebar } = useSidebar();
-  const { hydrated } = useLanguage(); // Use hydrated state
+  const { hydrated, t } = useLanguage(); 
   const hostSide = props["data-sidebar-host-side"];
 
-  const ariaLabel = hydrated ? (open ? "Collapse sidebar" : "Expand sidebar") : "Toggle sidebar";
-  const title = hydrated ? (open ? "Collapse" : "Expand") : "Toggle sidebar";
+  const defaultAriaLabel = open ? "Collapse sidebar" : "Expand sidebar";
+  const defaultTitle = open ? "Collapse" : "Expand";
+
+  const ariaLabel = hydrated ? t('sidebar.rail.toggleLabel', defaultAriaLabel) : defaultAriaLabel;
+  const title = hydrated ? t('sidebar.rail.toggleTitle', defaultTitle) : defaultTitle;
 
 
   return (
@@ -776,3 +792,4 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+
