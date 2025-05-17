@@ -1,12 +1,15 @@
-
 // src/lib/firebase/simulations.ts
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from './config';
+import { db, isFirebaseProperlyConfigured } from './config'; // Import isFirebaseProperlyConfigured
 import type { SimulationLogEntry } from '@/lib/types';
 
-export async function saveSimulationToFirebase(userId: string, simulationData: Omit<SimulationLogEntry, 'id' | 'userId' | 'fecha'>): Promise<string> {
+export async function saveSimulationToFirebase(userId: string | null, simulationData: Omit<SimulationLogEntry, 'id' | 'userId' | 'fecha'>): Promise<string> {
+  if (!isFirebaseProperlyConfigured) {
+    console.warn('Firebase not configured. Cannot save simulation.');
+    throw new Error('Firebase is not configured. Simulation cannot be saved.');
+  }
   if (!userId) {
-    console.warn('saveSimulationToFirebase called without userId. Simulation not saved.');
+    console.warn('saveSimulationToFirebase called without userId. Simulation not saved (feature disabled in no-auth mode).');
     throw new Error('User ID is required to save simulation.');
   }
 
@@ -33,6 +36,10 @@ export async function saveSimulationToFirebase(userId: string, simulationData: O
 import { query, orderBy, getDocs } from 'firebase/firestore';
 
 export async function getSimulationsForUser(userId: string): Promise<SimulationLogEntry[]> {
+  if (!isFirebaseProperlyConfigured) { // Guard added
+    console.warn('Firebase not configured. Cannot fetch simulations.');
+    return Promise.resolve([]);
+  }
   if (!userId) {
     return Promise.resolve([]);
   }

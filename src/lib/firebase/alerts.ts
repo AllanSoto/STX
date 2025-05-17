@@ -12,7 +12,7 @@ import {
   Timestamp,
   orderBy
 } from 'firebase/firestore';
-import { db } from './config';
+import { db, isFirebaseProperlyConfigured } from './config'; // Import isFirebaseProperlyConfigured
 import type { PriceAlert, AlertDirection, CryptoSymbol } from '@/lib/types';
 
 const ALERTS_COLLECTION_BASE = 'userAlerts'; // Base collection for user-specific alerts
@@ -23,10 +23,14 @@ export interface PriceAlertData {
   direction: AlertDirection;
 }
 
-export async function savePriceAlert(userId: string, alertData: PriceAlertData): Promise<string> {
+export async function savePriceAlert(userId: string | null, alertData: PriceAlertData): Promise<string> {
+  if (!isFirebaseProperlyConfigured) {
+    console.warn('Firebase not configured. Cannot save price alert.');
+    throw new Error('Firebase is not configured. Alert cannot be saved.');
+  }
   if (!userId) {
     console.warn('savePriceAlert called without userId. Alert not saved.');
-    throw new Error('User ID is required to save the alert.');
+    throw new Error('User ID is required to save the alert (feature disabled in no-auth mode).');
   }
   try {
     const userAlertsCollectionRef = collection(db, ALERTS_COLLECTION_BASE, userId, 'alerts');
@@ -50,9 +54,13 @@ export async function savePriceAlert(userId: string, alertData: PriceAlertData):
   }
 }
 
-export async function getActivePriceAlertsForUser(userId: string): Promise<PriceAlert[]> {
+export async function getActivePriceAlertsForUser(userId: string | null): Promise<PriceAlert[]> {
+  if (!isFirebaseProperlyConfigured) {
+    console.warn('Firebase not configured. Cannot fetch active price alerts.');
+    return Promise.resolve([]);
+  }
   if (!userId) {
-    console.warn('getActivePriceAlertsForUser called without userId. Returning empty array.');
+    console.warn('getActivePriceAlertsForUser called without userId. Returning empty array (feature disabled in no-auth mode).');
     return Promise.resolve([]);
   }
   try {
@@ -88,9 +96,13 @@ export async function getActivePriceAlertsForUser(userId: string): Promise<Price
   }
 }
 
-export async function getAllPriceAlertsForUser(userId: string): Promise<PriceAlert[]> {
+export async function getAllPriceAlertsForUser(userId: string | null): Promise<PriceAlert[]> {
+  if (!isFirebaseProperlyConfigured) {
+    console.warn('Firebase not configured. Cannot fetch all price alerts.');
+    return Promise.resolve([]);
+  }
   if (!userId) {
-    console.warn('getAllPriceAlertsForUser called without userId. Returning empty array.');
+    console.warn('getAllPriceAlertsForUser called without userId. Returning empty array (feature disabled in no-auth mode).');
     return Promise.resolve([]);
   }
   try {
@@ -127,9 +139,13 @@ export async function getAllPriceAlertsForUser(userId: string): Promise<PriceAle
 }
 
 
-export async function updatePriceAlert(userId: string, alertId: string, updates: Partial<Omit<PriceAlert, 'id' | 'userId' | 'createdAt'>>): Promise<void> {
+export async function updatePriceAlert(userId: string | null, alertId: string, updates: Partial<Omit<PriceAlert, 'id' | 'userId' | 'createdAt'>>): Promise<void> {
+  if (!isFirebaseProperlyConfigured) {
+    console.warn('Firebase not configured. Cannot update price alert.');
+    throw new Error('Firebase is not configured. Alert cannot be updated.');
+  }
    if (!userId) {
-    console.warn('updatePriceAlert called without userId. Alert not updated.');
+    console.warn('updatePriceAlert called without userId. Alert not updated (feature disabled in no-auth mode).');
     throw new Error('User ID is required to update the alert.');
   }
   const alertRef = doc(db, ALERTS_COLLECTION_BASE, userId, 'alerts', alertId);
@@ -150,9 +166,13 @@ export async function updatePriceAlert(userId: string, alertId: string, updates:
   }
 }
 
-export async function deletePriceAlert(userId: string, alertId: string): Promise<void> {
+export async function deletePriceAlert(userId: string | null, alertId: string): Promise<void> {
+  if (!isFirebaseProperlyConfigured) {
+    console.warn('Firebase not configured. Cannot delete price alert.');
+    throw new Error('Firebase is not configured. Alert cannot be deleted.');
+  }
   if (!userId) {
-    console.warn('deletePriceAlert called without userId. Alert not deleted.');
+    console.warn('deletePriceAlert called without userId. Alert not deleted (feature disabled in no-auth mode).');
     throw new Error('User ID is required to delete the alert.');
   }
   const alertRef = doc(db, ALERTS_COLLECTION_BASE, userId, 'alerts', alertId);
@@ -170,11 +190,15 @@ export async function deletePriceAlert(userId: string, alertId: string): Promise
   }
 }
 
-export async function deactivatePriceAlert(userId: string, alertId: string): Promise<void> {
+export async function deactivatePriceAlert(userId: string | null, alertId: string): Promise<void> {
+  if (!isFirebaseProperlyConfigured) {
+    console.warn('Firebase not configured. Cannot deactivate price alert.');
+    throw new Error('Firebase is not configured. Alert cannot be deactivated.');
+  }
   if (!userId) {
-    console.warn('deactivatePriceAlert called without userId. Alert not deactivated.');
+    console.warn('deactivatePriceAlert called without userId. Alert not deactivated (feature disabled in no-auth mode).');
     throw new Error('User ID is required to deactivate the alert.');
   }
+  // The following line will throw if userId is null due to the previous check.
   await updatePriceAlert(userId, alertId, { active: false, triggeredAt: serverTimestamp() });
 }
-

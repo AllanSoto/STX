@@ -1,11 +1,15 @@
 // src/lib/firebase/orders.ts
 import { collection, addDoc, serverTimestamp, query, where, orderBy, getDocs, Timestamp } from 'firebase/firestore';
-import { db } from './config';
+import { db, isFirebaseProperlyConfigured } from './config'; // Import isFirebaseProperlyConfigured
 import type { SavedOrder } from '@/lib/types';
 
-export async function saveOrderToFirebase(userId: string, orderData: Omit<SavedOrder, 'id' | 'userId' | 'timestamp'>): Promise<string> {
+export async function saveOrderToFirebase(userId: string | null, orderData: Omit<SavedOrder, 'id' | 'userId' | 'timestamp'>): Promise<string> {
+  if (!isFirebaseProperlyConfigured) {
+    console.warn('Firebase not configured. Cannot save order.');
+    throw new Error('Firebase is not configured. Order cannot be saved.');
+  }
   if (!userId) {
-    console.warn('saveOrderToFirebase called without userId. Order not saved.');
+    console.warn('saveOrderToFirebase called without userId. Order not saved (feature disabled in no-auth mode).');
     throw new Error('User ID is required to save the order.');
   }
 
@@ -31,8 +35,12 @@ export async function saveOrderToFirebase(userId: string, orderData: Omit<SavedO
 }
 
 export async function getOrdersForUser(userId: string | null): Promise<SavedOrder[]> {
+  if (!isFirebaseProperlyConfigured) {
+    console.warn('Firebase not configured. Cannot fetch orders.');
+    return Promise.resolve([]);
+  }
   if (!userId) {
-    console.log("getOrdersForUser called without user. Returning empty array.");
+    console.log("getOrdersForUser called without user. Returning empty array (feature disabled in no-auth mode).");
     return Promise.resolve([]); 
   }
   try {
@@ -74,4 +82,3 @@ export async function getOrdersForUser(userId: string | null): Promise<SavedOrde
     throw new Error('An unknown error occurred while fetching orders.');
   }
 }
-
