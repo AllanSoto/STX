@@ -8,7 +8,7 @@
  * - AnalyzeCryptoTrendOutput - The return type for the analyzeCryptoTrend function.
  */
 
-import {ai, isAiOperational} from '@/ai/genkit'; // Added isAiOperational import
+import {ai, isAiOperational} from '@/ai/genkit';
 import {z} from 'zod';
 
 const AnalyzeCryptoTrendInputSchema = z.object({
@@ -24,27 +24,63 @@ const AnalyzeCryptoTrendOutputSchema = z.object({
 });
 export type AnalyzeCryptoTrendOutput = z.infer<typeof AnalyzeCryptoTrendOutputSchema>;
 
-export async function analyzeCryptoTrend(input: AnalyzeCryptoTrendInput): Promise<AnalyzeCryptoTrendOutput> {
-  if (!isAiOperational()) {
-    console.warn("AI is not operational. analyzeCryptoTrend will return a default response. Input:", input);
-    return {
-      trend: 'sideways',
-      confidence: 0,
-      reason: 'AI system is not operational. Trend analysis unavailable.',
-    };
-  }
-  
+export async function analyzeCryptoTrend(
+  input: AnalyzeCryptoTrendInput
+): Promise<AnalyzeCryptoTrendOutput> {
   try {
-    return await analyzeCryptoTrendFlow(input);
-  } catch (error) {
-    // This catch block is a secondary safety net if analyzeCryptoTrendFlow itself throws
-    // an unexpected error (though it's designed not to).
-    console.error("Unexpected error in analyzeCryptoTrend server action wrapper. Input:", input, "Error:", error);
-    const errorMessage = error instanceof Error ? error.message : 'Critical server-side AI error';
+    if (!isAiOperational()) {
+      console.warn(
+        'AI is not operational. analyzeCryptoTrend will return a default response. Input:',
+        input
+      );
+      return {
+        trend: 'sideways',
+        confidence: 0,
+        reason: 'AI system is not operational. Trend analysis unavailable.',
+      };
+    }
+
+    const result = await analyzeCryptoTrendFlow(input);
+
+    // Defensive check for output structure, though Genkit flow outputSchema should handle this.
+    if (
+      !result || // Check if result itself is falsy
+      typeof result.trend !== 'string' ||
+      typeof result.confidence !== 'number' ||
+      typeof result.reason !== 'string' ||
+      !['upward', 'downward', 'sideways'].includes(result.trend)
+    ) {
+      console.error(
+        'analyzeCryptoTrendFlow returned malformed or falsy output:',
+        result,
+        'Input:',
+        input
+      );
+      return {
+        trend: 'sideways',
+        confidence: 0,
+        reason:
+          'AI analysis returned an unexpected data structure. Defaulting to sideways trend.',
+      };
+    }
+    return result;
+
+  } catch (error: unknown) {
+    console.error(
+      'Critical unhandled error in analyzeCryptoTrend Server Action. Input:',
+      input,
+      'Error:',
+      error
+    );
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : 'A critical server error occurred during AI trend analysis.';
+    // Return a default serializable object to prevent "An unexpected response" on client
     return {
       trend: 'sideways',
       confidence: 0,
-      reason: `AI system error: ${errorMessage}. Defaulting to sideways trend.`,
+      reason: `Critical AI system error: ${errorMessage}. Defaulting to sideways trend.`,
     };
   }
 }
@@ -82,7 +118,17 @@ const analyzeCryptoTrendFlow = ai.defineFlow(
           reason: 'AI analysis returned no data. Defaulting to sideways trend.',
         };
       }
-      return output;
+      // Ensure the output matches the schema before returning
+      const parsedOutput = AnalyzeCryptoTrendOutputSchema.safeParse(output);
+      if (!parsedOutput.success) {
+        console.error("AI prompt output failed Zod validation for analyzeCryptoTrendFlow. Output:", output, "Errors:", parsedOutput.error, "Input:", input);
+        return {
+          trend: 'sideways',
+          confidence: 0,
+          reason: `AI analysis output format error: ${parsedOutput.error.message}. Defaulting to sideways trend.`,
+        };
+      }
+      return parsedOutput.data;
     } catch (error) {
       console.error("Error during analyzeCryptoTrendPrompt execution in analyzeCryptoTrendFlow. Input:", input, "Error:", error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown AI error';
