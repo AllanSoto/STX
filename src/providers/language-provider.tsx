@@ -530,62 +530,35 @@ export const LanguageContext = createContext<LanguageContextType | undefined>(
 );
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const isServer = typeof window === 'undefined';
-
-  const [language, setCurrentLanguage] = useState<LanguageCode>(DEFAULT_LANGUAGE);
-  const [translations, setTranslationsState] = useState<Record<string, string>>(
+  const [language, setLanguage] = useState<LanguageCode>(DEFAULT_LANGUAGE);
+  const [translations, setTranslations] = useState<Record<string, string>>(
     translationsData[DEFAULT_LANGUAGE]
   );
-  const [hydrated, setHydrated] = useState(false); 
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    // This effect runs only on the client
     const storedLanguage = localStorage.getItem('simultradex_language') as LanguageCode | null;
-    let initialLang = DEFAULT_LANGUAGE;
-    if (storedLanguage && translationsData[storedLanguage]) {
-      initialLang = storedLanguage;
-    }
+    const initialLang = storedLanguage && translationsData[storedLanguage] ? storedLanguage : DEFAULT_LANGUAGE;
     
-    setCurrentLanguage(initialLang);
-    setTranslationsState(translationsData[initialLang]);
-    if (!isServer) {
-      document.documentElement.lang = initialLang;
-    }
+    setLanguage(initialLang);
+    setTranslations(translationsData[initialLang]);
+    document.documentElement.lang = initialLang;
     
     setHydrated(true);
-  }, [isServer]);
-
+  }, []);
 
   const setLanguageCallback = useCallback((langCode: LanguageCode) => {
     if (translationsData[langCode]) {
-      setCurrentLanguage(langCode);
-      setTranslationsState(translationsData[langCode]);
-      if (!isServer) {
-        localStorage.setItem('simultradex_language', langCode);
-        document.documentElement.lang = langCode;
-      }
-    } else {
-      setCurrentLanguage(DEFAULT_LANGUAGE);
-      setTranslationsState(translationsData[DEFAULT_LANGUAGE]);
-      if (!isServer) {
-        localStorage.setItem('simultradex_language', DEFAULT_LANGUAGE);
-        document.documentElement.lang = DEFAULT_LANGUAGE;
-      }
+      setLanguage(langCode);
+      setTranslations(translationsData[langCode]);
+      localStorage.setItem('simultradex_language', langCode);
+      document.documentElement.lang = langCode;
     }
-  }, [isServer]);
+  }, []);
 
   const t = useCallback((key: string, fallback: string = key, vars?: Record<string, string | number>) => {
-    let effectiveTranslations;
-    let effectiveHydrated;
-
-    if (isServer) {
-      effectiveTranslations = translationsData[DEFAULT_LANGUAGE];
-      effectiveHydrated = false; 
-    } else {
-      effectiveTranslations = translations; 
-      effectiveHydrated = hydrated; 
-    }
-
-    let msg = effectiveHydrated ? (effectiveTranslations[key] || fallback || key) : (fallback || key);
+    let msg = hydrated ? (translations[key] || fallback) : fallback;
     
     if (vars && typeof msg === 'string') {
       Object.keys(vars).forEach(varKey => {
@@ -593,7 +566,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
       });
     }
     return String(msg || key);
-  }, [translations, hydrated, isServer]); 
+  }, [translations, hydrated]);
 
   const contextValue = useMemo(() => ({
     language,

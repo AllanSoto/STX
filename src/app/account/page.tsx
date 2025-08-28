@@ -11,12 +11,32 @@ import Link from 'next/link';
 // import { Loader2 } from 'lucide-react'; // Not needed without auth loading
 
 export default function AccountPage() {
-  const { translations } = useLanguage();
+  const { t, hydrated } = useLanguage();
   // const { user, loading: authLoading } = useAuth(); // Auth disabled
-  const t = (key: string, fallback?: string) => translations[key] || fallback || key;
 
   // Since auth is removed, this page has limited functionality.
   // We can show a message indicating auth is disabled.
+
+  // Render a fallback or skeleton UI until the language is hydrated on the client
+  if (!hydrated) {
+    return (
+       <MainLayout>
+        <div className="container mx-auto py-8 px-4">
+          <div className="h-9 w-64 bg-muted animate-pulse rounded-md mb-8"></div>
+          <Card className="shadow-lg">
+            <CardHeader>
+              <div className="h-7 w-48 bg-muted animate-pulse rounded-md"></div>
+              <div className="h-5 w-32 bg-muted animate-pulse rounded-md mt-2"></div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+               <div className="h-5 w-full max-w-lg bg-muted animate-pulse rounded-md"></div>
+               <div className="h-10 w-36 bg-muted animate-pulse rounded-md"></div>
+            </CardContent>
+          </Card>
+        </div>
+      </MainLayout>
+    )
+  }
 
   return (
     <MainLayout>
