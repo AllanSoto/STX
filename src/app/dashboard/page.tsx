@@ -1,3 +1,4 @@
+
 // src/app/dashboard/page.tsx
 'use client';
 
@@ -24,6 +25,7 @@ import { fetchCoinGeckoHistoricalPrices } from '@/services/coingecko';
 // import { Button } from '@/components/ui/button'; // Not used directly after auth removal for redirection
 // import Link from 'next/link'; // Not used directly after auth removal for redirection
 import { Loader2, WifiOff } from 'lucide-react'; 
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 const BINANCE_WS_URL = 'wss://stream.binance.com:9443/ws/!miniTicker@arr';
@@ -84,7 +86,7 @@ export default function DashboardPage() {
   const [isPricesLoading, setIsPricesLoading] = useState(true);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
-  const { translations, language } = useLanguage();
+  const { translations, language, hydrated: languageHydrated } = useLanguage();
   const { toast } = useToast();
   // const { user, loading: authLoading } = useAuth(); // Auth removed
 
@@ -540,6 +542,28 @@ export default function DashboardPage() {
   //   );
   // }
 
+  if (!languageHydrated) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto py-8 px-4">
+          <Skeleton className="h-8 w-48 mb-8" />
+          <div className="mb-8">
+            <Skeleton className="h-24 w-full" />
+          </div>
+          <div className="mb-8">
+            <Skeleton className="h-6 w-40 mb-4" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-40 w-full" />)}
+            </div>
+          </div>
+          <div>
+            <Skeleton className="h-96 w-full" />
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
 
   return (
     <MainLayout>
@@ -626,3 +650,5 @@ export default function DashboardPage() {
     </MainLayout>
   );
 }
+
+    
