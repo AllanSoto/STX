@@ -236,7 +236,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'settings.title': 'Configuración',
     'settings.accountSettings': 'Configuración de Aplicación', 
     'settings.language': 'Idioma',
-    'dashboard.title': 'Tablero', // Changed from 'Panel' to 'Tablero' for consistency
+    'dashboard.title': 'Tablero',
     'dashboard.marketOverview': 'Resumen del Mercado',
     'dashboard.loadingPrices': 'Cargando precios en vivo...',
     'dashboard.portfolioBalance': 'Balance de Portafolio',
@@ -444,8 +444,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'firebase.offline.fetchError': 'No se pudieron cargar los datos. Parece que no tienes conexión.',
     'firebase.generalError.title': 'Error',
     'firebase.generalError.userDataError': 'Ocurrió un error al cargar los datos del usuario.',
-    'sidebar.rail.toggleLabel': 'Activar o desactivar la barra lateral', // Spanish translation
-    'sidebar.rail.toggleTitle': 'Activar o desactivar la barra lateral',  // Spanish translation
+    'sidebar.rail.toggleLabel': 'Activar o desactivar la barra lateral',
+    'sidebar.rail.toggleTitle': 'Activar o desactivar la barra lateral',
   },
   fr: { 
     'app.name': 'SimulTradex',
@@ -466,8 +466,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'firebase.offline.fetchError': 'Impossible de charger les données. Vous semblez être hors ligne.',
     'firebase.generalError.title': 'Erreur',
     'firebase.generalError.userDataError': 'Une erreur s\'est produite lors du chargement des données utilisateur.',
-    'sidebar.rail.toggleLabel': 'Basculer la barre latérale', // French translation
-    'sidebar.rail.toggleTitle': 'Basculer la barre latérale',  // French translation
+    'sidebar.rail.toggleLabel': 'Basculer la barre latérale',
+    'sidebar.rail.toggleTitle': 'Basculer la barre latérale',
   },
   hi: { 
     'app.name': 'सिमुलट्रेडेक्स',
@@ -488,8 +488,8 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'firebase.offline.fetchError': 'डेटा लोड नहीं किया जा सका। आप ऑफ़लाइन प्रतीत होते हैं।',
     'firebase.generalError.title': 'त्रुटि',
     'firebase.generalError.userDataError': 'उपयोगकर्ता डेटा लोड करते समय एक त्रुटि हुई।',
-    'sidebar.rail.toggleLabel': 'साइडबार टॉगल करें', // Hindi translation
-    'sidebar.rail.toggleTitle': 'साइडबार टॉगल करें',  // Hindi translation
+    'sidebar.rail.toggleLabel': 'साइडबार टॉगल करें',
+    'sidebar.rail.toggleTitle': 'साइडबार टॉगल करें',
   },
   zh: { 
     'app.name': 'SimulTradex',
@@ -510,12 +510,12 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'firebase.offline.fetchError': '无法加载数据。您似乎处于离线状态。',
     'firebase.generalError.title': '错误',
     'firebase.generalError.userDataError': '加载用户数据时出错。',
-    'sidebar.rail.toggleLabel': '切换侧边栏', // Chinese translation
-    'sidebar.rail.toggleTitle': '切换侧边栏',  // Chinese translation
+    'sidebar.rail.toggleLabel': '切换侧边栏',
+    'sidebar.rail.toggleTitle': '切换侧边栏',
   }
 };
 
-const DEFAULT_LANGUAGE: LanguageCode = 'en';
+const DEFAULT_LANGUAGE: LanguageCode = 'es';
 
 export interface LanguageContextType {
   language: LanguageCode;
@@ -609,4 +609,3 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     </LanguageContext.Provider>
   );
 };
-
