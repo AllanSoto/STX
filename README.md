@@ -1,5 +1,4 @@
-
-The error "Firebase: Error (auth/api-key-not-valid.-please-pass-a-valid-api-key.)" indicates that the Firebase API key used by the application is invalid, missing, or not correctly configured for the Firebase project.
+rebase: Error (auth/api-key-not-valid.-please-pass-a-valid-api-key.)" indicates that the Firebase API key used by the application is invalid, missing, or not correctly configured for the Firebase project.
 
 **Note: User authentication has been removed from this application. However, an invalid API key can still affect other Firebase services like Firestore if they rely on it.**
 
