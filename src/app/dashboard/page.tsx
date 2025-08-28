@@ -206,11 +206,12 @@ export default function DashboardPage() {
       return;
     }
     try {
-      const symbolsParam = JSON.stringify(binanceSymbolsForREST);
-      const response = await fetch(`${BINANCE_API_REST_BASE_URL}/ticker/price?symbols=${symbolsParam}`);
+      const symbolsParam = encodeURIComponent(JSON.stringify(binanceSymbolsForREST));
+      const url = `${BINANCE_API_REST_BASE_URL}/ticker/price?symbols=${symbolsParam}`;
+      const response = await fetch(url);
       if (!response.ok) {
         const errorData = await response.text();
-        console.error('Binance API error (REST):', errorData, 'Status:', response.status, 'URL:', `${BINANCE_API_REST_BASE_URL}/ticker/price?symbols=${symbolsParam}`);
+        console.error('Binance API error (REST):', errorData, 'Status:', response.status, 'URL:', url);
         throw new Error(t('dashboard.api.binance.fetchError', 'Failed to fetch prices from Binance: {status}', { status: response.statusText }));
       }
       const data: Array<{ symbol: string; price: string }> = await response.json();
@@ -650,5 +651,7 @@ export default function DashboardPage() {
     </MainLayout>
   );
 }
+
+    
 
     
