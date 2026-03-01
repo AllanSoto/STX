@@ -1,4 +1,3 @@
-// src/components/dashboard/order-opportunity-simulator.tsx
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -142,7 +141,7 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
       
       if (autoFilledPrice > 0) {
         if (!purchasePriceManuallyEdited || isPurchaseFieldEffectivelyEmpty) {
-          form.setValue('purchasePriceOfBaseInQuote', autoFilledPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: autoFilledPrice < 0.01 ? 8 : 5, useGrouping: false }));
+          form.setValue('purchasePriceOfBaseInQuote', autoFilledPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: autoFilledPrice < 1 ? 10 : 5, useGrouping: false }));
         }
       } else {
          if (!purchasePriceManuallyEdited || isPurchaseFieldEffectivelyEmpty) {
@@ -225,7 +224,7 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
       isBuyRow: true, cur1Label: String(quoteC), cur2Label: String(baseC),
       operation: t('dashboard.orderOpportunitySimulator.buyOperation', 'Buy {targetCrypto} with {baseCurrency}', {targetCrypto: String(baseC), baseCurrency: String(quoteC)}),
       displayAmount1: `${amountToSpendInQuoteNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: STABLECOIN_SYMBOLS.includes(quoteC as any) ? 2 : 8 })} ${quoteC}`,
-      displayMarketPrice: `${purchasePriceOfBaseInQuoteNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: purchasePriceOfBaseInQuoteNum < 0.01 ? 8 : 5 })} ${quoteC}/${baseC}`,
+      displayMarketPrice: `${purchasePriceOfBaseInQuoteNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: purchasePriceOfBaseInQuoteNum < 1 ? 10 : 5 })} ${quoteC}/${baseC}`,
       displayAmount2: `${amountOfBaseBought.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: STABLECOIN_SYMBOLS.includes(baseC as any) ? 2: 8})} ${baseC}`,
       displayCommission: `${commissionBuyInUSDT.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})} ${DEFAULT_QUOTE_CURRENCY}`,
       displayNetProfit: '-',
@@ -262,7 +261,7 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
         isBuyRow: false, cur1Label: String(cryptoToSellForOpportunities), cur2Label: String(sellBackToCurrency),
         operation: t('dashboard.orderOpportunitySimulator.sellOperationPerc', 'Sell {targetCrypto} (+{perc}%)', {targetCrypto: String(cryptoToSellForOpportunities), perc: (perc * 100).toFixed(1)}),
         displayAmount1: `${amountOfBaseBought.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: STABLECOIN_SYMBOLS.includes(cryptoToSellForOpportunities as any) ? 2 : 8 })} ${cryptoToSellForOpportunities}`, 
-        displayMarketPrice: `${targetSellPriceOfBaseInQuote.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: targetSellPriceOfBaseInQuote < 1 ? 8 : 5 })} ${sellBackToCurrency}/${cryptoToSellForOpportunities}`, 
+        displayMarketPrice: `${targetSellPriceOfBaseInQuote.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: targetSellPriceOfBaseInQuote < 1 ? 10 : 5 })} ${sellBackToCurrency}/${cryptoToSellForOpportunities}`, 
         displayAmount2: `${grossQuoteReceivedFromSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: STABLECOIN_SYMBOLS.includes(sellBackToCurrency as any) ? 2 : 8 })} ${sellBackToCurrency}`, 
         displayCommission: `${commissionSellInUSDT.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})} ${DEFAULT_QUOTE_CURRENCY}`,
         displayNetProfit: `${netProfitInUSDT.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} ${DEFAULT_QUOTE_CURRENCY}`,

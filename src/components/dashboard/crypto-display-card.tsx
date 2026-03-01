@@ -73,7 +73,7 @@ export function CryptoDisplayCard({ data, isLoading, onRemove }: CryptoDisplayCa
         <div className={`text-2xl font-bold ${priceChangeClass}`}>
           ${value.toLocaleString(undefined, {
             minimumFractionDigits: 2,
-            maximumFractionDigits: value < 1 ? 8 : 2
+            maximumFractionDigits: value < 1 ? 10 : 2
           })}
         </div>
       </CardContent>
