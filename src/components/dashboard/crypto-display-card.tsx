@@ -17,7 +17,7 @@ interface CryptoDisplayCardProps {
 }
 
 export function CryptoDisplayCard({ data, isLoading, onRemove }: CryptoDisplayCardProps) {
-  const { symbol, value, previousValue } = data;
+  const { symbol, value, previousValue, priceChangePercent24h } = data;
   const [priceChangeClass, setPriceChangeClass] = useState('');
   const { t } = useLanguage();
 
@@ -50,6 +50,8 @@ export function CryptoDisplayCard({ data, isLoading, onRemove }: CryptoDisplayCa
     );
   }
 
+  const isPositiveChange = priceChangePercent24h >= 0;
+
   return (
     <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between min-h-[150px] relative group">
       <Button
@@ -76,6 +78,9 @@ export function CryptoDisplayCard({ data, isLoading, onRemove }: CryptoDisplayCa
             maximumFractionDigits: value < 1 ? 10 : 2
           })}
         </div>
+        <p className={`text-sm font-medium ${isPositiveChange ? 'text-primary' : 'text-destructive'}`}>
+          {isPositiveChange ? '+' : ''}{priceChangePercent24h.toFixed(2)}% (24h)
+        </p>
       </CardContent>
     </Card>
   );

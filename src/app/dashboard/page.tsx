@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-const BINANCE_WS_URL = 'wss://stream.binance.com:9443/ws/!miniTicker@arr';
+const BINANCE_WS_URL = 'wss://stream.binance.com:9443/ws/!ticker@arr';
 const BINANCE_API_REST_BASE_URL = 'https://api.binance.com/api/v3';
 const BINANCE_API_REFRESH_INTERVAL = 5000;
 
@@ -68,37 +68,39 @@ export default function DashboardPage() {
     }
     try {
       const symbolsParam = encodeURIComponent(JSON.stringify(binanceSymbolsForREST));
-      const url = `${BINANCE_API_REST_BASE_URL}/ticker/price?symbols=${symbolsParam}`;
+      const url = `${BINANCE_API_REST_BASE_URL}/ticker/24hr?symbols=${symbolsParam}`;
       const response = await fetch(url);
       if (!response.ok) {
         const errorData = await response.text();
         console.error('Binance API error (REST):', errorData, 'Status:', response.status, 'URL:', url);
         throw new Error(t('dashboard.api.binance.fetchError', 'Failed to fetch prices from Binance: {status}', { status: response.statusText }));
       }
-      const data: Array<{ symbol: string; price: string }> = await response.json();
+      const data: Array<{ symbol: string; lastPrice: string; priceChangePercent: string; }> = await response.json();
       
       setCryptoData(prevData => {
-        let pricesActuallyChanged = false;
+        let dataActuallyChanged = false;
         const updatedData = prevData.map(crypto => {
             const binanceSymbolInfo = COIN_DATA[crypto.symbol];
             if (!binanceSymbolInfo) return crypto;
             const binanceSymbol = binanceSymbolInfo.binanceSymbol;
             const priceData = data.find(d => d.symbol === binanceSymbol);
             if (priceData) {
-                const newPrice = parseFloat(priceData.price);
-                if (crypto.value !== newPrice) {
-                    pricesActuallyChanged = true;
+                const newPrice = parseFloat(priceData.lastPrice);
+                const newChangePercent = parseFloat(priceData.priceChangePercent);
+                if (crypto.value !== newPrice || crypto.priceChangePercent24h !== newChangePercent) {
+                    dataActuallyChanged = true;
                     return {
                         ...crypto,
                         previousValue: crypto.value !== 0 ? crypto.value : newPrice,
                         value: newPrice,
+                        priceChangePercent24h: newChangePercent,
                     };
                 }
             }
             return crypto;
         });
 
-        if (pricesActuallyChanged) {
+        if (dataActuallyChanged) {
             if (isPricesLoading) setIsPricesLoading(false);
             return updatedData;
         }
@@ -159,7 +161,7 @@ export default function DashboardPage() {
 
     ws.onmessage = (event) => {
       try {
-        const messageArray = JSON.parse(event.data as string) as Array<{ e: string; E: number; s: string; c: string; }>;
+        const messageArray = JSON.parse(event.data as string) as Array<{ e: string; E: number; s: string; c: string; P: string; }>;
         
         setCryptoData(prevData => {
           let changed = false;
@@ -171,9 +173,15 @@ export default function DashboardPage() {
             const tickerData = messageArray.find(item => item.s === binanceTicker);
             if (tickerData) {
               const newPrice = parseFloat(tickerData.c);
-              if (cd.value !== newPrice) {
+              const newChangePercent = parseFloat(tickerData.P);
+              if (cd.value !== newPrice || cd.priceChangePercent24h !== newChangePercent) {
                 changed = true;
-                return { ...cd, previousValue: cd.value !== 0 ? cd.value : newPrice, value: newPrice };
+                return { 
+                    ...cd, 
+                    previousValue: cd.value !== 0 ? cd.value : newPrice, 
+                    value: newPrice,
+                    priceChangePercent24h: newChangePercent
+                };
               }
             }
             return cd;
