@@ -25,6 +25,7 @@ import {
 const BINANCE_WS_URL = 'wss://stream.binance.com:9443/ws/!ticker@arr';
 const BINANCE_API_REST_BASE_URL = 'https://api.binance.com/api/v3';
 const BINANCE_API_REFRESH_INTERVAL = 5000;
+const DISPLAYED_SYMBOLS_STORAGE_KEY = 'simulTradex_displayedSymbols';
 
 const binanceSymbolsForREST = CRYPTO_SYMBOLS.map(s => COIN_DATA[s]?.binanceSymbol).filter(Boolean) as string[];
 
@@ -37,7 +38,7 @@ export default function DashboardPage() {
   const { translations, language, hydrated: languageHydrated } = useLanguage();
   const { toast } = useToast();
 
-  const [displayedSymbols, setDisplayedSymbols] = useState<CryptoSymbol[]>(INITIAL_SYMBOLS_TO_DISPLAY);
+  const [displayedSymbols, setDisplayedSymbols] = useState<CryptoSymbol[]>([]);
   const [symbolToAdd, setSymbolToAdd] = useState<CryptoSymbol | ''>('');
 
   const webSocketRef = useRef<WebSocket | null>(null);
@@ -47,6 +48,37 @@ export default function DashboardPage() {
   useEffect(() => {
     cryptoDataRef.current = cryptoData;
   }, [cryptoData]);
+
+  // Load symbols from localStorage on initial client-side render
+  useEffect(() => {
+    const savedSymbolsRaw = localStorage.getItem(DISPLAYED_SYMBOLS_STORAGE_KEY);
+    if (savedSymbolsRaw) {
+      try {
+        const savedSymbols = JSON.parse(savedSymbolsRaw);
+        // Basic validation
+        if (Array.isArray(savedSymbols) && savedSymbols.length > 0 && savedSymbols.every((s: any) => CRYPTO_SYMBOLS.includes(s))) {
+          setDisplayedSymbols(savedSymbols);
+        } else {
+          setDisplayedSymbols(INITIAL_SYMBOLS_TO_DISPLAY);
+        }
+      } catch (e) {
+        console.error("Could not parse saved symbols from localStorage", e);
+        setDisplayedSymbols(INITIAL_SYMBOLS_TO_DISPLAY);
+      }
+    } else {
+      // If nothing is in localStorage, set the default
+      setDisplayedSymbols(INITIAL_SYMBOLS_TO_DISPLAY);
+    }
+  }, []); // Run only once on mount
+
+  // Save symbols to localStorage whenever they change
+  useEffect(() => {
+    // Only save if displayedSymbols has been populated, to avoid overwriting on initial render
+    if (displayedSymbols.length > 0) {
+      localStorage.setItem(DISPLAYED_SYMBOLS_STORAGE_KEY, JSON.stringify(displayedSymbols));
+    }
+  }, [displayedSymbols]);
+
 
   const t = useCallback((key: string, fallback?: string, vars?: Record<string, string | number>) => {
     let msg = translations[key] || fallback || key;
