@@ -1,4 +1,3 @@
-
 // src/app/dashboard/page.tsx
 'use client';
 
@@ -8,7 +7,6 @@ import { CryptoDisplayCard } from '@/components/dashboard/crypto-display-card';
 import { OrderOpportunitySimulator } from '@/components/dashboard/order-opportunity-simulator';
 import type { CryptoCardData } from '@/components/dashboard/types';
 import { initialCryptoData } from '@/components/dashboard/types';
-import { analyzeCryptoTrend } from '@/ai/flows/analyze-crypto-trends';
 import type { CryptoSymbol, PriceAlert } from '@/lib/types';
 import { CRYPTO_SYMBOLS, COIN_DATA, QUOTE_CURRENCY } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
@@ -19,9 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 // UI elements calling these will be disabled if they require a user.
 import { getActivePriceAlertsForUser, deactivatePriceAlert, savePriceAlert, updatePriceAlert, deletePriceAlert } from '@/lib/firebase/alerts';
 import { AlertModal } from '@/components/dashboard/alert-modal';
-import type { TrendAnalysis } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { fetchCoinGeckoHistoricalPrices } from '@/services/coingecko';
 // import { Button } from '@/components/ui/button'; // Not used directly after auth removal for redirection
 // import Link from 'next/link'; // Not used directly after auth removal for redirection
 import { Loader2, WifiOff } from 'lucide-react'; 
@@ -32,8 +28,6 @@ const BINANCE_WS_URL = 'wss://stream.binance.com:9443/ws/!miniTicker@arr';
 const BINANCE_API_REST_BASE_URL = 'https://api.binance.com/api/v3';
 
 const BINANCE_API_REFRESH_INTERVAL = 5000; 
-const AI_ANALYSIS_INITIAL_DELAY = 5000; 
-const AI_ANALYSIS_INTERVAL = 60000 * 1; 
 const ALERT_CHECK_INTERVAL = 10000; 
 
 
@@ -43,48 +37,9 @@ const binanceSymbolsForREST = CRYPTO_SYMBOLS.map(s => COIN_DATA[s]?.binanceSymbo
 const SYMBOLS_TO_DISPLAY_ON_CARDS: CryptoSymbol[] = ['BTC', 'ETH', 'SOL', 'XRP', 'BNB'];
 
 
-async function updateAllAiTrendsExternal(currentCryptoData: CryptoCardData[], tGlobal: (key: string, fallback?: string, vars?: Record<string, string | number>) => string): Promise<CryptoCardData[]> {
-  const dataToAnalyze = currentCryptoData.filter(crypto => SYMBOLS_TO_DISPLAY_ON_CARDS.includes(crypto.symbol) && crypto.value > 0);
-  if (dataToAnalyze.length === 0) return currentCryptoData;
-
-  const dataPromises = dataToAnalyze.map(async (crypto) => {
-    const recentPriceData = await fetchCoinGeckoHistoricalPrices(crypto.symbol, 30); 
-    if (!recentPriceData) {
-      console.warn(`Could not fetch historical prices for ${crypto.symbol} for AI trend analysis.`);
-      const errorTrendAnalysis: TrendAnalysis = {
-        trend: 'sideways', 
-        confidence: 0,
-        reason: tGlobal('dashboard.ai.historicalDataError', 'Could not fetch historical data for {symbol}.', {symbol: crypto.symbol}),
-      };
-      return { ...crypto, trendAnalysis: errorTrendAnalysis };
-    }
-    try {
-      const trendAnalysisOutput = await analyzeCryptoTrend({ cryptoSymbol: crypto.symbol, recentPriceData });
-      return { ...crypto, trendAnalysis: trendAnalysisOutput };
-    } catch (error) {
-      console.error(`Client-side error calling analyzeCryptoTrend for ${crypto.symbol}:`, error);
-      const errorReason = error instanceof Error ? error.message : tGlobal('dashboard.ai.errorDescription', 'Could not update AI trends.');
-      const errorTrendAnalysis: TrendAnalysis = {
-        trend: 'sideways', 
-        confidence: 0,
-        reason: tGlobal('dashboard.ai.clientErrorReason', 'Client error fetching trend for {symbol}: {details}', {symbol: crypto.symbol, details: errorReason }),
-      };
-      return { ...crypto, trendAnalysis: errorTrendAnalysis };
-    }
-  });
-  
-  const results = await Promise.all(dataPromises);
-  
-  return currentCryptoData.map(crypto => {
-    const updatedCrypto = results.find(r => r.symbol === crypto.symbol);
-    return updatedCrypto || crypto;
-  });
-}
-
 export default function DashboardPage() {
   const [cryptoData, setCryptoData] = useState<CryptoCardData[]>(initialCryptoData);
   const [isPricesLoading, setIsPricesLoading] = useState(true);
-  const [isAiLoading, setIsAiLoading] = useState(false);
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
   const { translations, language, hydrated: languageHydrated } = useLanguage();
   const { toast } = useToast();
@@ -383,72 +338,6 @@ export default function DashboardPage() {
     };
   }, [connectWebSocket]);
 
-  useEffect(() => {
-    let isMounted = true;
-    let aiIntervalTimerId: NodeJS.Timeout | null = null;
-
-    const performAiUpdate = async () => {
-      const relevantCryptoHasPrice = cryptoDataRef.current
-        .filter(cd => SYMBOLS_TO_DISPLAY_ON_CARDS.includes(cd.symbol))
-        .some(cd => cd.value > 0);
-
-      if (!isMounted || !relevantCryptoHasPrice) {
-        if(relevantCryptoHasPrice === false && isMounted) {
-            console.log("AI Update skipped: No relevant crypto has a price > 0 for analysis.");
-        }
-        if (isMounted) setIsAiLoading(false); 
-        return;
-      }
-
-      setIsAiLoading(true);
-      try {
-        const currentDataForAI = JSON.parse(JSON.stringify(cryptoDataRef.current)) as CryptoCardData[];
-        const updatedDataWithTrends = await updateAllAiTrendsExternal(currentDataForAI, t);
-        
-        if (isMounted) {
-          setCryptoData(prevData => {
-            return prevData.map(currentCrypto => {
-              const trendUpdate = updatedDataWithTrends.find(upd => upd.symbol === currentCrypto.symbol);
-              if (trendUpdate && trendUpdate.trendAnalysis) {
-                return { ...currentCrypto, trendAnalysis: trendUpdate.trendAnalysis };
-              }
-              return currentCrypto;
-            });
-          });
-        }
-      } catch (error) { 
-        console.error("Error in performAiUpdate:", error);
-        if (isMounted) {
-          toast({
-            title: t('dashboard.ai.errorTitle', 'AI Analysis Error'),
-            description: error instanceof Error ? error.message : t('dashboard.ai.errorDescription', 'Could not update AI trends.'),
-            variant: "destructive",
-          });
-        }
-      } finally {
-        if (isMounted) {
-          setIsAiLoading(false);
-        }
-      }
-    };
-    
-    const initialTimeoutId = setTimeout(() => {
-      if (isMounted) {
-        performAiUpdate();
-        if (aiIntervalTimerId) clearInterval(aiIntervalTimerId);
-        aiIntervalTimerId = setInterval(performAiUpdate, AI_ANALYSIS_INTERVAL);
-      }
-    }, AI_ANALYSIS_INITIAL_DELAY);
-
-    return () => {
-      isMounted = false;
-      clearTimeout(initialTimeoutId);
-      if (aiIntervalTimerId) {
-        clearInterval(aiIntervalTimerId);
-      }
-    };
-  }, [t, toast]); 
-
    useEffect(() => {
     let alertIntervalId: NodeJS.Timeout | null = null;
 
@@ -627,8 +516,7 @@ export default function DashboardPage() {
                 <CryptoDisplayCard 
                   key={data.symbol || i} 
                   data={data} 
-                  isLoading={isPricesLoading && data.value === 0} 
-                  isAiTrendLoading={isAiLoading && !data.trendAnalysis && data.value !==0}
+                  isLoading={isPricesLoading && data.value === 0}
                   onSetAlertClick={() => handleOpenAlertModal(data.symbol, data.value, activeAlerts.find(a => a.symbol === data.symbol))}
                 />
               ))}
@@ -651,7 +539,3 @@ export default function DashboardPage() {
     </MainLayout>
   );
 }
-
-    
-
-    

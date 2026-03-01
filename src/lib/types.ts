@@ -24,12 +24,6 @@ export interface CryptoPriceData {
   price: number;
 }
 
-export interface TrendAnalysis {
-  trend: 'upward' | 'downward' | 'sideways';
-  confidence: number;
-  reason: string;
-}
-
 export interface Opportunity {
   cryptoSymbol: CryptoSymbol;
   currentPrice: number;
@@ -93,4 +87,3 @@ export interface PriceAlert {
   updatedAt: any; 
   triggeredAt?: any; 
 }
-
