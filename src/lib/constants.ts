@@ -3,7 +3,7 @@
 export const CRYPTO_SYMBOLS = [
     'BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'DOGE', 'SHIB', 
     'LTC', 'LINK', 'DOT', 'BCH', 'UNI', 'AVAX', 'MATIC', 'TRX',
-    'SKL', 'ARK', 'TIA', 'WLD', 'ENA', 'WLFI', 'KAITO', 'SOMII', 'BANANAS31'
+    'SKL', 'ARK', 'TIA', 'WLD', 'ENA', 'WLFI', 'KAITO', 'SOMI', 'BANANAS31'
 ] as const;
 export type CryptoSymbol = typeof CRYPTO_SYMBOLS[number];
 
@@ -62,7 +62,7 @@ export const COIN_DATA: Record<CryptoSymbol, { binanceSymbol: string; coinGeckoI
   ENA: { binanceSymbol: 'ENAUSDT', coinGeckoId: 'ethena', coinCapId: 'ethena' },
   WLFI: { binanceSymbol: 'WLFIUSDT', coinGeckoId: 'wlfi', coinCapId: 'wlfi' },
   KAITO: { binanceSymbol: 'KAITOUSDT', coinGeckoId: 'kaito', coinCapId: 'kaito' },
-  SOMII: { binanceSymbol: 'SOMIIUSDT', coinGeckoId: 'somii', coinCapId: 'somii' },
+  SOMI: { binanceSymbol: 'SOMIUSDT', coinGeckoId: 'somi', coinCapId: 'somi' },
   BANANAS31: { binanceSymbol: 'BANANAS31USDT', coinGeckoId: 'bananas31', coinCapId: 'bananas31' },
 };
 
