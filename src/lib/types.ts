@@ -18,27 +18,3 @@ export interface Usuario {
   bloqueado_hasta?: string | null; // Will be a string from DB
   username: string;
 }
-
-export interface SimulatedTrade {
-  id: string;
-  date: string;
-  cryptoSymbol: CryptoSymbol;
-  buyPrice: number;
-  sellPrice: number;
-  quantity: number; 
-  commission: number;
-  netProfitLoss: number;
-}
-
-export interface CryptoPriceData {
-  symbol: CryptoSymbol;
-  price: number;
-}
-
-export interface Opportunity {
-  cryptoSymbol: CryptoSymbol;
-  currentPrice: number;
-  targetSellPrice: number;
-  profitPercentage: number;
-  potentialProfit: number;
-}

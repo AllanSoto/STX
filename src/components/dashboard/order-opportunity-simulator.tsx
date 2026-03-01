@@ -397,7 +397,6 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
                     <TableHead>{getHeaderLabel('dashboard.orderOpportunitySimulator.table.header.amountExchanged', simulatedRows[0]?.cur1Label, simulatedRows[0]?.cur2Label)}</TableHead>
                     <TableHead>{t('dashboard.orderOpportunitySimulator.table.header.commissionDisplay', 'Commission ({currency})', {currency: DEFAULT_QUOTE_CURRENCY})}</TableHead>
                     <TableHead>{t('dashboard.orderOpportunitySimulator.table.header.netProfitDisplay', 'Net Profit ({currency})', {currency: DEFAULT_QUOTE_CURRENCY})}</TableHead>
-                    <TableHead>{t('dashboard.orderOpportunitySimulator.table.header.actions', 'Actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -416,9 +415,6 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
                         }
                       >
                         {row.displayNetProfit}
-                      </TableCell>
-                       <TableCell>
-                        {/* Actions column is kept for layout consistency, but buttons are removed */}
                       </TableCell>
                     </TableRow>
                   ))}

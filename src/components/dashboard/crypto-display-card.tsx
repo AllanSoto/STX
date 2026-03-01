@@ -66,9 +66,6 @@ export function CryptoDisplayCard({ data, isLoading }: CryptoDisplayCardProps) {
             maximumFractionDigits: value < 1 ? 5 : 2
           })}
         </div>
-        <p className="text-xs mt-1 text-muted-foreground invisible">
-          {t('dashboard.cryptoCard.trend.notAvailable', 'Trend N/A')}
-        </p>
       </CardContent>
     </Card>
   );
