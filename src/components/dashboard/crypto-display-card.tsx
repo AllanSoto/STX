@@ -8,7 +8,7 @@ import { CryptoIcon } from '@/components/shared/CryptoIcon';
 import { useLanguage } from '@/hooks/use-language';
 import type { CryptoSymbol } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { X, TrendingUp, TrendingDown } from 'lucide-react';
 
 interface CryptoDisplayCardProps {
   data: CryptoCardData;
@@ -78,8 +78,9 @@ export function CryptoDisplayCard({ data, isLoading, onRemove }: CryptoDisplayCa
             maximumFractionDigits: value < 1 ? 10 : 2
           })}
         </div>
-        <p className={`text-sm font-medium ${isPositiveChange ? 'text-primary' : 'text-destructive'}`}>
-          {isPositiveChange ? '+' : ''}{priceChangePercent24h.toFixed(2)}% (24h)
+        <p className={`flex items-center text-sm font-medium ${isPositiveChange ? 'text-primary' : 'text-destructive'}`}>
+            {isPositiveChange ? <TrendingUp className="mr-1 h-4 w-4" /> : <TrendingDown className="mr-1 h-4 w-4" />}
+            {isPositiveChange ? '+' : ''}{priceChangePercent24h.toFixed(2)}% (24h)
         </p>
       </CardContent>
     </Card>
