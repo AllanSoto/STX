@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -49,7 +48,6 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
     <>
       <div className="mt-4 p-2 text-center text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
         <p>&copy; {currentYearValue} {t('app.name', DEFAULT_APP_NAME)}.</p>
-        <p>{t('footer.createdBy', 'Created with AI by Allan Soto')}</p>
       </div>
       <div className="hidden p-2 text-center text-xs text-muted-foreground group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center">
         <TooltipProvider>
@@ -59,7 +57,6 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
             </TooltipTrigger>
             <TooltipContent side="right" align="center">
               <p>&copy; {currentYearValue} {t('app.name', DEFAULT_APP_NAME)}.</p>
-              <p>{t('footer.createdBy', 'Created with AI by Allan Soto')}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

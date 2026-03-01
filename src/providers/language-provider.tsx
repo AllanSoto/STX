@@ -215,7 +215,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.orderOpportunity.targetPricePositive': 'Sell price must be a positive number.',
     'zod.alert.targetPricePositive': 'Target price must be a positive number.',
     'zod.alert.directionRequired': 'Please select a direction for the alert.',
-    'footer.createdBy': 'Created with AI by Allan Soto',
     'toaster.notificationsLabel': 'Notifications (F8)',
     'firebase.config.errorTitle': 'Firebase Configuration Error',
     'firebase.config.errorMessage': 'The application is not properly configured to connect to Firebase. Please check your .env.local file and ensure all NEXT_PUBLIC_FIREBASE_... variables are correctly set. Refer to README.md for setup instructions.',
@@ -431,7 +430,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'zod.orderOpportunity.targetPricePositive': 'El precio de venta debe ser un número positivo.',
     'zod.alert.targetPricePositive': 'El precio objetivo debe ser un número positivo.',
     'zod.alert.directionRequired': 'Por favor, selecciona una dirección para la alerta.',
-    'footer.createdBy': 'Creado con IA por Allan Soto',
     'toaster.notificationsLabel': 'Notificaciones (F8)',
     'firebase.config.errorTitle': 'Error de Configuración de Firebase',
     'firebase.config.errorMessage': 'La aplicación no está configurada correctamente para conectarse a Firebase. Por favor, revisa tu archivo .env.local y asegúrate de que todas las variables NEXT_PUBLIC_FIREBASE_... estén correctamente establecidas. Consulta README.md para instrucciones de configuración.',
@@ -453,7 +451,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.title': 'Tableau de Bord', // French for Dashboard
     'dashboard.marketOverview': 'Aperçu du Marché',
     // ... (rest of French translations, similarly modified for auth removal and consistency) ...
-    'footer.createdBy': 'Créé avec IA par Allan Soto',
     'toaster.notificationsLabel': 'Notifications (F8)',
     'firebase.config.errorTitle': 'Erreur de Configuration Firebase',
     'firebase.config.errorMessage': 'L\'application n\'est pas correctement configurée pour se connecter à Firebase. Veuillez vérifier votre fichier .env.local et vous assurer que toutes les variables NEXT_PUBLIC_FIREBASE_... sont correctement définies. Consultez README.md pour les instructions de configuration.',
@@ -475,10 +472,9 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.title': 'डैशबोर्ड', // Hindi for Dashboard
     'dashboard.marketOverview': 'बाजार अवलोकन',
     // ... (rest of Hindi translations, similarly modified for auth removal and consistency) ...
-    'footer.createdBy': 'IA द्वारा एलन सोटो द्वारा बनाया गया',
     'toaster.notificationsLabel': 'सूचनाएं (F8)',
     'firebase.config.errorTitle': 'फायरबेस कॉन्फ़िगरेशन त्रुटि',
-    'firebase.config.errorMessage': 'एप्लिकेशन फायरबेस से कनेक्ट करने के लिए ठीक से कॉन्फ़िगर नहीं है। कृपया अपनी .env.local फ़ाइल जांचें और सुनिश्चित करें कि सभी NEXT_PUBLIC_FIREBASE_... متغیرات درست طریقے سے سیٹ ہیں۔ سیٹ اپ ہدایات کے لیے README.md देखیں۔',
+    'firebase.config.errorMessage': 'एप्लिकेशन फायरबेस से कनेक्ट करने के लिए ठीक से कॉन्फ़िगर नहीं है। कृपया अपनी .env.local फ़ाइल जांचें और सुनिश्चित करें कि सभी NEXT_PUBLIC_FIREBASE_... متغیرات درست तरीके से سیٹ ہیں۔ سیٹ اپ ہدایات کے لیے README.md देखیں۔',
     'firebase.offline.title': 'ऑफलाइन',
     'firebase.offline.userDataError': 'उपयोगकर्ता डेटा लोड नहीं किया जा सका। आप ऑफ़लाइन प्रतीत होते हैं। कुछ सुविधाएँ सीमित हो सकती हैं।',
     'firebase.offline.fetchError': 'डेटा लोड नहीं किया जा सका। आप ऑफ़लाइन प्रतीत होते हैं।',
@@ -497,7 +493,6 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.title': '仪表板', // Chinese for Dashboard
     'dashboard.marketOverview': '市场概览',
     // ... (rest of Chinese translations, similarly modified for auth removal and consistency) ...
-    'footer.createdBy': '由Allan Soto使用AI创建',
     'toaster.notificationsLabel': '通知 (F8)',
     'firebase.config.errorTitle': 'Firebase 配置错误',
     'firebase.config.errorMessage': '应用程序未正确配置以连接到 Firebase。请检查您的 .env.local 文件并确保所有 NEXT_PUBLIC_FIREBASE_... 变量均已正确设置。有关设置说明，请参阅 README.md。',
