@@ -387,7 +387,7 @@ export function OrderOpportunitySimulator({ cryptoPrices }: OrderOpportunitySimu
 
         {simulatedRows.length > 0 ? (
           <>
-            <ScrollArea className="w-full sm:max-h-[500px]">
+            <ScrollArea className="w-full">
               <Table>
                 <TableHeader>
                   <TableRow>
