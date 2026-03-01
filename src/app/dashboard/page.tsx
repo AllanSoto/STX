@@ -6,7 +6,7 @@ import { CryptoDisplayCard } from '@/components/dashboard/crypto-display-card';
 import { OrderOpportunitySimulator } from '@/components/dashboard/order-opportunity-simulator';
 import type { CryptoCardData } from '@/components/dashboard/types';
 import { initialCryptoData } from '@/components/dashboard/types';
-import type { CryptoSymbol } from '@/lib/types';
+import type { CryptoSymbol } from '@/lib/constants';
 import { CRYPTO_SYMBOLS, COIN_DATA } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
@@ -269,6 +269,11 @@ export default function DashboardPage() {
     }
   };
 
+  const handleRemoveSymbol = (symbolToRemove: CryptoSymbol) => {
+    setDisplayedSymbols(prevSymbols => prevSymbols.filter(symbol => symbol !== symbolToRemove));
+  };
+
+
   if (!languageHydrated) {
     return (
       <MainLayout>
@@ -351,6 +356,7 @@ export default function DashboardPage() {
                   key={data.symbol || i} 
                   data={data} 
                   isLoading={isPricesLoading && data.value === 0}
+                  onRemove={handleRemoveSymbol}
                 />
               ))}
             </div>

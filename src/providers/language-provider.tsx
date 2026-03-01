@@ -1,4 +1,3 @@
-// src/providers/language-provider.tsx
 'use client';
 
 import type { ReactNode } from 'react';
@@ -22,6 +21,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.addPairPlaceholder': 'Add Crypto',
     'dashboard.addPairButton': 'Add',
     'dashboard.cryptoCard.trend.notAvailable': "Trend N/A",
+    'dashboard.cryptoCard.removeAriaLabel': 'Remove {symbol}',
     'dashboard.orderOpportunitySimulator.title': 'Order & Opportunity Simulator',
     'dashboard.orderOpportunitySimulator.description': 'Simulate an exchange and see potential sell opportunities at incremental profit percentages.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Trading Pair',
@@ -75,6 +75,7 @@ const translationsData: Record<LanguageCode, Record<string, string>> = {
     'dashboard.addPairPlaceholder': 'Añadir Cripto',
     'dashboard.addPairButton': 'Añadir',
     'dashboard.cryptoCard.trend.notAvailable': "Tendencia N/A",
+    'dashboard.cryptoCard.removeAriaLabel': 'Quitar {symbol}',
     'dashboard.orderOpportunitySimulator.title': 'Simulador de Órdenes y Oportunidades',
     'dashboard.orderOpportunitySimulator.description': 'Simula un intercambio y visualiza oportunidades de venta potenciales con porcentajes de ganancia incrementales.',
     'dashboard.orderOpportunitySimulator.operationPairLabel': 'Par de Trading',

@@ -1,4 +1,3 @@
-// src/components/dashboard/crypto-display-card.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -7,17 +6,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CryptoIcon } from '@/components/shared/CryptoIcon';
 import { useLanguage } from '@/hooks/use-language';
+import type { CryptoSymbol } from '@/lib/constants';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 
 interface CryptoDisplayCardProps {
   data: CryptoCardData;
   isLoading: boolean;
+  onRemove: (symbol: CryptoSymbol) => void;
 }
 
-export function CryptoDisplayCard({ data, isLoading }: CryptoDisplayCardProps) {
+export function CryptoDisplayCard({ data, isLoading, onRemove }: CryptoDisplayCardProps) {
   const { symbol, value, previousValue } = data;
   const [priceChangeClass, setPriceChangeClass] = useState('');
-  const { translations } = useLanguage();
-  const t = (key: string, fallback?: string) => translations[key] || fallback || key;
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (previousValue !== undefined && previousValue !== 0 && value !== 0) {
@@ -49,15 +51,23 @@ export function CryptoDisplayCard({ data, isLoading }: CryptoDisplayCardProps) {
   }
 
   return (
-    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between min-h-[150px]">
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between min-h-[150px] relative group">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="absolute top-1 right-1 h-6 w-6 text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity z-10"
+        onClick={() => onRemove(symbol)}
+        aria-label={t('dashboard.cryptoCard.removeAriaLabel', 'Remove {symbol}', { symbol })}
+      >
+        <X className="h-4 w-4" />
+      </Button>
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2 pr-8">
         <div className="flex items-center">
            <CryptoIcon symbol={symbol} className="mr-2" />
           <CardTitle className="text-sm font-medium">
             {symbol}
           </CardTitle>
         </div>
-        <div className="h-5 w-5"></div> 
       </CardHeader>
       <CardContent className="flex-grow">
         <div className={`text-2xl font-bold ${priceChangeClass}`}>
