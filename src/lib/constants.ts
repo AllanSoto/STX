@@ -1,5 +1,8 @@
 
-export const CRYPTO_SYMBOLS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'DOGE', 'SHIB'] as const;
+export const CRYPTO_SYMBOLS = [
+    'BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'DOGE', 'SHIB', 
+    'LTC', 'LINK', 'DOT', 'BCH', 'UNI', 'AVAX', 'MATIC', 'TRX'
+] as const;
 export type CryptoSymbol = typeof CRYPTO_SYMBOLS[number];
 
 export const DETAILED_TRADING_PAIRS = [
@@ -12,11 +15,19 @@ export const DETAILED_TRADING_PAIRS = [
   'XRP/USDT',
   'DOGE/USDT',
   'SHIB/USDT',
+  'LTC/USDT',
+  'LINK/USDT',
+  'DOT/USDT',
+  'BCH/USDT',
+  'UNI/USDT',
+  'AVAX/USDT',
+  'MATIC/USDT',
+  'TRX/USDT',
   // USDT as base
   'USDT/BTC',
   'USDT/ETH',
   'USDT/BNB',
-  'USDT/XRP', // Added as per request
+  'USDT/XRP',
 ] as const;
 
 export type DetailedTradingPair = typeof DETAILED_TRADING_PAIRS[number];
@@ -46,8 +57,15 @@ export const COIN_DATA: Record<CryptoSymbol, { binanceSymbol: string; coinGeckoI
   ADA: { binanceSymbol: 'ADAUSDT', coinGeckoId: 'cardano', coinCapId: 'cardano' },
   DOGE: { binanceSymbol: 'DOGEUSDT', coinGeckoId: 'dogecoin', coinCapId: 'dogecoin' },
   SHIB: { binanceSymbol: 'SHIBUSDT', coinGeckoId: 'shiba-inu', coinCapId: 'shiba-inu' },
+  LTC: { binanceSymbol: 'LTCUSDT', coinGeckoId: 'litecoin', coinCapId: 'litecoin' },
+  LINK: { binanceSymbol: 'LINKUSDT', coinGeckoId: 'chainlink', coinCapId: 'chainlink' },
+  DOT: { binanceSymbol: 'DOTUSDT', coinGeckoId: 'polkadot', coinCapId: 'polkadot' },
+  BCH: { binanceSymbol: 'BCHUSDT', coinGeckoId: 'bitcoin-cash', coinCapId: 'bitcoin-cash' },
+  UNI: { binanceSymbol: 'UNIUSDT', coinGeckoId: 'uniswap', coinCapId: 'uniswap' },
+  AVAX: { binanceSymbol: 'AVAXUSDT', coinGeckoId: 'avalanche-2', coinCapId: 'avalanche' },
+  MATIC: { binanceSymbol: 'MATICUSDT', coinGeckoId: 'matic-network', coinCapId: 'polygon' },
+  TRX: { binanceSymbol: 'TRXUSDT', coinGeckoId: 'tron', coinCapId: 'tron' },
 };
 
 // For CoinCap WebSocket, which uses IDs like 'bitcoin', 'ethereum'
 export const COINCAP_ASSET_IDS = Object.values(COIN_DATA).map(data => data.coinCapId);
-
