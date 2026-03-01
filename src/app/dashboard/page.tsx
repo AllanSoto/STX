@@ -55,7 +55,6 @@ export default function DashboardPage() {
   const [activeAlerts, setActiveAlerts] = useState<PriceAlert[]>([]);
   const activeAlertsRef = useRef<PriceAlert[]>([]);
   const [editingAlert, setEditingAlert] = useState<PriceAlert | null>(null);
-  const [alertsError, setAlertsError] = useState<string | null>(null); 
 
 
   useEffect(() => {
@@ -87,18 +86,14 @@ export default function DashboardPage() {
 
   const fetchActiveAlerts = useCallback(async () => {
     // if (!user) return; // User check removed
-    setAlertsError(null); 
     try {
       // Fetching user-specific alerts is disabled without auth.
       // const alerts = await getActivePriceAlertsForUser(user.uid);
       // setActiveAlerts(alerts);
       setActiveAlerts([]); // Default to no alerts
-      setAlertsError(t('auth.disabled.alertsUnavailable', 'Price alerts are unavailable without user accounts.'));
       console.warn("Alert fetching disabled: User authentication removed.");
     } catch (error: any) {
       console.error("Error fetching active alerts (would be disabled):", error);
-      const errorMessage = error.message || t('dashboard.alerts.fetchErrorDescription', 'Could not load your active price alerts.');
-      setAlertsError(errorMessage);
       // Toast for offline remains relevant
       if (error.message && error.message.includes('offline')) {
         toast({
@@ -106,13 +101,6 @@ export default function DashboardPage() {
             description: t('firebase.offline.fetchError', 'Could not load alerts. You appear to be offline.'),
             variant: 'destructive',
         });
-      } else {
-        // This toast might not be relevant if the feature is disabled
-        // toast({
-        //     title: t('dashboard.alerts.fetchErrorTitle', 'Alerts Error'),
-        //     description: errorMessage,
-        //     variant: 'destructive',
-        // });
       }
     }
   }, [/*user,*/ t, toast]); // user removed from dependencies
@@ -438,9 +426,6 @@ export default function DashboardPage() {
         <div className="container mx-auto py-8 px-4">
           <Skeleton className="h-8 w-48 mb-8" />
           <div className="mb-8">
-            <Skeleton className="h-24 w-full" />
-          </div>
-          <div className="mb-8">
             <Skeleton className="h-6 w-40 mb-4" />
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-40 w-full" />)}
@@ -458,16 +443,16 @@ export default function DashboardPage() {
   return (
     <MainLayout>
       <div className="container mx-auto py-8 px-4">
-        <h1 className="text-3xl font-bold mb-8 text-foreground">{t('dashboard.title', 'Dashboard')}</h1>
+        <h1 className="text-3xl font-bold mb-8 text-foreground">{t('dashboard.title', 'Tablero')}</h1>
         
         {!isWebSocketConnected && !binanceFallbackIntervalRef.current && (
           <Card className="mb-8 bg-destructive/10 border-destructive/50">
             <CardHeader>
-              <CardTitle className="text-destructive">{t('dashboard.connectionStatus.title', 'Connection Issue')}</CardTitle>
+              <CardTitle className="text-destructive">{t('dashboard.connectionStatus.title', 'Problema de Conexión')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-destructive-foreground">
-                {t('dashboard.connectionStatus.noFeed', 'Currently not receiving live price updates. Attempting to connect...')}
+                {t('dashboard.connectionStatus.noFeed', 'Actualmente no se reciben actualizaciones de precios en vivo. Intentando conectar...')}
               </p>
             </CardContent>
           </Card>
@@ -475,41 +460,20 @@ export default function DashboardPage() {
          {!isWebSocketConnected && binanceFallbackIntervalRef.current && (
           <Card className="mb-8 bg-yellow-500/10 border-yellow-500/50">
             <CardHeader>
-              <CardTitle className="text-yellow-600 dark:text-yellow-400">{t('dashboard.connectionStatus.fallbackTitle', 'Using Fallback Connection')}</CardTitle>
+              <CardTitle className="text-yellow-600 dark:text-yellow-400">{t('dashboard.connectionStatus.fallbackTitle', 'Usando Conexión de Respaldo')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-yellow-700 dark:text-yellow-300">
-                {t('dashboard.connectionStatus.restFallbackActive', 'WebSocket connection failed. Using periodic REST API updates for prices.')}
+                {t('dashboard.connectionStatus.restFallbackActive', 'Falló la conexión WebSocket. Usando actualizaciones periódicas de API REST para precios.')}
               </p>
             </CardContent>
           </Card>
         )}
 
-        <Card className="mb-8 shadow-lg bg-secondary/30">
-            <CardHeader>
-                <CardTitle>{t('dashboard.portfolioBalance', 'Portfolio Balance')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <p className="text-muted-foreground">
-                   {/* Updated message as Binance API keys are no longer a planned feature */}
-                   {t('dashboard.portfolioBalance.publicSourceMessage', "Displaying market data from public source.")}
-                </p>
-                 {alertsError && (
-                    <div className="mt-4 p-3 text-sm text-destructive-foreground bg-destructive/20 rounded-md flex items-start">
-                        <WifiOff className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
-                        <div>
-                            <p className="font-semibold">{t('dashboard.alerts.fetchErrorTitle', 'Alerts Error')}</p>
-                            <p>{alertsError}</p>
-                        </div>
-                    </div>
-                )}
-            </CardContent>
-        </Card>
-
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('dashboard.marketOverview', 'Market Overview')}</h2>
+          <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('dashboard.marketOverview', 'Resumen del Mercado')}</h2>
           {isPricesLoading && filteredCryptoDataForDisplay.every(c => c.value === 0) ? (
-             <p>{t('dashboard.loadingPrices', 'Loading live prices...')}</p>
+             <p>{t('dashboard.loadingPrices', 'Cargando precios en vivo...')}</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {filteredCryptoDataForDisplay.map((data, i) => (
