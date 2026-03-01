@@ -5,32 +5,20 @@ export const CRYPTO_SYMBOLS = [
 ] as const;
 export type CryptoSymbol = typeof CRYPTO_SYMBOLS[number];
 
-export const DETAILED_TRADING_PAIRS = [
-  // USDT as quote
-  'BTC/USDT',
-  'ETH/USDT',
-  'BNB/USDT',
-  'SOL/USDT',
-  'ADA/USDT',
-  'XRP/USDT',
-  'DOGE/USDT',
-  'SHIB/USDT',
-  'LTC/USDT',
-  'LINK/USDT',
-  'DOT/USDT',
-  'BCH/USDT',
-  'UNI/USDT',
-  'AVAX/USDT',
-  'MATIC/USDT',
-  'TRX/USDT',
-  // USDT as base
-  'USDT/BTC',
-  'USDT/ETH',
-  'USDT/BNB',
-  'USDT/XRP',
-] as const;
+// Dynamically generate trading pairs from the master list of symbols
+const usdtQuotePairs = CRYPTO_SYMBOLS.map(symbol => `${symbol}/USDT`);
 
-export type DetailedTradingPair = typeof DETAILED_TRADING_PAIRS[number];
+// Define a specific list of symbols that can be quoted against USDT
+const usdtBaseAllowList: CryptoSymbol[] = ['BTC', 'ETH', 'BNB', 'XRP'];
+const usdtBasePairs = usdtBaseAllowList.map(symbol => `USDT/${symbol}`);
+
+// Combine and sort the pairs for a clean dropdown list
+export const DETAILED_TRADING_PAIRS = [
+  ...usdtQuotePairs,
+  ...usdtBasePairs,
+].sort();
+
+export type DetailedTradingPair = (typeof DETAILED_TRADING_PAIRS)[number];
 
 
 export const LANGUAGES = [
