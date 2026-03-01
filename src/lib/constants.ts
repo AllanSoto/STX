@@ -1,7 +1,9 @@
 
+
 export const CRYPTO_SYMBOLS = [
     'BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'DOGE', 'SHIB', 
-    'LTC', 'LINK', 'DOT', 'BCH', 'UNI', 'AVAX', 'MATIC', 'TRX'
+    'LTC', 'LINK', 'DOT', 'BCH', 'UNI', 'AVAX', 'MATIC', 'TRX',
+    'SKL', 'ARK', 'TIA', 'WLD', 'ENA', 'WLFI', 'KAITO', 'SOMII', 'BANANAS31'
 ] as const;
 export type CryptoSymbol = typeof CRYPTO_SYMBOLS[number];
 
@@ -53,6 +55,15 @@ export const COIN_DATA: Record<CryptoSymbol, { binanceSymbol: string; coinGeckoI
   AVAX: { binanceSymbol: 'AVAXUSDT', coinGeckoId: 'avalanche-2', coinCapId: 'avalanche' },
   MATIC: { binanceSymbol: 'MATICUSDT', coinGeckoId: 'matic-network', coinCapId: 'polygon' },
   TRX: { binanceSymbol: 'TRXUSDT', coinGeckoId: 'tron', coinCapId: 'tron' },
+  SKL: { binanceSymbol: 'SKLUSDT', coinGeckoId: 'skale', coinCapId: 'skale-network' },
+  ARK: { binanceSymbol: 'ARKUSDT', coinGeckoId: 'ark', coinCapId: 'ark' },
+  TIA: { binanceSymbol: 'TIAUSDT', coinGeckoId: 'celestia', coinCapId: 'celestia' },
+  WLD: { binanceSymbol: 'WLDUSDT', coinGeckoId: 'worldcoin-wld', coinCapId: 'worldcoin-org' },
+  ENA: { binanceSymbol: 'ENAUSDT', coinGeckoId: 'ethena', coinCapId: 'ethena' },
+  WLFI: { binanceSymbol: 'WLFIUSDT', coinGeckoId: 'wlfi', coinCapId: 'wlfi' },
+  KAITO: { binanceSymbol: 'KAITOUSDT', coinGeckoId: 'kaito', coinCapId: 'kaito' },
+  SOMII: { binanceSymbol: 'SOMIIUSDT', coinGeckoId: 'somii', coinCapId: 'somii' },
+  BANANAS31: { binanceSymbol: 'BANANAS31USDT', coinGeckoId: 'bananas31', coinCapId: 'bananas31' },
 };
 
 // For CoinCap WebSocket, which uses IDs like 'bitcoin', 'ethereum'
