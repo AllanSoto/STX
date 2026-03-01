@@ -1,4 +1,3 @@
-// src/app/dashboard/page.tsx
 'use client';
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
@@ -8,25 +7,28 @@ import { OrderOpportunitySimulator } from '@/components/dashboard/order-opportun
 import type { CryptoCardData } from '@/components/dashboard/types';
 import { initialCryptoData } from '@/components/dashboard/types';
 import type { CryptoSymbol } from '@/lib/types';
-import { CRYPTO_SYMBOLS, COIN_DATA, QUOTE_CURRENCY } from '@/lib/constants';
+import { CRYPTO_SYMBOLS, COIN_DATA } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, WifiOff } from 'lucide-react'; 
+import { Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const BINANCE_WS_URL = 'wss://stream.binance.com:9443/ws/!miniTicker@arr';
 const BINANCE_API_REST_BASE_URL = 'https://api.binance.com/api/v3';
-
-const BINANCE_API_REFRESH_INTERVAL = 5000; 
-
+const BINANCE_API_REFRESH_INTERVAL = 5000;
 
 const binanceSymbolsForREST = CRYPTO_SYMBOLS.map(s => COIN_DATA[s]?.binanceSymbol).filter(Boolean) as string[];
 
-
-const SYMBOLS_TO_DISPLAY_ON_CARDS: CryptoSymbol[] = ['BTC', 'ETH', 'SOL', 'XRP', 'BNB'];
-
+const INITIAL_SYMBOLS_TO_DISPLAY: CryptoSymbol[] = ['BTC', 'ETH', 'SOL', 'XRP', 'BNB'];
 
 export default function DashboardPage() {
   const [cryptoData, setCryptoData] = useState<CryptoCardData[]>(initialCryptoData);
@@ -35,15 +37,16 @@ export default function DashboardPage() {
   const { translations, language, hydrated: languageHydrated } = useLanguage();
   const { toast } = useToast();
 
+  const [displayedSymbols, setDisplayedSymbols] = useState<CryptoSymbol[]>(INITIAL_SYMBOLS_TO_DISPLAY);
+  const [symbolToAdd, setSymbolToAdd] = useState<CryptoSymbol | ''>('');
+
   const webSocketRef = useRef<WebSocket | null>(null);
   const binanceFallbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const cryptoDataRef = useRef<CryptoCardData[]>(initialCryptoData);
 
-
   useEffect(() => {
     cryptoDataRef.current = cryptoData;
   }, [cryptoData]);
-
 
   const t = useCallback((key: string, fallback?: string, vars?: Record<string, string | number>) => {
     let msg = translations[key] || fallback || key;
@@ -56,7 +59,6 @@ export default function DashboardPage() {
     }
     return String(msg);
   }, [translations]);
-  
 
   const fetchBinancePricesREST = useCallback(async (showToastOnError = true) => {
     if (binanceSymbolsForREST.length === 0) {
@@ -222,7 +224,6 @@ export default function DashboardPage() {
     };
   }, [t, toast, startBinanceRestFallback, isPricesLoading]); 
 
-
   useEffect(() => {
     connectWebSocket();
 
@@ -242,7 +243,6 @@ export default function DashboardPage() {
     };
   }, [connectWebSocket]);
 
-
   const cryptoPricesForSimulator = useMemo(() => 
     cryptoData.reduce((acc, curr) => {
       if (curr.value !== 0) {
@@ -253,8 +253,21 @@ export default function DashboardPage() {
   [cryptoData]);
   
   const filteredCryptoDataForDisplay = useMemo(() => {
-    return cryptoData.filter(cd => SYMBOLS_TO_DISPLAY_ON_CARDS.includes(cd.symbol));
-  }, [cryptoData]);
+    return displayedSymbols
+        .map(symbol => cryptoData.find(cd => cd.symbol === symbol))
+        .filter((data): data is CryptoCardData => data !== undefined);
+  }, [cryptoData, displayedSymbols]);
+
+  const availableSymbolsToAdd = useMemo(() => {
+    return CRYPTO_SYMBOLS.filter(s => !displayedSymbols.includes(s));
+  }, [displayedSymbols]);
+
+  const handleAddSymbol = () => {
+    if (symbolToAdd && !displayedSymbols.includes(symbolToAdd)) {
+        setDisplayedSymbols(prevSymbols => [...prevSymbols, symbolToAdd]);
+        setSymbolToAdd(''); // Reset selection
+    }
+  };
 
   if (!languageHydrated) {
     return (
@@ -263,7 +276,7 @@ export default function DashboardPage() {
           <Skeleton className="h-8 w-48 mb-8" />
           <div className="mb-8">
             <Skeleton className="h-6 w-40 mb-4" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-40 w-full" />)}
             </div>
           </div>
@@ -274,7 +287,6 @@ export default function DashboardPage() {
       </MainLayout>
     );
   }
-
 
   return (
     <MainLayout>
@@ -307,11 +319,33 @@ export default function DashboardPage() {
         )}
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4 text-foreground">{t('dashboard.marketOverview', 'Resumen del Mercado')}</h2>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+                <h2 className="text-2xl font-semibold text-foreground mb-2 sm:mb-0">{t('dashboard.marketOverview', 'Resumen del Mercado')}</h2>
+                {availableSymbolsToAdd.length > 0 && (
+                    <div className="flex items-center gap-2">
+                    <Select onValueChange={(value) => setSymbolToAdd(value as CryptoSymbol)} value={symbolToAdd}>
+                        <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder={t('dashboard.addPairPlaceholder', 'Añadir Cripto')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                        {availableSymbolsToAdd.map(symbol => (
+                            <SelectItem key={symbol} value={symbol}>
+                            {symbol}
+                            </SelectItem>
+                        ))}
+                        </SelectContent>
+                    </Select>
+                    <Button onClick={handleAddSymbol} disabled={!symbolToAdd}>
+                        {t('dashboard.addPairButton', 'Añadir')}
+                    </Button>
+                    </div>
+                )}
+            </div>
+
           {isPricesLoading && filteredCryptoDataForDisplay.every(c => c.value === 0) ? (
              <p>{t('dashboard.loadingPrices', 'Cargando precios en vivo...')}</p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {filteredCryptoDataForDisplay.map((data, i) => (
                 <CryptoDisplayCard 
                   key={data.symbol || i} 
