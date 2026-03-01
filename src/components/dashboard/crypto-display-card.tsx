@@ -3,20 +3,17 @@
 
 import { useEffect, useState } from 'react';
 import type { CryptoCardData } from './types';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CryptoIcon } from '@/components/shared/CryptoIcon';
 import { useLanguage } from '@/hooks/use-language';
-import { Button } from '@/components/ui/button';
-import { BellPlus } from 'lucide-react';
 
 interface CryptoDisplayCardProps {
   data: CryptoCardData;
   isLoading: boolean;
-  onSetAlertClick: () => void;
 }
 
-export function CryptoDisplayCard({ data, isLoading, onSetAlertClick }: CryptoDisplayCardProps) {
+export function CryptoDisplayCard({ data, isLoading }: CryptoDisplayCardProps) {
   const { symbol, value, previousValue } = data;
   const [priceChangeClass, setPriceChangeClass] = useState('');
   const { translations } = useLanguage();
@@ -47,9 +44,6 @@ export function CryptoDisplayCard({ data, isLoading, onSetAlertClick }: CryptoDi
           <Skeleton className="h-8 w-32 mb-1" />
           <Skeleton className="h-4 w-24" />
         </CardContent>
-        <CardFooter className="p-2 pt-0 mt-auto">
-          <Skeleton className="h-8 w-full" />
-        </CardFooter>
       </Card>
     );
   }
@@ -76,18 +70,6 @@ export function CryptoDisplayCard({ data, isLoading, onSetAlertClick }: CryptoDi
           {t('dashboard.cryptoCard.trend.notAvailable', 'Trend N/A')}
         </p>
       </CardContent>
-      <CardFooter className="p-2 pt-0 mt-auto">
-        <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full" 
-            onClick={onSetAlertClick}
-            title={t('dashboard.cryptoCard.alertButton.title', 'Set Price Alert')}
-        >
-          <BellPlus className="mr-2 h-4 w-4" />
-          {t('dashboard.cryptoCard.alertButton.label', 'Set Alert')}
-        </Button>
-      </CardFooter>
     </Card>
   );
 }

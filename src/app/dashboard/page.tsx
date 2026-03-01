@@ -7,19 +7,11 @@ import { CryptoDisplayCard } from '@/components/dashboard/crypto-display-card';
 import { OrderOpportunitySimulator } from '@/components/dashboard/order-opportunity-simulator';
 import type { CryptoCardData } from '@/components/dashboard/types';
 import { initialCryptoData } from '@/components/dashboard/types';
-import type { CryptoSymbol, PriceAlert } from '@/lib/types';
+import type { CryptoSymbol } from '@/lib/types';
 import { CRYPTO_SYMBOLS, COIN_DATA, QUOTE_CURRENCY } from '@/lib/constants';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
-// useAuth import removed as auth is disabled
-// import { useAuth } from '@/hooks/use-auth'; 
-// Firebase alert functions might be affected as they require userId.
-// UI elements calling these will be disabled if they require a user.
-import { getActivePriceAlertsForUser, deactivatePriceAlert, savePriceAlert, updatePriceAlert, deletePriceAlert } from '@/lib/firebase/alerts';
-import { AlertModal } from '@/components/dashboard/alert-modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-// import { Button } from '@/components/ui/button'; // Not used directly after auth removal for redirection
-// import Link from 'next/link'; // Not used directly after auth removal for redirection
 import { Loader2, WifiOff } from 'lucide-react'; 
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -28,7 +20,6 @@ const BINANCE_WS_URL = 'wss://stream.binance.com:9443/ws/!miniTicker@arr';
 const BINANCE_API_REST_BASE_URL = 'https://api.binance.com/api/v3';
 
 const BINANCE_API_REFRESH_INTERVAL = 5000; 
-const ALERT_CHECK_INTERVAL = 10000; 
 
 
 const binanceSymbolsForREST = CRYPTO_SYMBOLS.map(s => COIN_DATA[s]?.binanceSymbol).filter(Boolean) as string[];
@@ -43,27 +34,15 @@ export default function DashboardPage() {
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
   const { translations, language, hydrated: languageHydrated } = useLanguage();
   const { toast } = useToast();
-  // const { user, loading: authLoading } = useAuth(); // Auth removed
 
   const webSocketRef = useRef<WebSocket | null>(null);
   const binanceFallbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const cryptoDataRef = useRef<CryptoCardData[]>(initialCryptoData);
 
-  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
-  const [alertCryptoSymbol, setAlertCryptoSymbol] = useState<CryptoSymbol | null>(null);
-  const [alertCurrentPrice, setAlertCurrentPrice] = useState<number | null>(null);
-  const [activeAlerts, setActiveAlerts] = useState<PriceAlert[]>([]);
-  const activeAlertsRef = useRef<PriceAlert[]>([]);
-  const [editingAlert, setEditingAlert] = useState<PriceAlert | null>(null);
-
 
   useEffect(() => {
     cryptoDataRef.current = cryptoData;
   }, [cryptoData]);
-  
-  useEffect(() => {
-    activeAlertsRef.current = activeAlerts;
-  }, [activeAlerts]); 
 
 
   const t = useCallback((key: string, fallback?: string, vars?: Record<string, string | number>) => {
@@ -78,69 +57,6 @@ export default function DashboardPage() {
     return String(msg);
   }, [translations]);
   
-  // Auth state update log removed
-  // useEffect(() => {
-  //   console.log('[DashboardPage] Auth State Update:', { authLoading, userEmail: user?.email });
-  // }, [authLoading, user]);
-  
-
-  const fetchActiveAlerts = useCallback(async () => {
-    // if (!user) return; // User check removed
-    try {
-      // Fetching user-specific alerts is disabled without auth.
-      // const alerts = await getActivePriceAlertsForUser(user.uid);
-      // setActiveAlerts(alerts);
-      setActiveAlerts([]); // Default to no alerts
-      console.warn("Alert fetching disabled: User authentication removed.");
-    } catch (error: any) {
-      console.error("Error fetching active alerts (would be disabled):", error);
-      // Toast for offline remains relevant
-      if (error.message && error.message.includes('offline')) {
-        toast({
-            title: t('firebase.offline.title', 'Offline'),
-            description: t('firebase.offline.fetchError', 'Could not load alerts. You appear to be offline.'),
-            variant: 'destructive',
-        });
-      }
-    }
-  }, [/*user,*/ t, toast]); // user removed from dependencies
-
-  useEffect(() => {
-    // if(user) { // User check removed
-    fetchActiveAlerts();
-    // } else {
-    //   setActiveAlerts([]); 
-    //   setAlertsError(null);
-    // }
-  }, [/*user,*/ fetchActiveAlerts]); // user removed
-
-
-  const handleOpenAlertModal = (symbol: CryptoSymbol, price: number, alertToEdit?: PriceAlert) => {
-    // if (!user) { // User check removed
-    //   toast({ title: t('alertModal.toast.authErrorTitle', 'Authentication Required'), description: t('alertModal.toast.authErrorDescriptionLoginToSet', 'Please log in to set price alerts.'), variant: 'warning'});
-    //   return;
-    // }
-    toast({ title: t('auth.disabled.title', 'Feature Disabled'), description: t('auth.disabled.alertsUnavailableShort', 'Price alerts are unavailable without user accounts.'), variant: 'warning'});
-    // Optionally, still open modal in a read-only or informational mode if desired.
-    // For now, just show toast and don't open.
-    return; 
-    // setAlertCryptoSymbol(symbol);
-    // setAlertCurrentPrice(price);
-    // setEditingAlert(alertToEdit || null);
-    // setIsAlertModalOpen(true);
-  };
-
-  const handleCloseAlertModal = () => {
-    setIsAlertModalOpen(false);
-    setAlertCryptoSymbol(null);
-    setAlertCurrentPrice(null);
-    setEditingAlert(null);
-  };
-
-  const handleAlertSaved = () => {
-    fetchActiveAlerts(); 
-  };
-
 
   const fetchBinancePricesREST = useCallback(async (showToastOnError = true) => {
     if (binanceSymbolsForREST.length === 0) {
@@ -326,56 +242,6 @@ export default function DashboardPage() {
     };
   }, [connectWebSocket]);
 
-   useEffect(() => {
-    let alertIntervalId: NodeJS.Timeout | null = null;
-
-    const checkAlerts = () => {
-      // if (!user || activeAlertsRef.current.length === 0 || cryptoDataRef.current.every(c => c.value === 0)) { // User check removed
-      if (activeAlertsRef.current.length === 0 || cryptoDataRef.current.every(c => c.value === 0)) {
-        return;
-      }
-
-      const currentPricesMap = new Map(cryptoDataRef.current.map(c => [c.symbol, c.value]));
-
-      activeAlertsRef.current.forEach(async (alert) => {
-        const currentPrice = currentPricesMap.get(alert.symbol);
-        if (currentPrice === undefined || currentPrice === 0) return;
-
-        let triggered = false;
-        if (alert.direction === 'above' && currentPrice > alert.targetPrice) {
-          triggered = true;
-        } else if (alert.direction === 'below' && currentPrice < alert.targetPrice) {
-          triggered = true;
-        }
-
-        if (triggered) {
-          toast({
-            title: t('dashboard.alerts.triggeredTitle', 'Price Alert Triggered!'),
-            description: t('dashboard.alerts.triggeredDescription', '{symbol} has reached your target price of ${targetPrice}. Current price: ${currentPrice}.', {
-              symbol: alert.symbol,
-              targetPrice: alert.targetPrice.toLocaleString(),
-              currentPrice: currentPrice.toLocaleString()
-            }),
-            duration: 10000, 
-          });
-          // await deactivatePriceAlert(user.uid, alert.id); // User-specific action disabled
-          console.warn("Alert triggered, but deactivation is disabled without user auth:", alert.id);
-          fetchActiveAlerts(); 
-        }
-      });
-    };
-
-    // if (user) { // User check removed
-      alertIntervalId = setInterval(checkAlerts, ALERT_CHECK_INTERVAL);
-    // } else if (alertIntervalId) {
-    //   clearInterval(alertIntervalId); 
-    // }
-    
-    return () => {
-      if (alertIntervalId) clearInterval(alertIntervalId);
-    };
-  }, [/*user,*/ t, toast, fetchActiveAlerts]); // user removed
-
 
   const cryptoPricesForSimulator = useMemo(() => 
     cryptoData.reduce((acc, curr) => {
@@ -389,36 +255,6 @@ export default function DashboardPage() {
   const filteredCryptoDataForDisplay = useMemo(() => {
     return cryptoData.filter(cd => SYMBOLS_TO_DISPLAY_ON_CARDS.includes(cd.symbol));
   }, [cryptoData]);
-
-
-  // Auth loading check removed as auth is disabled
-  // if (authLoading) {
-  //   console.log('[DashboardPage] Rendering loader due to authLoading=true');
-  //   return (
-  //     <MainLayout>
-  //       <div className="container mx-auto py-8 px-4 flex justify-center items-center min-h-[calc(100vh-10rem)]">
-  //         <Loader2 className="h-12 w-12 animate-spin text-primary" />
-  //         <p className="mt-2 text-muted-foreground">{t('dashboard.loadingAuth', 'Verifying session...')}</p>
-  //       </div>
-  //     </MainLayout>
-  //   );
-  // }
-
-  // Login prompt removed as auth is disabled
-  // if (!user && !authLoading) {
-  //   console.log('[DashboardPage] No user and not authLoading, redirecting to login');
-  //   return (
-  //     <MainLayout>
-  //       <div className="container mx-auto py-8 px-4 text-center">
-  //         <h1 className="text-3xl font-bold mb-8 text-foreground">{t('dashboard.title', 'Dashboard')}</h1>
-  //         <p className="text-lg text-muted-foreground mb-6">{t('dashboard.loginPrompt', 'Please log in to view the dashboard and use SimulTradex features.')}</p>
-  //         <Button asChild>
-  //           <Link href="/login">{t('login.title', 'Login')}</Link>
-  //         </Button>
-  //       </div>
-  //     </MainLayout>
-  //   );
-  // }
 
   if (!languageHydrated) {
     return (
@@ -481,7 +317,6 @@ export default function DashboardPage() {
                   key={data.symbol || i} 
                   data={data} 
                   isLoading={isPricesLoading && data.value === 0}
-                  onSetAlertClick={() => handleOpenAlertModal(data.symbol, data.value, activeAlerts.find(a => a.symbol === data.symbol))}
                 />
               ))}
             </div>
@@ -492,14 +327,6 @@ export default function DashboardPage() {
           <OrderOpportunitySimulator cryptoPrices={cryptoPricesForSimulator} />
         </section>
       </div>
-       <AlertModal
-        isOpen={isAlertModalOpen}
-        onClose={handleCloseAlertModal}
-        cryptoSymbol={alertCryptoSymbol}
-        currentPrice={alertCurrentPrice}
-        existingAlert={editingAlert}
-        onAlertSaved={handleAlertSaved}
-      />
     </MainLayout>
   );
 }
