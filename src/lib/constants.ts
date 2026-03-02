@@ -32,7 +32,7 @@ export const LANGUAGES = [
 ];
 
 export const APP_NAME = 'SimulTradex';
-export const COMMISSION_RATE = 0.001; // 0.1%
+export const COMMISSION_RATE = 0.002; // 0.2%
 export const QUOTE_CURRENCY = 'USDT'; // Standard quote currency for pairs
 export const STABLECOIN_SYMBOLS = ['USDT'] as const; // Add other stablecoins if needed
 export type StableCoinSymbol = typeof STABLECOIN_SYMBOLS[number];
@@ -68,3 +68,4 @@ export const COIN_DATA: Record<CryptoSymbol, { binanceSymbol: string; coinGeckoI
 
 // For CoinCap WebSocket, which uses IDs like 'bitcoin', 'ethereum'
 export const COINCAP_ASSET_IDS = Object.values(COIN_DATA).map(data => data.coinCapId);
+
