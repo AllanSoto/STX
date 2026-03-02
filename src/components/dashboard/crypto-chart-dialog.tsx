@@ -253,7 +253,7 @@ export function CryptoChartDialog({ isOpen, onClose, symbol }: CryptoChartDialog
         )}
       >
         <DialogHeader>
-            <div className="flex flex-col sm:flex-row justify-between sm:items-start pr-12 sm:pr-8">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-start pr-28">
                 <div>
                     {symbol && (
                         <div className="flex items-center gap-2">
