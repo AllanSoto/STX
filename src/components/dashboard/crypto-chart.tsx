@@ -79,14 +79,6 @@ export function CryptoChart({ data, showRsi6, showRsi14, showRsi24 }: CryptoChar
       wickUpColor: upColor,
     });
     candlestickSeriesRef.current = candlestickSeries;
-
-    // RSI Pane and Scale
-    chart.priceScale('rsi').applyOptions({
-        mode: PriceScaleMode.Normal,
-        visible: false, // Initially hidden
-        scaleMargins: { top: 0.8, bottom: 0 },
-        entireTextOnly: true,
-    });
     
     // RSI 6 Series
     const rsi6Series = chart.addLineSeries({
@@ -114,6 +106,14 @@ export function CryptoChart({ data, showRsi6, showRsi14, showRsi24 }: CryptoChar
         visible: false,
     });
     rsi24SeriesRef.current = rsi24Series;
+
+    // RSI Pane and Scale - MUST be configured after a series is assigned to the scale ID
+    chart.priceScale('rsi').applyOptions({
+        mode: PriceScaleMode.Normal,
+        visible: false, // Initially hidden
+        scaleMargins: { top: 0.8, bottom: 0 },
+        entireTextOnly: true,
+    });
 
 
     const resizeObserver = new ResizeObserver(entries => {
