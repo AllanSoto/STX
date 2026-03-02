@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { CryptoChartDialog } from '@/components/dashboard/crypto-chart-dialog';
+import { MarketClocks } from '@/components/dashboard/market-clocks';
 
 const BINANCE_WS_URL = 'wss://stream.binance.com:9443/ws/!ticker@arr';
 const BINANCE_API_REST_BASE_URL = 'https://api.binance.com/api/v3';
@@ -418,6 +419,8 @@ export default function DashboardPage() {
             </div>
           )}
         </section>
+
+        <MarketClocks />
 
         <section className="mb-8">
           <OrderOpportunitySimulator cryptoPrices={cryptoPricesForSimulator} />
