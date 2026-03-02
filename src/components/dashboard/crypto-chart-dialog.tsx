@@ -154,11 +154,11 @@ export function CryptoChartDialog({ isOpen, onClose, symbol }: CryptoChartDialog
         });
     };
 
-    ws.onerror = (error) => {
-        console.error("WebSocket error:", error);
+    ws.onerror = (event: Event) => {
+        console.error("Chart WebSocket error event:", event);
         toast({
             title: 'WebSocket Error',
-            description: 'Live chart connection failed.',
+            description: `Live chart connection failed. Event type: ${event.type}.`,
             variant: 'destructive'
         })
     };
