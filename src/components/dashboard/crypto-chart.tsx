@@ -17,20 +17,27 @@ export function CryptoChart({ data }: CryptoChartProps) {
 
     // Determine colors from CSS variables
     const style = getComputedStyle(document.body);
-    const backgroundColor = style.getPropertyValue('--background').trim();
-    const textColor = style.getPropertyValue('--foreground').trim();
-    const gridColor = style.getPropertyValue('--border').trim();
-    const upColor = style.getPropertyValue('--primary').trim();
-    const downColor = style.getPropertyValue('--destructive').trim();
+    
+    // Helper to convert space-separated HSL from CSS vars to comma-separated for the library
+    const getHslColor = (variable: string) => {
+        const value = style.getPropertyValue(variable).trim();
+        return `hsl(${value.split(' ').join(',')})`;
+    }
+
+    const backgroundColor = getHslColor('--background');
+    const textColor = getHslColor('--foreground');
+    const gridColor = getHslColor('--border');
+    const upColor = getHslColor('--primary');
+    const downColor = getHslColor('--destructive');
     
     const chart = createChart(chartContainerRef.current, {
         layout: {
-            background: { type: ColorType.Solid, color: `hsl(${backgroundColor})` },
-            textColor: `hsl(${textColor})`,
+            background: { type: ColorType.Solid, color: backgroundColor },
+            textColor: textColor,
         },
         grid: {
-            vertLines: { color: `hsl(${gridColor})` },
-            horzLines: { color: `hsl(${gridColor})` },
+            vertLines: { color: gridColor },
+            horzLines: { color: gridColor },
         },
         width: chartContainerRef.current.clientWidth,
         height: chartContainerRef.current.clientHeight,
@@ -43,12 +50,12 @@ export function CryptoChart({ data }: CryptoChartProps) {
     chartRef.current = chart;
 
     const candlestickSeries = chart.addCandlestickSeries({
-      upColor: `hsl(${upColor})`,
-      downColor: `hsl(${downColor})`,
-      borderDownColor: `hsl(${downColor})`,
-      borderUpColor: `hsl(${upColor})`,
-      wickDownColor: `hsl(${downColor})`,
-      wickUpColor: `hsl(${upColor})`,
+      upColor: upColor,
+      downColor: downColor,
+      borderDownColor: downColor,
+      borderUpColor: upColor,
+      wickDownColor: downColor,
+      wickUpColor: upColor,
     });
     seriesRef.current = candlestickSeries;
     
