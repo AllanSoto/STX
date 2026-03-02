@@ -192,7 +192,7 @@ export function CryptoChartDialog({ isOpen, onClose, symbol }: CryptoChartDialog
     ws.onerror = (event: Event) => {
         // The raw event object often logs as an empty object '{}' in some environments.
         // We log a more descriptive message to the console for better diagnostics.
-        console.error(`Chart WebSocket error. Event type: ${event.type}`);
+        console.warn(`Chart WebSocket error. Event type: ${event.type}`);
 
         toast({
             title: 'WebSocket Error',
