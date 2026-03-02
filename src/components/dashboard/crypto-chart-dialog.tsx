@@ -19,6 +19,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CryptoIcon } from '../shared/CryptoIcon';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Maximize, Minimize } from 'lucide-react';
+import { Button } from '../ui/button';
+import { cn } from '@/lib/utils';
+
 
 interface CryptoChartDialogProps {
   isOpen: boolean;
@@ -56,8 +60,10 @@ export function CryptoChartDialog({ isOpen, onClose, symbol }: CryptoChartDialog
   const [chartData, setChartData] = useState<CandlestickData<Time>[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showRSI, setShowRSI] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
   const { toast } = useToast();
   const wsRef = useRef<WebSocket | null>(null);
+  const dialogContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isOpen || !symbol) {
@@ -167,6 +173,35 @@ export function CryptoChartDialog({ isOpen, onClose, symbol }: CryptoChartDialog
 
   }, [isOpen, symbol, interval, toast]);
 
+  useEffect(() => {
+    const handleFullScreenChange = () => {
+      setIsFullScreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullScreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullScreenChange);
+    };
+  }, []);
+
+  const handleToggleFullScreen = () => {
+    const element = dialogContentRef.current;
+    if (!element) return;
+
+    if (!document.fullscreenElement) {
+      element.requestFullscreen().catch((err) => {
+        toast({
+          title: 'Error',
+          description: `Could not enter full-screen mode: ${err.message}`,
+          variant: 'destructive',
+        });
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       onClose();
@@ -175,7 +210,13 @@ export function CryptoChartDialog({ isOpen, onClose, symbol }: CryptoChartDialog
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-4xl h-[80vh] flex flex-col p-4 sm:p-6">
+      <DialogContent 
+        ref={dialogContentRef}
+        className={cn(
+            "max-w-4xl h-[80vh] flex flex-col p-4 sm:p-6 landscape:h-[95vh]",
+            isFullScreen && "w-screen h-screen max-w-full m-0 rounded-none border-none"
+        )}
+      >
         <DialogHeader>
           {symbol && (
             <div className="flex items-center gap-2">
@@ -186,6 +227,16 @@ export function CryptoChartDialog({ isOpen, onClose, symbol }: CryptoChartDialog
           <DialogDescription>
             Candlestick chart with live data and technical indicators.
           </DialogDescription>
+           <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-14"
+            onClick={handleToggleFullScreen}
+            title={isFullScreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+          >
+            {isFullScreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+            <span className="sr-only">Toggle Fullscreen</span>
+          </Button>
         </DialogHeader>
         <Tabs value={interval} onValueChange={(value) => setInterval(value as KlineInterval)} className="mt-2">
           <TabsList>
