@@ -15,20 +15,29 @@ export function CryptoChart({ data }: CryptoChartProps) {
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
-    // Determine colors from CSS variables
-    const style = getComputedStyle(document.body);
-    
-    // Helper to convert space-separated HSL from CSS vars to comma-separated for the library
-    const getHslColor = (variable: string) => {
-        const value = style.getPropertyValue(variable).trim();
-        return `hsl(${value.split(' ').join(',')})`;
-    }
+    // To ensure lightweight-charts can parse the colors, we get the computed
+    // style of a temporary element that uses the CSS variables. This converts
+    // the HSL values to a parsable RGB format.
+    const getResolvedColor = (variable: string) => {
+      // The element must be in the DOM to have a computed style.
+      if (typeof document === 'undefined') return '';
+      const tempEl = document.createElement('div');
+      // Use a color property and the CSS variable.
+      tempEl.style.color = `hsl(var(${variable}))`;
+      // Keep it hidden and out of the layout flow.
+      tempEl.style.position = 'absolute';
+      tempEl.style.display = 'none';
+      document.body.appendChild(tempEl);
+      const color = getComputedStyle(tempEl).color;
+      document.body.removeChild(tempEl);
+      return color;
+    };
 
-    const backgroundColor = getHslColor('--background');
-    const textColor = getHslColor('--foreground');
-    const gridColor = getHslColor('--border');
-    const upColor = getHslColor('--primary');
-    const downColor = getHslColor('--destructive');
+    const backgroundColor = getResolvedColor('--background');
+    const textColor = getResolvedColor('--foreground');
+    const gridColor = getResolvedColor('--border');
+    const upColor = getResolvedColor('--primary');
+    const downColor = getResolvedColor('--destructive');
     
     const chart = createChart(chartContainerRef.current, {
         layout: {
