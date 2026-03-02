@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { CryptoChartDialog } from '@/components/dashboard/crypto-chart-dialog';
 
 const BINANCE_WS_URL = 'wss://stream.binance.com:9443/ws/!ticker@arr';
 const BINANCE_API_REST_BASE_URL = 'https://api.binance.com/api/v3';
@@ -40,6 +41,12 @@ export default function DashboardPage() {
 
   const [displayedSymbols, setDisplayedSymbols] = useState<CryptoSymbol[]>([]);
   const [symbolToAdd, setSymbolToAdd] = useState<CryptoSymbol | ''>('');
+
+  // State for chart dialog
+  const [chartModalState, setChartModalState] = useState<{
+    isOpen: boolean;
+    symbol: CryptoSymbol | null;
+  }>({ isOpen: false, symbol: null });
 
   const webSocketRef = useRef<WebSocket | null>(null);
   const binanceFallbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -313,6 +320,14 @@ export default function DashboardPage() {
     setDisplayedSymbols(prevSymbols => prevSymbols.filter(symbol => symbol !== symbolToRemove));
   };
 
+  const handleCardClick = (symbol: CryptoSymbol) => {
+    setChartModalState({ isOpen: true, symbol: symbol });
+  };
+  
+  const handleChartClose = () => {
+    setChartModalState({ isOpen: false, symbol: null });
+  };
+  
 
   if (!languageHydrated) {
     return (
@@ -397,6 +412,7 @@ export default function DashboardPage() {
                   data={data} 
                   isLoading={isPricesLoading && data.value === 0}
                   onRemove={handleRemoveSymbol}
+                  onCardClick={handleCardClick}
                 />
               ))}
             </div>
@@ -406,6 +422,12 @@ export default function DashboardPage() {
         <section className="mb-8">
           <OrderOpportunitySimulator cryptoPrices={cryptoPricesForSimulator} />
         </section>
+
+        <CryptoChartDialog 
+            isOpen={chartModalState.isOpen}
+            onClose={handleChartClose}
+            symbol={chartModalState.symbol}
+        />
       </div>
     </MainLayout>
   );

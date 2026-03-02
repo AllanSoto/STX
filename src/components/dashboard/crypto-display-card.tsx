@@ -14,9 +14,10 @@ interface CryptoDisplayCardProps {
   data: CryptoCardData;
   isLoading: boolean;
   onRemove: (symbol: CryptoSymbol) => void;
+  onCardClick: (symbol: CryptoSymbol) => void;
 }
 
-export function CryptoDisplayCard({ data, isLoading, onRemove }: CryptoDisplayCardProps) {
+export function CryptoDisplayCard({ data, isLoading, onRemove, onCardClick }: CryptoDisplayCardProps) {
   const { symbol, value, previousValue, priceChangePercent24h } = data;
   const [priceChangeClass, setPriceChangeClass] = useState('');
   const { t } = useLanguage();
@@ -52,13 +53,28 @@ export function CryptoDisplayCard({ data, isLoading, onRemove }: CryptoDisplayCa
 
   const isPositiveChange = priceChangePercent24h >= 0;
 
+  const handleRemoveClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click event when removing
+    onRemove(symbol);
+  };
+  
+  const handleCardClick = () => {
+    onCardClick(symbol);
+  };
+
   return (
-    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between min-h-[150px] relative group">
+    <Card 
+      className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between min-h-[150px] relative group cursor-pointer"
+      onClick={handleCardClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleCardClick()}
+    >
       <Button
         variant="ghost"
         size="icon"
         className="absolute top-1 right-1 h-6 w-6 text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity z-10"
-        onClick={() => onRemove(symbol)}
+        onClick={handleRemoveClick}
         aria-label={t('dashboard.cryptoCard.removeAriaLabel', 'Remove {symbol}', { symbol })}
       >
         <X className="h-4 w-4" />
