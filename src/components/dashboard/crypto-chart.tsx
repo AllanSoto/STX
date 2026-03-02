@@ -1,30 +1,28 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { createChart, type IChartApi, type CandlestickData, type Time, ColorType } from 'lightweight-charts';
+import { createChart, type IChartApi, type ISeriesApi, type CandlestickData, type Time, ColorType, PriceScaleMode } from 'lightweight-charts';
+import { calculateRSI } from '@/lib/indicators';
 
 interface CryptoChartProps {
   data: CandlestickData<Time>[];
+  showRSI: boolean;
 }
 
-export function CryptoChart({ data }: CryptoChartProps) {
+export function CryptoChart({ data, showRSI }: CryptoChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
-  const seriesRef = useRef<any>(null);
+  const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
+  const rsiSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
 
+  // Effect for chart initialization
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
-    // To ensure lightweight-charts can parse the colors, we get the computed
-    // style of a temporary element that uses the CSS variables. This converts
-    // the HSL values to a parsable RGB format.
     const getResolvedColor = (variable: string) => {
-      // The element must be in the DOM to have a computed style.
       if (typeof document === 'undefined') return '';
       const tempEl = document.createElement('div');
-      // Use a color property and the CSS variable.
       tempEl.style.color = `hsl(var(${variable}))`;
-      // Keep it hidden and out of the layout flow.
       tempEl.style.position = 'absolute';
       tempEl.style.display = 'none';
       document.body.appendChild(tempEl);
@@ -38,7 +36,8 @@ export function CryptoChart({ data }: CryptoChartProps) {
     const gridColor = getResolvedColor('--border');
     const upColor = getResolvedColor('--primary');
     const downColor = getResolvedColor('--destructive');
-    
+    const rsiColor = getResolvedColor('--chart-2');
+
     const chart = createChart(chartContainerRef.current, {
         layout: {
             background: { type: ColorType.Solid, color: backgroundColor },
@@ -53,11 +52,16 @@ export function CryptoChart({ data }: CryptoChartProps) {
         timeScale: {
             timeVisible: true,
             secondsVisible: false,
-        }
+        },
+        // Adjust main price scale to leave room for RSI
+        rightPriceScale: {
+            scaleMargins: { top: 0.1, bottom: 0.25 },
+        },
     });
 
     chartRef.current = chart;
 
+    // Price Series
     const candlestickSeries = chart.addCandlestickSeries({
       upColor: upColor,
       downColor: downColor,
@@ -66,9 +70,24 @@ export function CryptoChart({ data }: CryptoChartProps) {
       wickDownColor: downColor,
       wickUpColor: upColor,
     });
-    seriesRef.current = candlestickSeries;
-    
-    // Handle resizing
+    candlestickSeriesRef.current = candlestickSeries;
+
+    // RSI Series on a separate pane
+    const rsiSeries = chart.addLineSeries({
+        color: rsiColor,
+        lineWidth: 2,
+        priceScaleId: 'rsi',
+        visible: false,
+    });
+    // Configure the RSI price scale
+    chart.priceScale('rsi').applyOptions({
+        mode: PriceScaleMode.Normal,
+        visible: false,
+        scaleMargins: { top: 0.8, bottom: 0 },
+        entireTextOnly: true,
+    });
+    rsiSeriesRef.current = rsiSeries;
+
     const resizeObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
@@ -77,20 +96,39 @@ export function CryptoChart({ data }: CryptoChartProps) {
     });
     resizeObserver.observe(chartContainerRef.current);
 
-    // Cleanup
     return () => {
       resizeObserver.disconnect();
       chart.remove();
       chartRef.current = null;
     };
-  }, []); // Only run once to initialize chart
+  }, []);
 
+  // Effect to update data and RSI visibility
   useEffect(() => {
-    if (seriesRef.current && data) {
-      seriesRef.current.setData(data);
-      chartRef.current?.timeScale().fitContent();
+    const candlestickSeries = candlestickSeriesRef.current;
+    const rsiSeries = rsiSeriesRef.current;
+    const chart = chartRef.current;
+
+    if (!candlestickSeries || !rsiSeries || !chart) return;
+
+    // Update main candlestick data
+    candlestickSeries.setData(data);
+
+    // Update RSI
+    const rsiScale = chart.priceScale('rsi');
+    if (showRSI && data.length > 14) {
+        const rsiData = calculateRSI(data);
+        rsiSeries.setData(rsiData);
+        rsiSeries.applyOptions({ visible: true });
+        rsiScale.applyOptions({ visible: true });
+    } else {
+        rsiSeries.setData([]);
+        rsiSeries.applyOptions({ visible: false });
+        rsiScale.applyOptions({ visible: false });
     }
-  }, [data]); // Update data when it changes
+    
+  }, [data, showRSI]);
+
 
   return <div ref={chartContainerRef} className="absolute inset-0" />;
 }
