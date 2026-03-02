@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useRef } from 'react';
@@ -6,14 +7,19 @@ import { calculateRSI } from '@/lib/indicators';
 
 interface CryptoChartProps {
   data: CandlestickData<Time>[];
-  showRSI: boolean;
+  showRsi6: boolean;
+  showRsi14: boolean;
+  showRsi24: boolean;
 }
 
-export function CryptoChart({ data, showRSI }: CryptoChartProps) {
+export function CryptoChart({ data, showRsi6, showRsi14, showRsi24 }: CryptoChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
-  const rsiSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const rsi6SeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const rsi14SeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const rsi24SeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+
 
   // Effect for chart initialization
   useEffect(() => {
@@ -36,7 +42,9 @@ export function CryptoChart({ data, showRSI }: CryptoChartProps) {
     const gridColor = getResolvedColor('--border');
     const upColor = getResolvedColor('--primary');
     const downColor = getResolvedColor('--destructive');
-    const rsiColor = getResolvedColor('--chart-2');
+    const rsiColor6 = getResolvedColor('--chart-2');
+    const rsiColor14 = getResolvedColor('--chart-3');
+    const rsiColor24 = getResolvedColor('--chart-4');
 
     const chart = createChart(chartContainerRef.current, {
         layout: {
@@ -72,21 +80,41 @@ export function CryptoChart({ data, showRSI }: CryptoChartProps) {
     });
     candlestickSeriesRef.current = candlestickSeries;
 
-    // RSI Series on a separate pane
-    const rsiSeries = chart.addLineSeries({
-        color: rsiColor,
+    // RSI Pane and Scale
+    chart.priceScale('rsi').applyOptions({
+        mode: PriceScaleMode.Normal,
+        visible: false, // Initially hidden
+        scaleMargins: { top: 0.8, bottom: 0 },
+        entireTextOnly: true,
+    });
+    
+    // RSI 6 Series
+    const rsi6Series = chart.addLineSeries({
+        color: rsiColor6,
+        lineWidth: 1,
+        priceScaleId: 'rsi',
+        visible: false,
+    });
+    rsi6SeriesRef.current = rsi6Series;
+
+    // RSI 14 Series
+    const rsi14Series = chart.addLineSeries({
+        color: rsiColor14,
         lineWidth: 2,
         priceScaleId: 'rsi',
         visible: false,
     });
-    // Configure the RSI price scale
-    chart.priceScale('rsi').applyOptions({
-        mode: PriceScaleMode.Normal,
+    rsi14SeriesRef.current = rsi14Series;
+    
+    // RSI 24 Series
+    const rsi24Series = chart.addLineSeries({
+        color: rsiColor24,
+        lineWidth: 1,
+        priceScaleId: 'rsi',
         visible: false,
-        scaleMargins: { top: 0.8, bottom: 0 },
-        entireTextOnly: true,
     });
-    rsiSeriesRef.current = rsiSeries;
+    rsi24SeriesRef.current = rsi24Series;
+
 
     const resizeObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
@@ -106,28 +134,36 @@ export function CryptoChart({ data, showRSI }: CryptoChartProps) {
   // Effect to update data and RSI visibility
   useEffect(() => {
     const candlestickSeries = candlestickSeriesRef.current;
-    const rsiSeries = rsiSeriesRef.current;
+    const rsi6 = rsi6SeriesRef.current;
+    const rsi14 = rsi14SeriesRef.current;
+    const rsi24 = rsi24SeriesRef.current;
     const chart = chartRef.current;
 
-    if (!candlestickSeries || !rsiSeries || !chart) return;
+    if (!candlestickSeries || !rsi6 || !rsi14 || !rsi24 || !chart) return;
 
-    // Update main candlestick data
     candlestickSeries.setData(data);
 
-    // Update RSI
     const rsiScale = chart.priceScale('rsi');
-    if (showRSI && data.length > 14) {
-        const rsiData = calculateRSI(data);
-        rsiSeries.setData(rsiData);
-        rsiSeries.applyOptions({ visible: true });
-        rsiScale.applyOptions({ visible: true });
-    } else {
-        rsiSeries.setData([]);
-        rsiSeries.applyOptions({ visible: false });
-        rsiScale.applyOptions({ visible: false });
-    }
+    const anyRsiVisible = showRsi6 || showRsi14 || showRsi24;
+
+    const updateRsi = (series: ISeriesApi<'Line'>, period: number, visible: boolean) => {
+        if (visible && data.length > period) {
+            const rsiData = calculateRSI(data, period);
+            series.setData(rsiData);
+            series.applyOptions({ visible: true });
+        } else {
+            series.setData([]);
+            series.applyOptions({ visible: false });
+        }
+    };
     
-  }, [data, showRSI]);
+    updateRsi(rsi6, 6, showRsi6);
+    updateRsi(rsi14, 14, showRsi14);
+    updateRsi(rsi24, 24, showRsi24);
+    
+    rsiScale.applyOptions({ visible: anyRsiVisible });
+    
+  }, [data, showRsi6, showRsi14, showRsi24]);
 
 
   return <div ref={chartContainerRef} className="absolute inset-0" />;

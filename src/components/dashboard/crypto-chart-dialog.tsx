@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -59,11 +60,45 @@ export function CryptoChartDialog({ isOpen, onClose, symbol }: CryptoChartDialog
   const [interval, setInterval] = useState<KlineInterval>('1h');
   const [chartData, setChartData] = useState<CandlestickData<Time>[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [showRSI, setShowRSI] = useState(false);
+  const [showRsi6, setShowRsi6] = useState(false);
+  const [showRsi14, setShowRsi14] = useState(false);
+  const [showRsi24, setShowRsi24] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const { toast } = useToast();
   const wsRef = useRef<WebSocket | null>(null);
   const dialogContentRef = useRef<HTMLDivElement>(null);
+
+  const [tickerData, setTickerData] = useState<{ high: string, low: string } | null>(null);
+  const [isTickerLoading, setIsTickerLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen || !symbol) {
+        setTickerData(null);
+        return;
+    }
+    const binanceSymbol = COIN_DATA[symbol]?.binanceSymbol;
+    if (!binanceSymbol) return;
+
+    const fetch24hTicker = async () => {
+        setIsTickerLoading(true);
+        try {
+            const response = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${binanceSymbol}`);
+            if (!response.ok) throw new Error('Failed to fetch 24h ticker data');
+            const data = await response.json();
+            setTickerData({ high: data.highPrice, low: data.lowPrice });
+        } catch (error) {
+            console.error('Error fetching 24h ticker:', error);
+            toast({
+                title: 'Error',
+                description: 'Could not load 24h High/Low prices.',
+                variant: 'destructive',
+            });
+        } finally {
+            setIsTickerLoading(false);
+        }
+    };
+    fetch24hTicker();
+  }, [isOpen, symbol, toast]);
 
   useEffect(() => {
     if (!isOpen || !symbol) {
@@ -218,15 +253,32 @@ export function CryptoChartDialog({ isOpen, onClose, symbol }: CryptoChartDialog
         )}
       >
         <DialogHeader>
-          {symbol && (
-            <div className="flex items-center gap-2">
-              <CryptoIcon symbol={symbol} className="h-7 w-7" />
-              <DialogTitle className="text-2xl">{symbol}/USDT Chart</DialogTitle>
+            <div className="flex flex-col sm:flex-row justify-between sm:items-start pr-12 sm:pr-8">
+                <div>
+                    {symbol && (
+                        <div className="flex items-center gap-2">
+                        <CryptoIcon symbol={symbol} className="h-7 w-7" />
+                        <DialogTitle className="text-2xl">{symbol}/USDT Chart</DialogTitle>
+                        </div>
+                    )}
+                    <DialogDescription>
+                        Candlestick chart with live data and technical indicators.
+                    </DialogDescription>
+                </div>
+                <div className='text-center sm:text-right text-xs text-muted-foreground pt-1 mt-2 sm:mt-0'>
+                    {isTickerLoading ? (
+                        <>
+                            <Skeleton className="h-4 w-40 mb-1 mx-auto sm:mx-0 sm:ml-auto" />
+                            <Skeleton className="h-4 w-40 mx-auto sm:mx-0 sm:ml-auto" />
+                        </>
+                    ) : tickerData ? (
+                        <>
+                            <div>24h High: {parseFloat(tickerData.high).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 6})}</div>
+                            <div>24h Low: {parseFloat(tickerData.low).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 6})}</div>
+                        </>
+                    ) : null}
+                </div>
             </div>
-          )}
-          <DialogDescription>
-            Candlestick chart with live data and technical indicators.
-          </DialogDescription>
            <Button
             variant="ghost"
             size="icon"
@@ -249,24 +301,34 @@ export function CryptoChartDialog({ isOpen, onClose, symbol }: CryptoChartDialog
           {isLoading ? (
             <Skeleton className="absolute inset-0 w-full h-full" />
           ) : chartData.length > 0 ? (
-            <CryptoChart data={chartData} showRSI={showRSI} />
+            <CryptoChart 
+                data={chartData} 
+                showRsi6={showRsi6}
+                showRsi14={showRsi14}
+                showRsi24={showRsi24}
+            />
           ) : (
             <div className="flex items-center justify-center h-full">
               <p className="text-muted-foreground">No chart data available.</p>
             </div>
           )}
         </div>
-        <DialogFooter className="mt-2 pt-4 border-t">
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="rsi-switch"
-              checked={showRSI}
-              onCheckedChange={setShowRSI}
-            />
-            <Label htmlFor="rsi-switch">Show RSI (14)</Label>
-          </div>
+        <DialogFooter className="mt-2 pt-4 border-t flex-wrap sm:justify-start gap-x-6 gap-y-2">
+            <div className="flex items-center space-x-2">
+                <Switch id="rsi-6-switch" checked={showRsi6} onCheckedChange={setShowRsi6} />
+                <Label htmlFor="rsi-6-switch">RSI (6)</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+                <Switch id="rsi-14-switch" checked={showRsi14} onCheckedChange={setShowRsi14} />
+                <Label htmlFor="rsi-14-switch">RSI (14)</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+                <Switch id="rsi-24-switch" checked={showRsi24} onCheckedChange={setShowRsi24} />
+                <Label htmlFor="rsi-24-switch">RSI (24)</Label>
+            </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
